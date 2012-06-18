@@ -143,10 +143,6 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		}
 
 		if (!portletDataContext.isPerformDirectBinaryImport()) {
-			String binPath = getFileEntryBinPath(portletDataContext, fileEntry);
-
-			fileEntryElement.addAttribute("bin-path", binPath);
-
 			InputStream is = null;
 
 			try {
@@ -168,7 +164,12 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			}
 
 			try {
+				String binPath = getFileEntryBinPath(
+					portletDataContext, fileEntry);
+
 				portletDataContext.addZipEntry(binPath, is);
+
+				fileEntryElement.addAttribute("bin-path", binPath);
 			}
 			finally {
 				try {
@@ -304,10 +305,24 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		if (Validator.isNull(binPath) &&
 			portletDataContext.isPerformDirectBinaryImport()) {
 
-			is = FileEntryUtil.getContentStream(fileEntry);
+			try {
+				is = FileEntryUtil.getContentStream(fileEntry);
+			}
+			catch (NoSuchFileException nsfe) {
+			}
 		}
 		else {
 			is = portletDataContext.getZipEntryAsInputStream(binPath);
+		}
+
+		if (is == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"No file found for file entry " +
+						fileEntry.getFileEntryId());
+			}
+
+			return;
 		}
 
 		if ((folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) &&
@@ -427,13 +442,11 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 					serviceContext.setUuid(fileVersion.getUuid());
 
-					importedFileEntry =
-						DLAppLocalServiceUtil.updateFileEntry(
-							userId, existingFileEntry.getFileEntryId(),
-							fileEntry.getTitle(), fileEntry.getMimeType(),
-							fileEntry.getTitle(), fileEntry.getDescription(),
-							null, false, is, fileEntry.getSize(),
-							serviceContext);
+					importedFileEntry = DLAppLocalServiceUtil.updateFileEntry(
+						userId, existingFileEntry.getFileEntryId(),
+						fileEntry.getTitle(), fileEntry.getMimeType(),
+						fileEntry.getTitle(), fileEntry.getDescription(), null,
+						false, is, fileEntry.getSize(), serviceContext);
 				}
 				else {
 					DLAppLocalServiceUtil.updateAsset(

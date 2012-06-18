@@ -527,7 +527,7 @@ public class LayoutImporter {
 			_permissionImporter.readPortletDataPermissions(portletDataContext);
 		}
 
-		if (importCategories) {
+		if (importCategories || group.isCompany()) {
 			_portletImporter.readAssetCategories(portletDataContext);
 		}
 
@@ -635,7 +635,6 @@ public class LayoutImporter {
 			String portletId = portletElement.attributeValue("portlet-id");
 			long layoutId = GetterUtil.getLong(
 				portletElement.attributeValue("layout-id"));
-			long plid = newLayoutsMap.get(layoutId).getPlid();
 			long oldPlid = GetterUtil.getLong(
 				portletElement.attributeValue("old-plid"));
 
@@ -646,12 +645,17 @@ public class LayoutImporter {
 				continue;
 			}
 
-			Layout layout = null;
+			Layout layout = newLayoutsMap.get(layoutId);
 
-			try {
-				layout = LayoutUtil.findByPrimaryKey(plid);
+			long plid = LayoutConstants.DEFAULT_PLID;
+
+			if (layout != null) {
+				plid = layout.getPlid();
 			}
-			catch (NoSuchLayoutException nsle) {
+
+			layout = LayoutUtil.fetchByPrimaryKey(plid);
+
+			if ((layout == null) && !group.isCompany()) {
 				continue;
 			}
 
@@ -671,13 +675,19 @@ public class LayoutImporter {
 			_portletImporter.setPortletScope(
 				portletDataContext, portletElement);
 
+			long portletPreferencesGroupId = groupId;
+
 			try {
+
+				if ((layout != null) && !group.isCompany()) {
+					portletPreferencesGroupId = layout.getGroupId();
+				}
 
 				// Portlet preferences
 
 				_portletImporter.importPortletPreferences(
 					portletDataContext, layoutSet.getCompanyId(),
-					layout.getGroupId(), layout, null, portletElement,
+					portletPreferencesGroupId, layout, null, portletElement,
 					importPortletSetup, importPortletArchivedSetups,
 					importPortletUserPreferences, false);
 
@@ -694,7 +704,7 @@ public class LayoutImporter {
 			}
 			finally {
 				_portletImporter.resetPortletScope(
-					portletDataContext, layout.getGroupId());
+					portletDataContext, portletPreferencesGroupId);
 			}
 
 			// Portlet permissions
