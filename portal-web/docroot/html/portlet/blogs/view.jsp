@@ -18,24 +18,6 @@
 
 <%
 long assetCategoryId = ParamUtil.getLong(request, "categoryId");
-
-String assetCategoryTitle = null;
-String assetVocabularyTitle = null;
-
-if (assetCategoryId != 0) {
-	AssetCategory assetCategory = AssetCategoryLocalServiceUtil.getAssetCategory(assetCategoryId);
-
-	assetCategory = assetCategory.toEscapedModel();
-
-	assetCategoryTitle = assetCategory.getTitle(locale);
-
-	AssetVocabulary assetVocabulary = AssetVocabularyLocalServiceUtil.getAssetVocabulary(assetCategory.getVocabularyId());
-
-	assetVocabulary = assetVocabulary.toEscapedModel();
-
-	assetVocabularyTitle = assetVocabulary.getTitle(locale);
-}
-
 String assetTagName = ParamUtil.getString(request, "tag");
 
 PortletURL portletURL = renderResponse.createRenderURL();
@@ -65,10 +47,7 @@ portletURL.setParameter("struts_action", "/blogs/view");
 		AssetEntryQuery assetEntryQuery = new AssetEntryQuery(BlogsEntry.class.getName(), searchContainer);
 
 		assetEntryQuery.setExcludeZeroViewCount(false);
-
-		if (BlogsPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_ENTRY)) {
-			assetEntryQuery.setVisible(Boolean.TRUE);
-		}
+		assetEntryQuery.setVisible(Boolean.TRUE);
 
 		total = AssetEntryServiceUtil.getEntriesCount(assetEntryQuery);
 		results = AssetEntryServiceUtil.getEntries(assetEntryQuery);

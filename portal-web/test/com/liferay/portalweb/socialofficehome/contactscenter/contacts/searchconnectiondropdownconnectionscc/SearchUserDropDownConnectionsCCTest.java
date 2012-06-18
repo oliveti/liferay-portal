@@ -22,7 +22,7 @@ import com.liferay.portalweb.portal.util.RuntimeVariables;
  */
 public class SearchUserDropDownConnectionsCCTest extends BaseTestCase {
 	public void testSearchUserDropDownConnectionsCC() throws Exception {
-		selenium.open("/user/joebloggs/home1/");
+		selenium.open("/user/joebloggs/so/dashboard/");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -49,8 +49,8 @@ public class SearchUserDropDownConnectionsCCTest extends BaseTestCase {
 		assertTrue(selenium.isVisible(
 				"//input[@id='_1_WAR_contactsportlet_name']"));
 		assertTrue(selenium.isVisible(
-				"//select[@id='_1_WAR_contactsportlet_socialRelationType']"));
-		selenium.select("//select[@id='_1_WAR_contactsportlet_socialRelationType']",
+				"//select[@id='_1_WAR_contactsportlet_filterBy']"));
+		selenium.select("//select[@id='_1_WAR_contactsportlet_filterBy']",
 			RuntimeVariables.replace("Connections"));
 		selenium.type("//input[@id='_1_WAR_contactsportlet_name']",
 			RuntimeVariables.replace("Social01"));

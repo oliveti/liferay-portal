@@ -16,17 +16,14 @@ package com.liferay.portal.tools.samplesqlbuilder;
 
 import com.liferay.counter.model.Counter;
 import com.liferay.counter.model.impl.CounterModelImpl;
+import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.IntegerWrapper;
-import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.xml.Document;
-import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.model.ClassName;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Contact;
@@ -35,9 +32,7 @@ import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutTypePortletConstants;
 import com.liferay.portal.model.ModelHintsUtil;
-import com.liferay.portal.model.Permission;
-import com.liferay.portal.model.Resource;
-import com.liferay.portal.model.ResourceCode;
+import com.liferay.portal.model.PortletPreferences;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.ResourcePermission;
 import com.liferay.portal.model.Role;
@@ -48,13 +43,11 @@ import com.liferay.portal.model.impl.CompanyImpl;
 import com.liferay.portal.model.impl.ContactImpl;
 import com.liferay.portal.model.impl.GroupImpl;
 import com.liferay.portal.model.impl.LayoutImpl;
-import com.liferay.portal.model.impl.PermissionImpl;
-import com.liferay.portal.model.impl.ResourceCodeImpl;
-import com.liferay.portal.model.impl.ResourceImpl;
+import com.liferay.portal.model.impl.PortletPreferencesImpl;
 import com.liferay.portal.model.impl.ResourcePermissionImpl;
 import com.liferay.portal.model.impl.RoleImpl;
 import com.liferay.portal.model.impl.UserImpl;
-import com.liferay.portal.security.permission.ResourceActionsUtil;
+import com.liferay.portal.util.PortletKeys;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.model.impl.AssetEntryImpl;
 import com.liferay.portlet.blogs.model.BlogsEntry;
@@ -74,6 +67,12 @@ import com.liferay.portlet.documentlibrary.model.impl.DLFileRankImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileVersionImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFolderImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLSyncImpl;
+import com.liferay.portlet.dynamicdatalists.model.DDLRecord;
+import com.liferay.portlet.dynamicdatalists.model.DDLRecordSet;
+import com.liferay.portlet.dynamicdatalists.model.DDLRecordVersion;
+import com.liferay.portlet.dynamicdatalists.model.impl.DDLRecordImpl;
+import com.liferay.portlet.dynamicdatalists.model.impl.DDLRecordSetImpl;
+import com.liferay.portlet.dynamicdatalists.model.impl.DDLRecordVersionImpl;
 import com.liferay.portlet.dynamicdatamapping.model.DDMContent;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStorageLink;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
@@ -82,6 +81,10 @@ import com.liferay.portlet.dynamicdatamapping.model.impl.DDMContentImpl;
 import com.liferay.portlet.dynamicdatamapping.model.impl.DDMStorageLinkImpl;
 import com.liferay.portlet.dynamicdatamapping.model.impl.DDMStructureImpl;
 import com.liferay.portlet.dynamicdatamapping.model.impl.DDMStructureLinkImpl;
+import com.liferay.portlet.journal.model.JournalArticle;
+import com.liferay.portlet.journal.model.JournalArticleResource;
+import com.liferay.portlet.journal.model.impl.JournalArticleImpl;
+import com.liferay.portlet.journal.model.impl.JournalArticleResourceImpl;
 import com.liferay.portlet.messageboards.model.MBCategory;
 import com.liferay.portlet.messageboards.model.MBCategoryConstants;
 import com.liferay.portlet.messageboards.model.MBDiscussion;
@@ -107,9 +110,7 @@ import java.text.Format;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Brian Wing Shun Chan
@@ -117,11 +118,10 @@ import java.util.Map;
 public class DataFactory {
 
 	public DataFactory(
-		String baseDir, int maxGroupsCount, int maxUserToGroupCount,
-		SimpleCounter counter, SimpleCounter dlDateCounter,
-		SimpleCounter permissionCounter, SimpleCounter resourceCounter,
-		SimpleCounter resourceCodeCounter,
-		SimpleCounter resourcePermissionCounter,
+		String baseDir, int maxGroupsCount, int maxJournalArticleSize,
+		int maxUserToGroupCount, SimpleCounter counter,
+		SimpleCounter dlDateCounter, SimpleCounter permissionCounter,
+		SimpleCounter resourceCounter, SimpleCounter resourcePermissionCounter,
 		SimpleCounter socialActivityCounter) {
 
 		try {
@@ -131,9 +131,6 @@ public class DataFactory {
 
 			_counter = counter;
 			_dlDateCounter = dlDateCounter;
-			_permissionCounter = permissionCounter;
-			_resourceCounter = resourceCounter;
-			_resourceCodeCounter = resourceCodeCounter;
 			_resourcePermissionCounter = resourcePermissionCounter;
 			_socialActivityCounter = socialActivityCounter;
 
@@ -141,7 +138,7 @@ public class DataFactory {
 			initCompany();
 			initDefaultUser();
 			initGroups();
-			initResourceCodes();
+			initJournalArticle(maxJournalArticleSize);
 			initRoles();
 			initUserNames();
 		}
@@ -201,6 +198,48 @@ public class DataFactory {
 		contact.setLastName(lastName);
 
 		return contact;
+	}
+
+	public DDLRecord addDDLRecord(
+		long groupId, long companyId, long userId, long ddlRecordSetId) {
+
+		DDLRecord ddlRecord = new DDLRecordImpl();
+
+		ddlRecord.setRecordId(_counter.get());
+		ddlRecord.setGroupId(groupId);
+		ddlRecord.setCompanyId(companyId);
+		ddlRecord.setUserId(userId);
+		ddlRecord.setCreateDate(newCreateDate());
+		ddlRecord.setRecordSetId(ddlRecordSetId);
+
+		return ddlRecord;
+	}
+
+	public DDLRecordSet addDDLRecordSet(
+		long groupId, long companyId, long userId, long ddmStructureId) {
+
+		DDLRecordSet ddlRecordSet = new DDLRecordSetImpl();
+
+		ddlRecordSet.setRecordSetId(_counter.get());
+		ddlRecordSet.setGroupId(groupId);
+		ddlRecordSet.setCompanyId(companyId);
+		ddlRecordSet.setUserId(userId);
+		ddlRecordSet.setDDMStructureId(ddmStructureId);
+
+		return ddlRecordSet;
+	}
+
+	public DDLRecordVersion addDDLRecordVersion(DDLRecord ddlRecord) {
+		DDLRecordVersion ddlRecordVersion = new DDLRecordVersionImpl();
+
+		ddlRecordVersion.setRecordVersionId(_counter.get());
+		ddlRecordVersion.setGroupId(ddlRecord.getGroupId());
+		ddlRecordVersion.setCompanyId(ddlRecord.getCompanyId());
+		ddlRecordVersion.setUserId(ddlRecord.getUserId());
+		ddlRecordVersion.setRecordSetId(ddlRecord.getRecordSetId());
+		ddlRecordVersion.setRecordId(ddlRecord.getRecordId());
+
+		return ddlRecordVersion;
 	}
 
 	public DDMContent addDDMContent(long groupId, long companyId, long userId) {
@@ -385,6 +424,32 @@ public class DataFactory {
 		return group;
 	}
 
+	public JournalArticle addJournalArticle(
+		long resourcePrimKey, long groupId, long companyId, String articleId) {
+
+		JournalArticle journalArticle = new JournalArticleImpl();
+
+		journalArticle.setId(_counter.get());
+		journalArticle.setResourcePrimKey(resourcePrimKey);
+		journalArticle.setGroupId(groupId);
+		journalArticle.setCompanyId(companyId);
+		journalArticle.setArticleId(articleId);
+		journalArticle.setContent(_journalArticleContent);
+
+		return journalArticle;
+	}
+
+	public JournalArticleResource addJournalArticleResource(long groupId) {
+		JournalArticleResource journalArticleResource =
+			new JournalArticleResourceImpl();
+
+		journalArticleResource.setResourcePrimKey(_counter.get());
+		journalArticleResource.setGroupId(groupId);
+		journalArticleResource.setArticleId(String.valueOf(_counter.get()));
+
+		return journalArticleResource;
+	}
+
 	public Layout addLayout(
 		int layoutId, String name, String friendlyURL, String column1,
 		String column2) {
@@ -493,38 +558,19 @@ public class DataFactory {
 		return mbThread;
 	}
 
-	public List<Permission> addPermissions(Resource resource) {
-		List<Permission> permissions = new ArrayList<Permission>();
+	public PortletPreferences addPortletPreferences(
+		long ownerId, long plid, String portletId, String preferences) {
 
-		String name = _individualResourceNames.get(resource.getCodeId());
+		PortletPreferences portletPreferences = new PortletPreferencesImpl();
 
-		List<String> actions = ResourceActionsUtil.getModelResourceActions(
-			name);
+		portletPreferences.setPortletPreferencesId(_counter.get());
+		portletPreferences.setOwnerId(ownerId);
+		portletPreferences.setOwnerType(PortletKeys.PREFS_OWNER_TYPE_LAYOUT);
+		portletPreferences.setPlid(plid);
+		portletPreferences.setPortletId(portletId);
+		portletPreferences.setPreferences(preferences);
 
-		for (String action : actions) {
-			Permission permission = new PermissionImpl();
-
-			permission.setPermissionId(_permissionCounter.get());
-			permission.setCompanyId(_company.getCompanyId());
-			permission.setActionId(action);
-			permission.setResourceId(resource.getResourceId());
-
-			permissions.add(permission);
-		}
-
-		return permissions;
-	}
-
-	public Resource addResource(String name, String primKey) {
-		Long codeId = _individualResourceCodeIds.get(name);
-
-		Resource resource = new ResourceImpl();
-
-		resource.setResourceId(_resourceCounter.get());
-		resource.setCodeId(codeId);
-		resource.setPrimKey(primKey);
-
-		return resource;
+		return portletPreferences;
 	}
 
 	public List<ResourcePermission> addResourcePermission(
@@ -562,59 +608,6 @@ public class DataFactory {
 		resourcePermissions.add(resourcePermission);
 
 		return resourcePermissions;
-	}
-
-	public List<KeyValuePair> addRolesPermissions(
-		Resource resource, List<Permission> permissions, Role memberRole) {
-
-		List<KeyValuePair> rolesPermissions = new ArrayList<KeyValuePair>();
-
-		for (Permission permission : permissions) {
-			KeyValuePair kvp = new KeyValuePair();
-
-			kvp.setKey(String.valueOf(_ownerRole.getRoleId()));
-			kvp.setValue(String.valueOf(permission.getPermissionId()));
-
-			rolesPermissions.add(kvp);
-		}
-
-		String name = _individualResourceNames.get(resource.getCodeId());
-
-		if (memberRole != null) {
-			List<String> groupDefaultActions =
-				ResourceActionsUtil.getModelResourceGroupDefaultActions(name);
-
-			for (Permission permission : permissions) {
-				if (!groupDefaultActions.contains(permission.getActionId())) {
-					continue;
-				}
-
-				KeyValuePair kvp = new KeyValuePair();
-
-				kvp.setKey(String.valueOf(memberRole.getRoleId()));
-				kvp.setValue(String.valueOf(permission.getPermissionId()));
-
-				rolesPermissions.add(kvp);
-			}
-		}
-
-		List<String> guestDefaultactions =
-			ResourceActionsUtil.getModelResourceGuestDefaultActions(name);
-
-		for (Permission permission : permissions) {
-			if (!guestDefaultactions.contains(permission.getActionId())) {
-				continue;
-			}
-
-			KeyValuePair kvp = new KeyValuePair();
-
-			kvp.setKey(String.valueOf(_guestRole.getRoleId()));
-			kvp.setValue(String.valueOf(permission.getPermissionId()));
-
-			rolesPermissions.add(kvp);
-		}
-
-		return rolesPermissions;
 	}
 
 	public SocialActivity addSocialActivity(
@@ -729,6 +722,10 @@ public class DataFactory {
 		return _simpleDateFormat.format(date);
 	}
 
+	public ClassName getDDLRecordSetClassName() {
+		return _ddlRecordSetClassName;
+	}
+
 	public ClassName getDDMContentClassName() {
 		return _ddmContentClassName;
 	}
@@ -757,6 +754,10 @@ public class DataFactory {
 		return _guestRole;
 	}
 
+	public ClassName getJournalArticleClassName() {
+		return _journalArticleClassName;
+	}
+
 	public ClassName getMBMessageClassName() {
 		return _mbMessageClassName;
 	}
@@ -775,10 +776,6 @@ public class DataFactory {
 
 	public Role getPowerUserRole() {
 		return _powerUserRole;
-	}
-
-	public List<ResourceCode> getResourceCodes() {
-		return _resourceCodes;
 	}
 
 	public ClassName getRoleClassName() {
@@ -837,6 +834,9 @@ public class DataFactory {
 			if (model.equals(BlogsEntry.class.getName())) {
 				_blogsEntryClassName = className;
 			}
+			else if (model.equals(DDLRecordSet.class.getName())) {
+				_ddlRecordSetClassName = className;
+			}
 			else if (model.equals(DDMContent.class.getName())) {
 				_ddmContentClassName = className;
 			}
@@ -845,6 +845,9 @@ public class DataFactory {
 			}
 			else if (model.equals(Group.class.getName())) {
 				_groupClassName = className;
+			}
+			else if (model.equals(JournalArticle.class.getName())) {
+				_journalArticleClassName = className;
 			}
 			else if (model.equals(MBMessage.class.getName())) {
 				_mbMessageClassName = className;
@@ -881,33 +884,6 @@ public class DataFactory {
 
 		counter.setName(Counter.class.getName());
 		counter.setCurrentId(_counter.get());
-
-		_counters.add(counter);
-
-		// Permission
-
-		counter = new CounterModelImpl();
-
-		counter.setName(Permission.class.getName());
-		counter.setCurrentId(_permissionCounter.get());
-
-		_counters.add(counter);
-
-		// Resource
-
-		counter = new CounterModelImpl();
-
-		counter.setName(Resource.class.getName());
-		counter.setCurrentId(_resourceCounter.get());
-
-		_counters.add(counter);
-
-		// ResourceCode
-
-		counter = new CounterModelImpl();
-
-		counter.setName(ResourceCode.class.getName());
-		counter.setCurrentId(_resourceCodeCounter.get());
 
 		_counters.add(counter);
 
@@ -959,78 +935,18 @@ public class DataFactory {
 		_guestGroup = group;
 	}
 
-	public void initResourceCodes() throws Exception {
-		if (_resourceCodes != null) {
-			return;
+	public void initJournalArticle(int maxJournalArticleSize) throws Exception {
+		if (maxJournalArticleSize <= 0) {
+			maxJournalArticleSize = 1;
 		}
 
-		_resourceCodes = new ArrayList<ResourceCode>();
+		char[] chars = new char[maxJournalArticleSize];
 
-		_individualResourceCodeIds = new HashMap<String, Long>();
-		_individualResourceNames = new HashMap<Long, String>();
-
-		List<String> models = ModelHintsUtil.getModels();
-
-		for (String model : models) {
-			initResourceCodes(model);
+		for (int i = 0; i < maxJournalArticleSize; i++) {
+			chars[i] = (char)(CharPool.LOWER_CASE_A + (i % 26));
 		}
 
-		Document document = SAXReaderUtil.read(
-			new File(
-				_baseDir, "../portal-web/docroot/WEB-INF/portlet-custom.xml"),
-			false);
-
-		Element rootElement = document.getRootElement();
-
-		List<Element> portletElements = rootElement.elements("portlet");
-
-		for (Element portletElement : portletElements) {
-			String portletName = portletElement.elementText("portlet-name");
-
-			initResourceCodes(portletName);
-		}
-	}
-
-	public void initResourceCodes(String name) {
-
-		// Company
-
-		ResourceCode resourceCode = newResourceCode();
-
-		resourceCode.setName(name);
-		resourceCode.setScope(ResourceConstants.SCOPE_COMPANY);
-
-		_resourceCodes.add(resourceCode);
-
-		// Group
-
-		resourceCode = newResourceCode();
-
-		resourceCode.setName(name);
-		resourceCode.setScope(ResourceConstants.SCOPE_GROUP);
-
-		_resourceCodes.add(resourceCode);
-
-		// Group template
-
-		resourceCode = newResourceCode();
-
-		resourceCode.setName(name);
-		resourceCode.setScope(ResourceConstants.SCOPE_GROUP_TEMPLATE);
-
-		_resourceCodes.add(resourceCode);
-
-		// Individual
-
-		resourceCode = newResourceCode();
-
-		resourceCode.setName(name);
-		resourceCode.setScope(ResourceConstants.SCOPE_INDIVIDUAL);
-
-		_resourceCodes.add(resourceCode);
-
-		_individualResourceCodeIds.put(name, resourceCode.getCodeId());
-		_individualResourceNames.put(resourceCode.getCodeId(), name);
+		_journalArticleContent = new String(chars);
 	}
 
 	public void initRoles() {
@@ -1190,14 +1106,6 @@ public class DataFactory {
 		return new Date(_baseCreateTime + (_dlDateCounter.get() * Time.SECOND));
 	}
 
-	protected ResourceCode newResourceCode() {
-		ResourceCode resourceCode = new ResourceCodeImpl();
-
-		resourceCode.setCodeId(_resourceCodeCounter.get());
-
-		return resourceCode;
-	}
-
 	protected Role newRole() {
 		Role role = new RoleImpl();
 
@@ -1216,6 +1124,7 @@ public class DataFactory {
 	private Company _company;
 	private SimpleCounter _counter;
 	private List<CounterModelImpl> _counters;
+	private ClassName _ddlRecordSetClassName;
 	private ClassName _ddmContentClassName;
 	private User _defaultUser;
 	private SimpleCounter _dlDateCounter;
@@ -1224,8 +1133,8 @@ public class DataFactory {
 	private List<Group> _groups;
 	private Group _guestGroup;
 	private Role _guestRole;
-	private Map<String, Long> _individualResourceCodeIds;
-	private Map<Long, String> _individualResourceNames;
+	private ClassName _journalArticleClassName;
+	private String _journalArticleContent;
 	private int _maxGroupsCount;
 	private int _maxUserToGroupCount;
 	private ClassName _mbMessageClassName;
@@ -1233,11 +1142,7 @@ public class DataFactory {
 	private Role _organizationOwnerRole;
 	private Role _organizationUserRole;
 	private Role _ownerRole;
-	private SimpleCounter _permissionCounter;
 	private Role _powerUserRole;
-	private SimpleCounter _resourceCodeCounter;
-	private List<ResourceCode> _resourceCodes;
-	private SimpleCounter _resourceCounter;
 	private SimpleCounter _resourcePermissionCounter;
 	private ClassName _roleClassName;
 	private List<Role> _roles;

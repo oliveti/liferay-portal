@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class UserNotificationEventLocalServiceUtil {
 	* Deletes the user notification event with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param userNotificationEventId the primary key of the user notification event
+	* @return the user notification event that was removed
 	* @throws PortalException if a user notification event with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteUserNotificationEvent(long userNotificationEventId)
+	public static com.liferay.portal.model.UserNotificationEvent deleteUserNotificationEvent(
+		long userNotificationEventId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteUserNotificationEvent(userNotificationEventId);
+		return getService().deleteUserNotificationEvent(userNotificationEventId);
 	}
 
 	/**
 	* Deletes the user notification event from the database. Also notifies the appropriate model listeners.
 	*
 	* @param userNotificationEvent the user notification event
+	* @return the user notification event that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteUserNotificationEvent(
+	public static com.liferay.portal.model.UserNotificationEvent deleteUserNotificationEvent(
 		com.liferay.portal.model.UserNotificationEvent userNotificationEvent)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteUserNotificationEvent(userNotificationEvent);
+		return getService().deleteUserNotificationEvent(userNotificationEvent);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -289,15 +295,16 @@ public class UserNotificationEventLocalServiceUtil {
 		return getService().addUserNotificationEvents(userId, notificationEvents);
 	}
 
-	public static void deleteUserNotificationEvent(java.lang.String uuid)
+	public static void deleteUserNotificationEvent(java.lang.String uuid,
+		long companyId)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteUserNotificationEvent(uuid);
+		getService().deleteUserNotificationEvent(uuid, companyId);
 	}
 
 	public static void deleteUserNotificationEvents(
-		java.util.Collection<java.lang.String> uuids)
+		java.util.Collection<java.lang.String> uuids, long companyId)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteUserNotificationEvents(uuids);
+		getService().deleteUserNotificationEvents(uuids, companyId);
 	}
 
 	public static java.util.List<com.liferay.portal.model.UserNotificationEvent> getUserNotificationEvents(
@@ -336,15 +343,17 @@ public class UserNotificationEventLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.model.UserNotificationEvent updateUserNotificationEvent(
-		java.lang.String uuid, boolean archive)
+		java.lang.String uuid, long companyId, boolean archive)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		return getService().updateUserNotificationEvent(uuid, archive);
+		return getService().updateUserNotificationEvent(uuid, companyId, archive);
 	}
 
 	public static java.util.List<com.liferay.portal.model.UserNotificationEvent> updateUserNotificationEvents(
-		java.util.Collection<java.lang.String> uuids, boolean archive)
+		java.util.Collection<java.lang.String> uuids, long companyId,
+		boolean archive)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		return getService().updateUserNotificationEvents(uuids, archive);
+		return getService()
+				   .updateUserNotificationEvents(uuids, companyId, archive);
 	}
 
 	public static UserNotificationEventLocalService getService() {
@@ -353,20 +362,15 @@ public class UserNotificationEventLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(UserNotificationEventLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(UserNotificationEventLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(UserNotificationEventLocalService service) {
-		MethodCache.remove(UserNotificationEventLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(UserNotificationEventLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(UserNotificationEventLocalService.class);
 	}
 
 	private static UserNotificationEventLocalService _service;

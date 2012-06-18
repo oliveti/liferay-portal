@@ -19,14 +19,16 @@ import com.liferay.portal.image.DatabaseHook;
 import com.liferay.portal.image.FileSystemHook;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.image.Hook;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.Image;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.ImageLocalServiceUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
@@ -38,6 +40,7 @@ import com.liferay.portlet.documentlibrary.util.ImageProcessorUtil;
 import java.io.InputStream;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,7 +55,7 @@ import java.util.Map;
 public class UpgradeImageGallery extends UpgradeProcess {
 
 	public UpgradeImageGallery() throws Exception {
-		ClassLoader classLoader = PortalClassLoaderUtil.getClassLoader();
+		ClassLoader classLoader = PACLClassLoaderUtil.getPortalClassLoader();
 
 		_sourceHookClassName = FileSystemHook.class.getName();
 
@@ -238,6 +241,70 @@ public class UpgradeImageGallery extends UpgradeProcess {
 		}
 	}
 
+	protected void deleteConflictingIGPermissions(
+			String igResourceName, String dlResourceName)
+		throws Exception {
+
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+
+		try {
+			con = DataAccess.getConnection();
+
+			DatabaseMetaData databaseMetaData = con.getMetaData();
+
+			boolean supportsBatchUpdates =
+				databaseMetaData.supportsBatchUpdates();
+
+			ps = con.prepareStatement(
+				"select companyId, scope, primKey, roleId from " +
+					"ResourcePermission where name = ?");
+
+			ps.setString(1, igResourceName);
+
+			rs = ps.executeQuery();
+
+			ps = con.prepareStatement(
+				"delete from ResourcePermission where name = ? and " +
+					"companyId = ? and scope = ? and primKey = ? and " +
+						"roleId = ?");
+
+			int count = 0;
+
+			while (rs.next()) {
+				ps.setString(1, dlResourceName);
+				ps.setLong(2, rs.getLong("companyId"));
+				ps.setLong(3, rs.getLong("scope"));
+				ps.setLong(4, rs.getLong("primKey"));
+				ps.setLong(5, rs.getLong("roleId"));
+
+				if (supportsBatchUpdates) {
+					ps.addBatch();
+
+					if (count == PropsValues.HIBERNATE_JDBC_BATCH_SIZE) {
+						ps.executeBatch();
+
+						count = 0;
+					}
+					else {
+						count++;
+					}
+				}
+				else {
+				 	ps.executeUpdate();
+				}
+			}
+
+			if (supportsBatchUpdates && (count > 0)) {
+				ps.executeBatch();
+			}
+		}
+		finally {
+			DataAccess.cleanUp(con, ps, rs);
+		}
+	}
+
 	@Override
 	protected void doUpgrade() throws Exception {
 		updateIGFolderEntries();
@@ -296,95 +363,113 @@ public class UpgradeImageGallery extends UpgradeProcess {
 			DLStoreUtil.deleteFile(companyId, repositoryId, name);
 		}
 
-		DLStoreUtil.addFile(companyId, repositoryId, name, true, bytes);
+		DLStoreUtil.addFile(companyId, repositoryId, name, false, bytes);
 	}
 
 	protected void migrateImage(long imageId) throws Exception {
-		Connection con = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		Image image = ImageLocalServiceUtil.getImage(imageId);
 
 		try {
-			con = DataAccess.getConnection();
+			migrateFile(0, 0, null, image);
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Ignoring exception for image " + imageId, e);
+			}
 
-			StringBundler sb = new StringBundler(8);
+			return;
+		}
 
-			sb.append("select fileVersionId, fileEntry.fileEntryId ");
-			sb.append("as fileEntryId, fileEntry.groupId as groupId, ");
-			sb.append("fileEntry.companyId as companyId, fileEntry.folderId ");
-			sb.append("as folderId, name, largeImageId, smallImageId, ");
-			sb.append("custom1ImageId, custom2ImageId from ");
-			sb.append("DLFileVersion fileVersion, DLFileEntry fileEntry ");
-			sb.append("where fileEntry.fileEntryId = fileVersion.fileEntryId ");
-			sb.append("and (largeImageId = ? or smallImageId = ? or ");
-			sb.append("custom1ImageId = ? or custom2ImageId = ?)");
+		_sourceHook.deleteImage(image);
+	}
 
-			String sql = sb.toString();
+	protected void migrateImage(
+			long fileEntryId, long companyId, long groupId, long folderId,
+			String name, long smallImageId, long largeImageId,
+			long custom1ImageId, long custom2ImageId)
+		throws Exception {
 
-			ps = con.prepareStatement(sql);
+		Image largeImage = null;
 
-			ps.setLong(1, imageId);
-			ps.setLong(2, imageId);
-			ps.setLong(3, imageId);
-			ps.setLong(4, imageId);
+		if (largeImageId != 0) {
+			largeImage = ImageLocalServiceUtil.getImage(largeImageId);
 
-			rs = ps.executeQuery();
+			long repositoryId = DLFolderConstants.getDataRepositoryId(
+				groupId, folderId);
 
-			if (rs.next()) {
-				long fileVersionId = rs.getLong("fileVersionId");
-				long fileEntryId = rs.getLong("fileEntryId");
-				long companyId = rs.getLong("companyId");
-				long groupId = rs.getLong("groupId");
-				long folderId = rs.getLong("folderId");
-				String name = rs.getString("name");
-				long largeImageId = rs.getLong("largeImageId");
-				long custom1ImageId = rs.getLong("custom1ImageId");
-				long custom2ImageId = rs.getLong("custom2ImageId");
-
-				Image image = ImageLocalServiceUtil.getImage(imageId);
-
-				if (largeImageId == imageId) {
-					long repositoryId = DLFolderConstants.getDataRepositoryId(
-						groupId, folderId);
-
-					try {
-						migrateFile(repositoryId, companyId, name, image);
-					}
-					catch (Exception e) {
-					}
+			try {
+				migrateFile(repositoryId, companyId, name, largeImage);
+			}
+			catch (Exception e) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Ignoring exception for image " + largeImageId, e);
 				}
-				else {
-					InputStream is = _sourceHook.getImageAsStream(image);
+			}
+		}
 
-					if (custom1ImageId != imageId) {
-						custom1ImageId = 0;
-					}
+		long thumbnailImageId = 0;
 
-					if (custom2ImageId != imageId) {
-						custom2ImageId = 0;
-					}
+		if (smallImageId != 0) {
+			thumbnailImageId = smallImageId;
+		}
+		else if (custom1ImageId != 0) {
+			thumbnailImageId = custom1ImageId;
+		}
+		else if (custom2ImageId != 0) {
+			thumbnailImageId = custom2ImageId;
+		}
+
+		Image thumbnailImage = null;
+
+		if (thumbnailImageId != 0) {
+			thumbnailImage = ImageLocalServiceUtil.getImage(thumbnailImageId);
+
+			Connection con = null;
+			PreparedStatement ps = null;
+			ResultSet rs = null;
+
+			try {
+				InputStream is = _sourceHook.getImageAsStream(thumbnailImage);
+
+				con = DataAccess.getConnection();
+
+				ps = con.prepareStatement(
+					"select max(fileVersionId) from DLFileVersion where " +
+						"fileEntryId = " + fileEntryId);
+
+				rs = ps.executeQuery();
+
+				if (rs.next()) {
+					long fileVersionId = rs.getLong(1);
 
 					ImageProcessorUtil.storeThumbnail(
 						companyId, groupId, fileEntryId, fileVersionId,
-						custom1ImageId, custom2ImageId, is, image.getType());
+						custom1ImageId, custom2ImageId, is,
+						thumbnailImage.getType());
 				}
-
-				_sourceHook.deleteImage(image);
 			}
-			else if (!_sourceHookClassName.equals(DLHook.class.getName())) {
-				Image image = ImageLocalServiceUtil.getImage(imageId);
-
-				try {
-					migrateFile(0, 0, null, image);
+			catch (Exception e) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Ignoring exception for image " + thumbnailImageId, e);
 				}
-				catch (Exception e) {
-				}
-
-				_sourceHook.deleteImage(image);
+			}
+			finally {
+				DataAccess.cleanUp(con, ps, rs);
 			}
 		}
-		finally {
-			DataAccess.cleanUp(con, ps, rs);
+
+		if (largeImageId != 0) {
+			_sourceHook.deleteImage(largeImage);
+
+			runSQL("delete from Image where imageId = " + largeImageId);
+		}
+
+		if ((largeImageId != thumbnailImageId) && (thumbnailImageId != 0)) {
+			_sourceHook.deleteImage(thumbnailImage);
+
+			runSQL("delete from Image where imageId = " + thumbnailImageId);
 		}
 	}
 
@@ -396,32 +481,62 @@ public class UpgradeImageGallery extends UpgradeProcess {
 		try {
 			con = DataAccess.getConnection();
 
-			ps = con.prepareStatement("select imageId from Image");
+			StringBundler sb = new StringBundler(8);
+
+			sb.append("select fileEntryId, companyId, groupId, folderId, ");
+			sb.append("name, smallImageId, largeImageId, custom1ImageId, ");
+			sb.append("custom2ImageId from DLFileEntry where ((smallImageId ");
+			sb.append("is not null) and (smallImageId != 0)) or ");
+			sb.append("((largeImageId is not null) and (largeImageId != 0)) ");
+			sb.append("or ((custom1ImageId is not null) and (custom1ImageId ");
+			sb.append("!= 0)) or ((custom2ImageId is not null) and ");
+			sb.append("(custom2ImageId != 0))");
+
+			ps = con.prepareStatement(sb.toString());
 
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
-				long imageId = rs.getLong("imageId");
+				long fileEntryId = rs.getLong("fileEntryId");
+				long companyId = rs.getLong("companyId");
+				long groupId = rs.getLong("groupId");
+				long folderId = rs.getLong("folderId");
+				String name = rs.getString("name");
+				long smallImageId = rs.getLong("smallImageId");
+				long largeImageId = rs.getLong("largeImageId");
+				long custom1ImageId = rs.getLong("custom1ImageId");
+				long custom2ImageId = rs.getLong("custom2ImageId");
 
-				migrateImage(imageId);
-			}
-
-			StringBundler sb = new StringBundler(5);
-
-			sb.append("delete from Image where imageId in (select ");
-			sb.append("smallImageId from DLFileEntry) or imageId in (select ");
-			sb.append("largeImageId from DLFileEntry) or imageId in (select ");
-			sb.append("custom1ImageId from DLFileEntry) or imageId in ");
-			sb.append("(select custom2ImageId from DLFileEntry)");
-
-			runSQL(sb.toString());
-
-			if (_sourceHookClassName.equals(DatabaseHook.class.getName())) {
-				runSQL("update Image set text_ = ''");
+				migrateImage(
+					fileEntryId, companyId, groupId, folderId, name,
+					smallImageId, largeImageId, custom1ImageId, custom2ImageId);
 			}
 		}
 		finally {
 			DataAccess.cleanUp(con, ps, rs);
+		}
+
+		if (!_sourceHookClassName.equals(DLHook.class.getName())) {
+			try {
+				con = DataAccess.getConnection();
+
+				ps = con.prepareStatement("select imageId from Image");
+
+				rs = ps.executeQuery();
+
+				while (rs.next()) {
+					long imageId = rs.getLong("imageId");
+
+					migrateImage(imageId);
+				}
+			}
+			finally {
+				DataAccess.cleanUp(con, ps, rs);
+			}
+
+			if (_sourceHookClassName.equals(DatabaseHook.class.getName())) {
+				runSQL("update Image set text_ = ''");
+			}
 		}
 	}
 
@@ -476,36 +591,12 @@ public class UpgradeImageGallery extends UpgradeProcess {
 	}
 
 	protected void updateIGFolderPermissions() throws Exception {
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 6) {
-			return;
-		}
+		deleteConflictingIGPermissions(
+			_IG_FOLDER_CLASS_NAME, DLFolder.class.getName());
 
-		runSQL(
-			"delete from ResourcePermission where " +
-				"name = 'com.liferay.portlet.imagegallery.model.IGFolder' " +
-					"and primKey = '0'");
-
-		Connection con = null;
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-
-		try {
-			con = DataAccess.getConnection();
-
-			StringBundler sb = new StringBundler(4);
-
-			sb.append("update ResourcePermission set name = '");
-			sb.append(DLFolder.class.getName());
-			sb.append("' where name = 'com.liferay.portlet.imagegallery.");
-			sb.append("model.IGFolder'");
-
-			ps = con.prepareStatement(sb.toString());
-
-			ps.executeUpdate();
-		}
-		finally {
-			DataAccess.cleanUp(con, ps, rs);
-		}
+		runSQL("update ResourcePermission set name = '" +
+			DLFolder.class.getName() +
+				"' where name = '" + _IG_FOLDER_CLASS_NAME + "'");
 	}
 
 	protected void updateIGImageEntries() throws Exception {
@@ -602,7 +693,9 @@ public class UpgradeImageGallery extends UpgradeProcess {
 			ps = con.prepareStatement(
 				"select folderId from DLFolder where groupId = " + groupId +
 					" and parentFolderId = " + parentFolderId +
-						" and name = '" + name + "'");
+						" and name = ?");
+
+			ps.setString(1, name);
 
 			rs = ps.executeQuery();
 
@@ -626,13 +719,8 @@ public class UpgradeImageGallery extends UpgradeProcess {
 	}
 
 	protected void updateIGImagePermissions() throws Exception {
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 6) {
-			return;
-		}
-
-		runSQL(
-			"delete from ResourcePermission where name = '" +
-				_IG_IMAGE_CLASS_NAME + "' and primKey = '0'");
+		deleteConflictingIGPermissions(
+			_IG_IMAGE_CLASS_NAME, DLFileEntry.class.getName());
 
 		runSQL(
 			"update ResourcePermission set name = '" +
@@ -640,8 +728,13 @@ public class UpgradeImageGallery extends UpgradeProcess {
 					_IG_IMAGE_CLASS_NAME + "'");
 	}
 
+	private static final String _IG_FOLDER_CLASS_NAME =
+		"com.liferay.portlet.imagegallery.model.IGFolder";
+
 	private static final String _IG_IMAGE_CLASS_NAME =
 		"com.liferay.portlet.imagegallery.model.IGImage";
+
+	private static Log _log = LogFactoryUtil.getLog(UpgradeImageGallery.class);
 
 	private Hook _sourceHook;
 	private String _sourceHookClassName;

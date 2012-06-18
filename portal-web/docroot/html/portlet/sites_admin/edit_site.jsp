@@ -17,7 +17,7 @@
 <%@ include file="/html/portlet/sites_admin/init.jsp" %>
 
 <%
-String viewOrganizationsRedirect = ParamUtil.getString(request, "viewOrganizationsRedirect");
+String viewOrganizationsRedirect = ParamUtil.getString(request, "viewOrganizationsRedirect", themeDisplay.getURLControlPanel());
 String redirect = ParamUtil.getString(request, "redirect", viewOrganizationsRedirect);
 String closeRedirect = ParamUtil.getString(request, "closeRedirect");
 String backURL = ParamUtil.getString(request, "backURL", redirect);
@@ -75,14 +75,16 @@ boolean showPrototypes = ParamUtil.getBoolean(request, "showPrototypes", true);
 String[] mainSections = PropsValues.SITES_FORM_ADD_MAIN;
 String[] seoSections = PropsValues.SITES_FORM_ADD_SEO;
 String[] advancedSections = PropsValues.SITES_FORM_ADD_ADVANCED;
+String[] miscellaneousSections = PropsValues.SITES_FORM_ADD_MISCELLANEOUS;
 
 if (group != null) {
 	mainSections = PropsValues.SITES_FORM_UPDATE_MAIN;
 	seoSections = PropsValues.SITES_FORM_UPDATE_SEO;
 	advancedSections = PropsValues.SITES_FORM_UPDATE_ADVANCED;
+	miscellaneousSections = PropsValues.SITES_FORM_UPDATE_MISCELLANEOUS;
 }
 
-String[][] categorySections = {mainSections, seoSections, advancedSections};
+String[][] categorySections = {mainSections, seoSections, advancedSections, miscellaneousSections};
 %>
 
 <c:if test="<%= portletName.equals(PortletKeys.SITES_ADMIN) %>">
@@ -135,20 +137,12 @@ else if (layoutSetPrototype != null) {
 	request.setAttribute("site.showPrototypes", String.valueOf(showPrototypes));
 	%>
 
-	<liferay-util:buffer var="htmlBottom">
-		<aui:button-row>
-			<aui:button type="submit" />
-
-			<aui:button href="<%= redirect %>" type="cancel" />
-		</aui:button-row>
-	</liferay-util:buffer>
-
 	<liferay-ui:form-navigator
+		backURL="<%= backURL %>"
 		categoryNames="<%= _CATEGORY_NAMES %>"
 		categorySections="<%= categorySections %>"
-		htmlBottom="<%= htmlBottom %>"
 		jspPath="/html/portlet/sites_admin/site/"
-		showButtons="<%= false %>"
+		showButtons="<%= true %>"
 	/>
 </aui:form>
 
@@ -241,7 +235,7 @@ else if (layoutSetPrototype != null) {
 
 <%
 if (group != null) {
-	PortalUtil.addPortletBreadcrumbEntry(request, HtmlUtil.escape(group.getDescriptiveName(locale)), null);
+	PortalUtil.addPortletBreadcrumbEntry(request, group.getDescriptiveName(locale), null);
 	PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(pageContext, "edit"), currentURL);
 }
 else {
@@ -250,5 +244,5 @@ else {
 %>
 
 <%!
-private static String[] _CATEGORY_NAMES = {"basic-information", "search-engine-optimization", "advanced"};
+private static String[] _CATEGORY_NAMES = {"basic-information", "search-engine-optimization", "advanced", "miscellaneous"};
 %>

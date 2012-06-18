@@ -574,12 +574,14 @@ public class RatingsEntryUtil {
 	* @param userId the user ID
 	* @param classNameId the class name ID
 	* @param classPK the class p k
+	* @return the ratings entry that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByU_C_C(long userId, long classNameId, long classPK)
+	public static com.liferay.portlet.ratings.model.RatingsEntry removeByU_C_C(
+		long userId, long classNameId, long classPK)
 		throws com.liferay.portal.kernel.exception.SystemException,
 			com.liferay.portlet.ratings.NoSuchEntryException {
-		getPersistence().removeByU_C_C(userId, classNameId, classPK);
+		return getPersistence().removeByU_C_C(userId, classNameId, classPK);
 	}
 
 	/**
@@ -669,11 +671,10 @@ public class RatingsEntryUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(RatingsEntryPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(RatingsEntryUtil.class,
-			"_persistence");
 	}
 
 	private static RatingsEntryPersistence _persistence;

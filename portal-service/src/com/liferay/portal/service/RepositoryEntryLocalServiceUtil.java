@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class RepositoryEntryLocalServiceUtil {
 	* Deletes the repository entry with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param repositoryEntryId the primary key of the repository entry
+	* @return the repository entry that was removed
 	* @throws PortalException if a repository entry with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteRepositoryEntry(long repositoryEntryId)
+	public static com.liferay.portal.model.RepositoryEntry deleteRepositoryEntry(
+		long repositoryEntryId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteRepositoryEntry(repositoryEntryId);
+		return getService().deleteRepositoryEntry(repositoryEntryId);
 	}
 
 	/**
 	* Deletes the repository entry from the database. Also notifies the appropriate model listeners.
 	*
 	* @param repositoryEntry the repository entry
+	* @return the repository entry that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteRepositoryEntry(
+	public static com.liferay.portal.model.RepositoryEntry deleteRepositoryEntry(
 		com.liferay.portal.model.RepositoryEntry repositoryEntry)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteRepositoryEntry(repositoryEntry);
+		return getService().deleteRepositoryEntry(repositoryEntry);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -276,26 +282,37 @@ public class RepositoryEntryLocalServiceUtil {
 		getService().setBeanIdentifier(beanIdentifier);
 	}
 
+	public static com.liferay.portal.model.RepositoryEntry addRepositoryEntry(
+		long groupId, long repositoryId, java.lang.String mappedId,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .addRepositoryEntry(groupId, repositoryId, mappedId,
+			serviceContext);
+	}
+
+	public static com.liferay.portal.model.RepositoryEntry updateRepositoryEntry(
+		long repositoryEntryId, java.lang.String mappedId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().updateRepositoryEntry(repositoryEntryId, mappedId);
+	}
+
 	public static RepositoryEntryLocalService getService() {
 		if (_service == null) {
 			_service = (RepositoryEntryLocalService)PortalBeanLocatorUtil.locate(RepositoryEntryLocalService.class.getName());
 
 			ReferenceRegistry.registerReference(RepositoryEntryLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(RepositoryEntryLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(RepositoryEntryLocalService service) {
-		MethodCache.remove(RepositoryEntryLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(RepositoryEntryLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(RepositoryEntryLocalService.class);
 	}
 
 	private static RepositoryEntryLocalService _service;

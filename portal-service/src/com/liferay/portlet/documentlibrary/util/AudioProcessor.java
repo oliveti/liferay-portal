@@ -35,14 +35,16 @@ public interface AudioProcessor {
 			Element fileEntryElement)
 		throws Exception;
 
-	public void generateAudio(FileVersion fileVersion) throws Exception;
+	public void generateAudio(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
+		throws Exception;
 
 	public Set<String> getAudioMimeTypes();
 
-	public InputStream getPreviewAsStream(FileVersion fileVersion)
+	public InputStream getPreviewAsStream(FileVersion fileVersion, String type)
 		throws Exception;
 
-	public long getPreviewFileSize(FileVersion fileVersion)
+	public long getPreviewFileSize(FileVersion fileVersion, String type)
 		throws Exception;
 
 	public boolean hasAudio(FileVersion fileVersion);
@@ -58,6 +60,7 @@ public interface AudioProcessor {
 
 	public boolean isSupported(String mimeType);
 
-	public void trigger(FileVersion fileVersion);
+	public void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion);
 
 }

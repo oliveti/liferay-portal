@@ -21,7 +21,7 @@ if (mergeUrlTags || mergeLayoutTags) {
 	String[] compilerTagNames = new String[0];
 
 	if (mergeUrlTags) {
-		compilerTagNames = (String[])request.getAttribute(WebKeys.TAGS_COMPILER_ENTRIES);
+		compilerTagNames = ParamUtil.getParameterValues(request, "tags");
 	}
 
 	if (mergeLayoutTags) {
@@ -78,10 +78,10 @@ if (enableTagBasedNavigation && selectionStyle.equals("manual") && ((assetEntryQ
 	selectionStyle = "dynamic";
 }
 
-Group group = themeDisplay.getScopeGroup();
+Group scopeGroup = themeDisplay.getScopeGroup();
 %>
 
-<c:if test="<%= (group != null) && (!group.hasStagingGroup() || group.isStagingGroup()) && !portletName.equals(PortletKeys.RELATED_ASSETS) %>">
+<c:if test="<%= (scopeGroup != null) && (!scopeGroup.hasStagingGroup() || scopeGroup.isStagingGroup()) && !portletName.equals(PortletKeys.RELATED_ASSETS) %>">
 	<aui:form name="fm">
 
 		<%
@@ -111,42 +111,10 @@ if (!paginationType.equals("none")) {
 %>
 
 <c:if test="<%= showMetadataDescriptions %>">
-	<c:choose>
-		<c:when test='<%= (assetCategoryId > 0) && Validator.isNotNull(assetTagName) && selectionStyle.equals("dynamic") %>'>
-			<h1 class="asset-categorization-title">
-				<liferay-ui:message arguments="<%= new String[] {assetVocabularyTitle, assetCategoryTitle, assetTagName} %>" key="content-with-x-x-and-tag-x" />
-			</h1>
-
-			<%
-			AssetUtil.addPortletBreadcrumbEntries(assetCategoryId, request, portletURL);
-			AssetUtil.addPortletBreadcrumbEntry(request, assetTagName, currentURL);
-			%>
-
-		</c:when>
-		<c:otherwise>
-			<c:if test='<%= (assetCategoryId > 0) && selectionStyle.equals("dynamic") %>'>
-				<h1 class="asset-categorization-title">
-					<liferay-ui:message arguments="<%= new String[] {assetVocabularyTitle, assetCategoryTitle} %>" key="content-with-x-x" />
-				</h1>
-
-				<%
-				AssetUtil.addPortletBreadcrumbEntries(assetCategoryId, request, portletURL);
-				%>
-
-			</c:if>
-
-			<c:if test='<%= Validator.isNotNull(assetTagName) && selectionStyle.equals("dynamic") %>'>
-				<h1 class="asset-categorization-title">
-					<liferay-ui:message arguments="<%= assetTagName %>" key="content-with-tag-x" />
-				</h1>
-
-				<%
-				AssetUtil.addPortletBreadcrumbEntry(request, assetTagName, currentURL);
-				%>
-
-			</c:if>
-		</c:otherwise>
-	</c:choose>
+	<liferay-ui:categorization-filter
+		assetType="content"
+		portletURL="<%= portletURL%>"
+	/>
 </c:if>
 
 <c:choose>

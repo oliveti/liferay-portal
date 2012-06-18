@@ -11,6 +11,7 @@
 		<attributes>
 			<id name="name" />
 			<basic name="currentId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -41,6 +42,7 @@
 			<basic name="size">
 				<column name="SIZE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -72,6 +74,8 @@
 			<basic name="primary">
 				<column name="PRIMARY_" />
 			</basic>
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -82,6 +86,7 @@
 			<id name="browserTrackerId" />
 			<basic name="userId" />
 			<basic name="browserKey" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -91,6 +96,8 @@
 		<attributes>
 			<id name="classNameId" />
 			<basic name="value" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -101,6 +108,7 @@
 			<basic name="name" />
 			<basic name="clusterNodeIds" />
 			<basic name="wholeCluster" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -122,6 +130,7 @@
 				<column name="ACTIVE_" />
 			</basic>
 			<transient name="keyObj" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -138,8 +147,11 @@
 			<basic name="modifiedDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<basic name="classNameId" />
+			<basic name="classPK" />
 			<basic name="accountId" />
 			<basic name="parentContactId" />
+			<basic name="emailAddress" />
 			<basic name="firstName" />
 			<basic name="middleName" />
 			<basic name="lastName" />
@@ -164,6 +176,8 @@
 			<basic name="jobTitle" />
 			<basic name="jobClass" />
 			<basic name="hoursOfOperation" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -185,6 +199,7 @@
 			<basic name="active">
 				<column name="ACTIVE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -208,6 +223,8 @@
 			<basic name="primary">
 				<column name="PRIMARY_" />
 			</basic>
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -233,7 +250,9 @@
 			<basic name="active">
 				<column name="ACTIVE_" />
 			</basic>
+			<transient name="className" />
 			<transient name="creatorUserUuid" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -255,6 +274,7 @@
 			<basic name="size">
 				<column name="SIZE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -304,6 +324,7 @@
 			<transient name="descriptionMap" />
 			<transient name="keywordsCurrentLanguageId" />
 			<transient name="keywordsMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -326,6 +347,7 @@
 			<basic name="name" />
 			<basic name="description" />
 			<basic name="master" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -346,6 +368,7 @@
 			<basic name="active">
 				<column name="ACTIVE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -395,6 +418,7 @@
 			<transient name="descriptionMap" />
 			<transient name="keywordsCurrentLanguageId" />
 			<transient name="keywordsMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -432,6 +456,7 @@
 			</basic>
 			<basic name="layoutSetPrototypeUuid" />
 			<basic name="layoutSetPrototypeLinkEnabled" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -465,6 +490,7 @@
 			</basic>
 			<basic name="layoutSetPrototypeUuid" />
 			<basic name="layoutSetPrototypeLinkEnabled" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -491,6 +517,7 @@
 			<basic name="active">
 				<column name="ACTIVE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -504,6 +531,7 @@
 			<basic name="type">
 				<column name="TYPE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -529,6 +557,7 @@
 			<basic name="expirationDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -550,6 +579,7 @@
 			</basic>
 			<basic name="replierUserId" />
 			<basic name="statusId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="replierUserUuid" />
@@ -571,16 +601,7 @@
 			<basic name="countryId" />
 			<basic name="statusId" />
 			<basic name="comments" />
-			<transient name="primaryKey" />
-			<transient name="primaryKeyObj" />
-		</attributes>
-	</mapped-superclass>
-	<mapped-superclass class="com.liferay.portal.model.impl.OrgGroupPermissionModelImpl">
-		<id-class class="com.liferay.portal.service.persistence.OrgGroupPermissionPK" />
-		<attributes>
-			<id name="organizationId" />
-			<id name="groupId" />
-			<id name="permissionId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -591,6 +612,7 @@
 			<id name="organizationId" />
 			<id name="groupId" />
 			<id name="roleId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -614,6 +636,7 @@
 			<basic name="friClose" />
 			<basic name="satOpen" />
 			<basic name="satClose" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -656,6 +679,7 @@
 			<basic name="requireUnlock" />
 			<basic name="resetFailureCount" />
 			<basic name="resetTicketMaxAge" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -667,6 +691,8 @@
 			<basic name="passwordPolicyId" />
 			<basic name="classNameId" />
 			<basic name="classPK" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -681,19 +707,10 @@
 			<basic name="password">
 				<column name="PASSWORD_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
-		</attributes>
-	</mapped-superclass>
-	<mapped-superclass class="com.liferay.portal.model.impl.PermissionModelImpl">
-		<attributes>
-			<id name="permissionId" />
-			<basic name="companyId" />
-			<basic name="actionId" />
-			<basic name="resourceId" />
-			<transient name="primaryKey" />
-			<transient name="primaryKeyObj" />
 		</attributes>
 	</mapped-superclass>
 	<mapped-superclass class="com.liferay.portal.model.impl.PhoneModelImpl">
@@ -718,6 +735,8 @@
 			<basic name="primary">
 				<column name="PRIMARY_" />
 			</basic>
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -733,6 +752,7 @@
 			<basic name="active">
 				<column name="ACTIVE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -743,6 +763,7 @@
 			<basic name="ownerId" />
 			<basic name="ownerType" />
 			<basic name="preferences" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -758,6 +779,7 @@
 			<basic name="active">
 				<column name="ACTIVE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -778,6 +800,8 @@
 			<basic name="name" />
 			<basic name="portletId" />
 			<basic name="classNameId" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -791,6 +815,7 @@
 			<basic name="plid" />
 			<basic name="portletId" />
 			<basic name="preferences" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -804,6 +829,7 @@
 			<basic name="active">
 				<column name="ACTIVE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -823,7 +849,11 @@
 				<temporal>TIMESTAMP</temporal>
 			</basic>
 			<basic name="verified" />
+			<basic name="state">
+				<column name="STATE_" />
+			</basic>
 			<basic name="testString" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -850,6 +880,8 @@
 			<basic name="portletId" />
 			<basic name="typeSettings" />
 			<basic name="dlFolderId" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -864,15 +896,7 @@
 			<basic name="groupId" />
 			<basic name="repositoryId" />
 			<basic name="mappedId" />
-			<transient name="primaryKey" />
-			<transient name="primaryKeyObj" />
-		</attributes>
-	</mapped-superclass>
-	<mapped-superclass class="com.liferay.portal.model.impl.ResourceModelImpl">
-		<attributes>
-			<id name="resourceId" />
-			<basic name="codeId" />
-			<basic name="primKey" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -883,6 +907,7 @@
 			<basic name="name" />
 			<basic name="actionId" />
 			<basic name="bitwiseValue" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -895,6 +920,7 @@
 			<basic name="name" />
 			<basic name="permissionsHash" />
 			<basic name="referenceCount" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -905,16 +931,7 @@
 			<basic name="resourceBlockId" />
 			<basic name="roleId" />
 			<basic name="actionIds" />
-			<transient name="primaryKey" />
-			<transient name="primaryKeyObj" />
-		</attributes>
-	</mapped-superclass>
-	<mapped-superclass class="com.liferay.portal.model.impl.ResourceCodeModelImpl">
-		<attributes>
-			<id name="codeId" />
-			<basic name="companyId" />
-			<basic name="name" />
-			<basic name="scope" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -929,6 +946,7 @@
 			<basic name="roleId" />
 			<basic name="ownerId" />
 			<basic name="actionIds" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -941,6 +959,7 @@
 			<basic name="name" />
 			<basic name="roleId" />
 			<basic name="actionIds" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -958,8 +977,10 @@
 				<column name="TYPE_" />
 			</basic>
 			<basic name="subtype" />
+			<transient name="className" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="titleCurrentLanguageId" />
@@ -975,6 +996,7 @@
 			<basic name="data">
 				<column name="DATA_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -985,6 +1007,8 @@
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="name" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1004,6 +1028,8 @@
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="frequency" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1024,6 +1050,7 @@
 			<basic name="groupId" />
 			<basic name="name" />
 			<basic name="description" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1048,6 +1075,8 @@
 			<basic name="expirationDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1111,6 +1140,7 @@
 			<basic name="agreedToTermsOfUse" />
 			<basic name="emailAddressVerified" />
 			<basic name="status" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1124,6 +1154,7 @@
 			<basic name="name" />
 			<basic name="description" />
 			<basic name="addedByLDAPImport" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1134,6 +1165,7 @@
 			<id name="userGroupId" />
 			<id name="groupId" />
 			<id name="roleId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1144,6 +1176,7 @@
 			<id name="userId" />
 			<id name="groupId" />
 			<id name="roleId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1158,6 +1191,7 @@
 			</basic>
 			<basic name="description" />
 			<basic name="externalUserId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1178,6 +1212,7 @@
 			<basic name="deliverBy" />
 			<basic name="payload" />
 			<basic name="archived" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1195,6 +1230,7 @@
 			<basic name="remoteAddr" />
 			<basic name="remoteHost" />
 			<basic name="userAgent" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1210,6 +1246,7 @@
 			<basic name="pathDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1220,6 +1257,7 @@
 			<basic name="companyId" />
 			<basic name="layoutSetId" />
 			<basic name="hostname" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1237,6 +1275,8 @@
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="props" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1260,6 +1300,8 @@
 			<basic name="primary">
 				<column name="PRIMARY_" />
 			</basic>
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1283,6 +1325,8 @@
 			<basic name="typePK" />
 			<basic name="workflowDefinitionName" />
 			<basic name="workflowDefinitionVersion" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1304,6 +1348,8 @@
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="workflowInstanceId" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1320,6 +1366,7 @@
 			<basic name="email" />
 			<basic name="sms" />
 			<basic name="website" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1356,6 +1403,8 @@
 			</basic>
 			<basic name="priority" />
 			<basic name="alert" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1370,6 +1419,7 @@
 			</basic>
 			<basic name="entryId" />
 			<basic name="value" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1400,6 +1450,7 @@
 			<basic name="vocabularyId" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="titleCurrentLanguageId" />
@@ -1424,6 +1475,7 @@
 				<column name="KEY_" />
 			</basic>
 			<basic name="value" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1469,8 +1521,10 @@
 			<basic name="width" />
 			<basic name="priority" />
 			<basic name="viewCount" />
+			<transient name="className" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="summaryCurrentLanguageId" />
@@ -1495,6 +1549,7 @@
 				<column name="TYPE_" />
 			</basic>
 			<basic name="weight" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1515,6 +1570,7 @@
 			</basic>
 			<basic name="name" />
 			<basic name="assetCount" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1537,6 +1593,7 @@
 				<column name="KEY_" />
 			</basic>
 			<basic name="value" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1548,6 +1605,8 @@
 			<basic name="tagId" />
 			<basic name="classNameId" />
 			<basic name="assetCount" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1576,6 +1635,7 @@
 			</basic>
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="titleCurrentLanguageId" />
@@ -1618,6 +1678,7 @@
 			<basic name="statusDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statusByUserUuid" />
@@ -1637,6 +1698,7 @@
 			<basic name="ratingsTotalEntries" />
 			<basic name="ratingsTotalScore" />
 			<basic name="ratingsAverageScore" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statsUserUuid" />
@@ -1666,6 +1728,7 @@
 			<basic name="description" />
 			<basic name="visits" />
 			<basic name="priority" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1691,6 +1754,7 @@
 			<basic name="parentFolderId" />
 			<basic name="name" />
 			<basic name="description" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1733,6 +1797,7 @@
 			<basic name="remindBy" />
 			<basic name="firstReminder" />
 			<basic name="secondReminder" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1754,6 +1819,7 @@
 			<basic name="size">
 				<column name="SIZE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1794,6 +1860,7 @@
 			<basic name="largeImageId" />
 			<basic name="custom1ImageId" />
 			<basic name="custom2ImageId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1811,6 +1878,7 @@
 			<basic name="fileEntryTypeId" />
 			<basic name="fileEntryId" />
 			<basic name="fileVersionId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -1833,6 +1901,7 @@
 			</basic>
 			<basic name="name" />
 			<basic name="description" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1848,6 +1917,10 @@
 				<temporal>TIMESTAMP</temporal>
 			</basic>
 			<basic name="fileEntryId" />
+			<basic name="active">
+				<column name="ACTIVE_" />
+			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -1872,12 +1945,16 @@
 			<basic name="repositoryId" />
 			<basic name="folderId" />
 			<basic name="toFileEntryId" />
+			<basic name="active">
+				<column name="ACTIVE_" />
+			</basic>
 			<basic name="status" />
 			<basic name="statusByUserId" />
 			<basic name="statusByUserName" />
 			<basic name="statusDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statusByUserUuid" />
@@ -1920,6 +1997,7 @@
 			<basic name="statusDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statusByUserUuid" />
@@ -1952,8 +2030,16 @@
 			</basic>
 			<basic name="defaultFileEntryTypeId" />
 			<basic name="overrideFileEntryTypes" />
+			<basic name="status" />
+			<basic name="statusByUserId" />
+			<basic name="statusByUserName" />
+			<basic name="statusDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
+			<transient name="statusByUserUuid" />
 			<transient name="userUuid" />
 		</attributes>
 	</mapped-superclass>
@@ -1972,11 +2058,13 @@
 			<basic name="repositoryId" />
 			<basic name="parentFolderId" />
 			<basic name="name" />
+			<basic name="description" />
 			<basic name="event" />
 			<basic name="type">
 				<column name="TYPE_" />
 			</basic>
 			<basic name="version" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2003,6 +2091,7 @@
 			<basic name="recordSetId" />
 			<basic name="version" />
 			<basic name="displayIndex" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2033,6 +2122,7 @@
 			<basic name="scope" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2061,6 +2151,7 @@
 			<basic name="statusDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statusByUserUuid" />
@@ -2086,6 +2177,7 @@
 			<basic name="name" />
 			<basic name="description" />
 			<basic name="xml" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2102,6 +2194,8 @@
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="structureId" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2131,10 +2225,11 @@
 			<basic name="type">
 				<column name="TYPE_" />
 			</basic>
+			<transient name="className" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
 			<transient name="document" />
-			<transient name="fieldsMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2148,6 +2243,8 @@
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="structureId" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2168,7 +2265,9 @@
 			<basic name="modifiedDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
-			<basic name="structureId" />
+			<basic name="classNameId" />
+			<basic name="classPK" />
+			<basic name="templateKey" />
 			<basic name="name" />
 			<basic name="description" />
 			<basic name="type">
@@ -2179,8 +2278,10 @@
 			</basic>
 			<basic name="language" />
 			<basic name="script" />
+			<transient name="className" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2199,6 +2300,7 @@
 			</basic>
 			<basic name="defaultData" />
 			<basic name="typeSettings" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2211,6 +2313,7 @@
 			<basic name="companyId" />
 			<basic name="tableId" />
 			<basic name="classPK" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2221,6 +2324,8 @@
 			<basic name="companyId" />
 			<basic name="classNameId" />
 			<basic name="name" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2239,6 +2344,8 @@
 			<basic name="data">
 				<column name="DATA_" />
 			</basic>
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2262,6 +2369,7 @@
 			<basic name="modifiedDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<basic name="folderId" />
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="articleId" />
@@ -2295,8 +2403,10 @@
 			<basic name="statusDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="className" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statusByUserUuid" />
@@ -2315,6 +2425,7 @@
 			<basic name="elName" />
 			<basic name="languageId" />
 			<basic name="tempImage" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2327,6 +2438,7 @@
 			</basic>
 			<basic name="groupId" />
 			<basic name="articleId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2340,6 +2452,7 @@
 			<basic name="layoutId" />
 			<basic name="portletId" />
 			<basic name="articleId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2379,6 +2492,32 @@
 			<basic name="contentField" />
 			<basic name="feedType" />
 			<basic name="feedVersion" />
+			<transient name="modelAttributes" />
+			<transient name="primaryKey" />
+			<transient name="primaryKeyObj" />
+			<transient name="userUuid" />
+		</attributes>
+	</mapped-superclass>
+	<mapped-superclass class="com.liferay.portlet.journal.model.impl.JournalFolderModelImpl">
+		<attributes>
+			<id name="folderId" />
+			<basic name="uuid">
+				<column name="UUID_" />
+			</basic>
+			<basic name="groupId" />
+			<basic name="companyId" />
+			<basic name="userId" />
+			<basic name="userName" />
+			<basic name="createDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<basic name="modifiedDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<basic name="parentFolderId" />
+			<basic name="name" />
+			<basic name="description" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2409,6 +2548,7 @@
 			<basic name="xsd" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2446,6 +2586,7 @@
 			<basic name="smallImageURL" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2468,6 +2609,7 @@
 			</basic>
 			<basic name="banUserId" />
 			<transient name="banUserUuid" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2498,6 +2640,7 @@
 			<basic name="lastPostDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2509,6 +2652,8 @@
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="threadId" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2549,6 +2694,7 @@
 			<basic name="active">
 				<column name="ACTIVE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2590,6 +2736,8 @@
 			<basic name="statusDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statusByUserUuid" />
@@ -2605,6 +2753,7 @@
 			<basic name="lastPostDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statsUserUuid" />
@@ -2634,6 +2783,7 @@
 				<temporal>TIMESTAMP</temporal>
 			</basic>
 			<transient name="lastPostByUserUuid" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="rootMessageUserUuid" />
@@ -2648,6 +2798,7 @@
 				<temporal>TIMESTAMP</temporal>
 			</basic>
 			<basic name="threadId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2678,8 +2829,10 @@
 				<column name="TYPE_" />
 			</basic>
 			<basic name="typeSettings" />
+			<transient name="className" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2712,6 +2865,7 @@
 			<basic name="typeSettings" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2739,6 +2893,7 @@
 			<basic name="description" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
 			<transient name="primaryKey" />
@@ -2766,6 +2921,8 @@
 			<basic name="classPK" />
 			<basic name="ruleGroupId" />
 			<basic name="priority" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2782,6 +2939,7 @@
 			<basic name="description" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2812,6 +2970,7 @@
 			</basic>
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="titleCurrentLanguageId" />
@@ -2836,6 +2995,7 @@
 			<basic name="voteDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2856,6 +3016,8 @@
 			<basic name="classNameId" />
 			<basic name="classPK" />
 			<basic name="score" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2869,6 +3031,8 @@
 			<basic name="totalEntries" />
 			<basic name="totalScore" />
 			<basic name="averageScore" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -2890,6 +3054,7 @@
 			<basic name="couponCodes" />
 			<basic name="altShipping" />
 			<basic name="insure" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2911,6 +3076,7 @@
 			<basic name="parentCategoryId" />
 			<basic name="name" />
 			<basic name="description" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2948,6 +3114,7 @@
 			<basic name="minOrder" />
 			<basic name="discount" />
 			<basic name="discountType" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -2999,6 +3166,7 @@
 			<basic name="largeImage" />
 			<basic name="largeImageId" />
 			<basic name="largeImageURL" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -3013,6 +3181,7 @@
 				<column name="VALUES_" />
 			</basic>
 			<basic name="description" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3029,6 +3198,7 @@
 			<basic name="shipping" />
 			<basic name="useShippingFormula" />
 			<basic name="status" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3092,6 +3262,7 @@
 			<basic name="ppPayerEmail" />
 			<basic name="sendOrderEmail" />
 			<basic name="sendShippingEmail" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -3111,6 +3282,7 @@
 			<basic name="shippedDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3130,6 +3302,8 @@
 			</basic>
 			<basic name="extraData" />
 			<basic name="receiverUserId" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="receiverUserUuid" />
@@ -3145,6 +3319,7 @@
 			<basic name="createDate" />
 			<basic name="name" />
 			<basic name="firstInGroup" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -3164,6 +3339,11 @@
 			<basic name="graceValue" />
 			<basic name="startPeriod" />
 			<basic name="endPeriod" />
+			<basic name="active">
+				<column name="ACTIVE_" />
+			</basic>
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3179,6 +3359,8 @@
 			<basic name="activityType" />
 			<basic name="activityCounterName" />
 			<basic name="value" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -3193,6 +3375,8 @@
 			<basic name="activityType" />
 			<basic name="name" />
 			<basic name="value" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3210,6 +3394,7 @@
 			<basic name="type">
 				<column name="TYPE_" />
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3233,6 +3418,8 @@
 			<basic name="extraData" />
 			<basic name="receiverUserId" />
 			<basic name="status" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="receiverUserUuid" />
@@ -3258,6 +3445,7 @@
 				<column name="ACTIVE_" />
 			</basic>
 			<basic name="priority" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -3273,6 +3461,7 @@
 				<column name="ACTIVE_" />
 			</basic>
 			<basic name="recommended" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3301,6 +3490,7 @@
 			<basic name="author" />
 			<basic name="repoGroupId" />
 			<basic name="repoArtifactId" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -3315,6 +3505,7 @@
 			<basic name="thumbnailId" />
 			<basic name="fullImageId" />
 			<basic name="priority" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3337,9 +3528,44 @@
 			<basic name="downloadPageURL" />
 			<basic name="directDownloadURL" />
 			<basic name="repoStoreArtifact" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
+		</attributes>
+	</mapped-superclass>
+	<mapped-superclass class="com.liferay.portlet.trash.model.impl.TrashEntryModelImpl">
+		<attributes>
+			<id name="entryId" />
+			<basic name="groupId" />
+			<basic name="companyId" />
+			<basic name="userId" />
+			<basic name="userName" />
+			<basic name="createDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<basic name="classNameId" />
+			<basic name="classPK" />
+			<basic name="typeSettings" />
+			<basic name="status" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
+			<transient name="primaryKey" />
+			<transient name="primaryKeyObj" />
+			<transient name="userUuid" />
+		</attributes>
+	</mapped-superclass>
+	<mapped-superclass class="com.liferay.portlet.trash.model.impl.TrashVersionModelImpl">
+		<attributes>
+			<id name="versionId" />
+			<basic name="entryId" />
+			<basic name="classNameId" />
+			<basic name="classPK" />
+			<basic name="status" />
+			<transient name="className" />
+			<transient name="modelAttributes" />
+			<transient name="primaryKey" />
+			<transient name="primaryKeyObj" />
 		</attributes>
 	</mapped-superclass>
 	<mapped-superclass class="com.liferay.portlet.wiki.model.impl.WikiNodeModelImpl">
@@ -3363,6 +3589,7 @@
 			<basic name="lastPostDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="userUuid" />
@@ -3401,6 +3628,7 @@
 			<basic name="statusDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statusByUserUuid" />
@@ -3415,6 +3643,7 @@
 			</basic>
 			<basic name="nodeId" />
 			<basic name="title" />
+			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 		</attributes>
@@ -3455,7 +3684,9 @@
 	</entity>
 	<entity class="com.liferay.portal.model.impl.CountryImpl" name="Country">
 		<table name="Country" />
-		<attributes />
+		<attributes>
+			<transient name="nameCurrentLanguageId" />
+		</attributes>
 	</entity>
 	<entity class="com.liferay.portal.model.impl.EmailAddressImpl" name="EmailAddress">
 		<table name="EmailAddress" />
@@ -3528,10 +3759,6 @@
 		<table name="Organization_" />
 		<attributes />
 	</entity>
-	<entity class="com.liferay.portal.model.impl.OrgGroupPermissionImpl" name="OrgGroupPermission">
-		<table name="OrgGroupPermission" />
-		<attributes />
-	</entity>
 	<entity class="com.liferay.portal.model.impl.OrgGroupRoleImpl" name="OrgGroupRole">
 		<table name="OrgGroupRole" />
 		<attributes />
@@ -3551,14 +3778,6 @@
 	<entity class="com.liferay.portal.model.impl.PasswordTrackerImpl" name="PasswordTracker">
 		<table name="PasswordTracker" />
 		<attributes />
-	</entity>
-	<entity class="com.liferay.portal.model.impl.PermissionImpl" name="Permission">
-		<table name="Permission_" />
-		<attributes>
-			<transient name="name" />
-			<transient name="primKey" />
-			<transient name="scope" />
-		</attributes>
 	</entity>
 	<entity class="com.liferay.portal.model.impl.PhoneImpl" name="Phone">
 		<table name="Phone" />
@@ -3660,6 +3879,7 @@
 			<transient name="supportedLocales" />
 			<transient name="system" />
 			<transient name="timestamp" />
+			<transient name="trashHandlerClasses" />
 			<transient name="undeployedPortlet" />
 			<transient name="unlinkedRoles" />
 			<transient name="useDefaultTemplate" />
@@ -3698,14 +3918,6 @@
 		<table name="RepositoryEntry" />
 		<attributes />
 	</entity>
-	<entity class="com.liferay.portal.model.impl.ResourceImpl" name="Resource">
-		<table name="Resource_" />
-		<attributes>
-			<transient name="companyId" />
-			<transient name="name" />
-			<transient name="scope" />
-		</attributes>
-	</entity>
 	<entity class="com.liferay.portal.model.impl.ResourceActionImpl" name="ResourceAction">
 		<table name="ResourceAction" />
 		<attributes />
@@ -3716,10 +3928,6 @@
 	</entity>
 	<entity class="com.liferay.portal.model.impl.ResourceBlockPermissionImpl" name="ResourceBlockPermission">
 		<table name="ResourceBlockPermission" />
-		<attributes />
-	</entity>
-	<entity class="com.liferay.portal.model.impl.ResourceCodeImpl" name="ResourceCode">
-		<table name="ResourceCode" />
 		<attributes />
 	</entity>
 	<entity class="com.liferay.portal.model.impl.ResourcePermissionImpl" name="ResourcePermission">
@@ -3944,7 +4152,6 @@
 		<table name="DDMStructure" />
 		<attributes>
 			<transient name="document" />
-			<transient name="fieldsMap" />
 		</attributes>
 	</entity>
 	<entity class="com.liferay.portlet.dynamicdatamapping.model.impl.DDMStructureLinkImpl" name="DDMStructureLink">
@@ -3985,6 +4192,8 @@
 			<transient name="integerArray" />
 			<transient name="long" />
 			<transient name="longArray" />
+			<transient name="number" />
+			<transient name="numberArray" />
 			<transient name="short" />
 			<transient name="shortArray" />
 			<transient name="string" />
@@ -4011,6 +4220,10 @@
 	</entity>
 	<entity class="com.liferay.portlet.journal.model.impl.JournalFeedImpl" name="JournalFeed">
 		<table name="JournalFeed" />
+		<attributes />
+	</entity>
+	<entity class="com.liferay.portlet.journal.model.impl.JournalFolderImpl" name="JournalFolder">
+		<table name="JournalFolder" />
 		<attributes />
 	</entity>
 	<entity class="com.liferay.portlet.journal.model.impl.JournalStructureImpl" name="JournalStructure">
@@ -4183,6 +4396,16 @@
 	</entity>
 	<entity class="com.liferay.portlet.softwarecatalog.model.impl.SCProductVersionImpl" name="SCProductVersion">
 		<table name="SCProductVersion" />
+		<attributes />
+	</entity>
+	<entity class="com.liferay.portlet.trash.model.impl.TrashEntryImpl" name="TrashEntry">
+		<table name="TrashEntry" />
+		<attributes>
+			<transient name="typeSettingsProperties" />
+		</attributes>
+	</entity>
+	<entity class="com.liferay.portlet.trash.model.impl.TrashVersionImpl" name="TrashVersion">
+		<table name="TrashVersion" />
 		<attributes />
 	</entity>
 	<entity class="com.liferay.portlet.wiki.model.impl.WikiNodeImpl" name="WikiNode">

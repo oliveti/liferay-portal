@@ -64,7 +64,6 @@ import java.io.Writer;
 import java.security.Key;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -263,11 +262,19 @@ public class PortletURLImpl
 	}
 
 	public PortletMode getPortletMode() {
-		return _portletMode;
+		if (_portletModeString == null) {
+			return null;
+		}
+
+		return PortletModeFactory.getPortletMode(_portletModeString);
 	}
 
 	public PortletRequest getPortletRequest() {
 		return _portletRequest;
+	}
+
+	public Set<String> getRemovedParameterNames() {
+		return _removedParameterNames;
 	}
 
 	public Map<String, String> getReservedParameterMap() {
@@ -289,16 +296,16 @@ public class PortletURLImpl
 			_reservedParameters.put("p_p_lifecycle", "2");
 		}
 
-		if (_windowState != null) {
-			_reservedParameters.put("p_p_state", _windowState.toString());
+		if (_windowStateString != null) {
+			_reservedParameters.put("p_p_state", _windowStateString);
 		}
 
 		if (_windowStateRestoreCurrentView) {
 			_reservedParameters.put("p_p_state_rcv", "1");
 		}
 
-		if (_portletMode != null) {
-			_reservedParameters.put("p_p_mode", _portletMode.toString());
+		if (_portletModeString != null) {
+			_reservedParameters.put("p_p_mode", _portletModeString);
 		}
 
 		if (_resourceID != null) {
@@ -339,7 +346,11 @@ public class PortletURLImpl
 	}
 
 	public WindowState getWindowState() {
-		return _windowState;
+		if (_windowStateString == null) {
+			return null;
+		}
+
+		return WindowStateFactory.getWindowState(_windowStateString);
 	}
 
 	public boolean isAnchor() {
@@ -590,7 +601,7 @@ public class PortletURLImpl
 			}
 		}
 
-		_portletMode = portletMode;
+		_portletModeString = portletMode.toString();
 
 		clearCache();
 	}
@@ -607,6 +618,12 @@ public class PortletURLImpl
 
 	public void setRefererPlid(long refererPlid) {
 		_refererPlid = refererPlid;
+
+		clearCache();
+	}
+
+	public void setRemovedParameterNames(Set<String> removedParameterNames) {
+		_removedParameterNames = removedParameterNames;
 
 		clearCache();
 	}
@@ -638,7 +655,7 @@ public class PortletURLImpl
 		if (LiferayWindowState.isWindowStatePreserved(
 				getWindowState(), windowState)) {
 
-			_windowState = windowState;
+			_windowStateString = windowState.toString();
 		}
 
 		clearCache();
@@ -960,10 +977,9 @@ public class PortletURLImpl
 			sb.append(StringPool.AMPERSAND);
 		}
 
-		Iterator<Map.Entry<String, String[]>> itr =
-			_removePublicRenderParameters.entrySet().iterator();
+		for (Map.Entry<String, String[]> entry :
+				_removePublicRenderParameters.entrySet()) {
 
-		while (itr.hasNext()) {
 			String lastString = sb.stringAt(sb.index() - 1);
 
 			if (lastString.charAt(lastString.length() - 1) !=
@@ -971,8 +987,6 @@ public class PortletURLImpl
 
 				sb.append(StringPool.AMPERSAND);
 			}
-
-			Map.Entry<String, String[]> entry = itr.next();
 
 			sb.append(entry.getKey());
 			sb.append(StringPool.EQUAL);
@@ -984,11 +998,9 @@ public class PortletURLImpl
 			mergeRenderParameters();
 		}
 
-		itr = _params.entrySet().iterator();
+		int previousSbIndex = sb.index();
 
-		while (itr.hasNext()) {
-			Map.Entry<String, String[]> entry = itr.next();
-
+		for (Map.Entry<String, String[]> entry : _params.entrySet()) {
 			String name = entry.getKey();
 			String[] values = entry.getValue();
 
@@ -1009,11 +1021,12 @@ public class PortletURLImpl
 				sb.append(name);
 				sb.append(StringPool.EQUAL);
 				sb.append(processValue(key, values[i]));
-
-				if ((i + 1 < values.length) || itr.hasNext()) {
-					sb.append(StringPool.AMPERSAND);
-				}
+				sb.append(StringPool.AMPERSAND);
 			}
+		}
+
+		if (sb.index() > previousSbIndex) {
+			sb.setIndex(sb.index() - 1);
 		}
 
 		if (_encrypt) {
@@ -1021,10 +1034,12 @@ public class PortletURLImpl
 		}
 
 		if (PropsValues.PORTLET_URL_ANCHOR_ENABLE) {
-			if (_anchor && (_windowState != null) &&
-				(!_windowState.equals(WindowState.MAXIMIZED)) &&
-				(!_windowState.equals(LiferayWindowState.EXCLUSIVE)) &&
-				(!_windowState.equals(LiferayWindowState.POP_UP))) {
+			if (_anchor && (_windowStateString != null) &&
+				!_windowStateString.equals(WindowState.MAXIMIZED.toString()) &&
+				!_windowStateString.equals(
+					LiferayWindowState.EXCLUSIVE.toString()) &&
+				!_windowStateString.equals(
+					LiferayWindowState.POP_UP.toString())) {
 
 				String lastString = sb.stringAt(sb.index() - 1);
 
@@ -1100,17 +1115,17 @@ public class PortletURLImpl
 
 		sb.append(StringPool.AMPERSAND);
 
-		if (_windowState != null) {
+		if (_windowStateString != null) {
 			sb.append("wsrp-windowState");
 			sb.append(StringPool.EQUAL);
-			sb.append(HttpUtil.encodeURL("wsrp:" + _windowState.toString()));
+			sb.append(HttpUtil.encodeURL("wsrp:" + _windowStateString));
 			sb.append(StringPool.AMPERSAND);
 		}
 
-		if (_portletMode != null) {
+		if (_portletModeString != null) {
 			sb.append("wsrp-mode");
 			sb.append(StringPool.EQUAL);
-			sb.append(HttpUtil.encodeURL("wsrp:" + _portletMode.toString()));
+			sb.append(HttpUtil.encodeURL("wsrp:" + _portletModeString));
 			sb.append(StringPool.AMPERSAND);
 		}
 
@@ -1129,10 +1144,12 @@ public class PortletURLImpl
 		}
 
 		if (PropsValues.PORTLET_URL_ANCHOR_ENABLE) {
-			if (_anchor && (_windowState != null) &&
-				(!_windowState.equals(WindowState.MAXIMIZED)) &&
-				(!_windowState.equals(LiferayWindowState.EXCLUSIVE)) &&
-				(!_windowState.equals(LiferayWindowState.POP_UP))) {
+			if (_anchor && (_windowStateString != null) &&
+				!_windowStateString.equals(WindowState.MAXIMIZED.toString()) &&
+				!_windowStateString.equals(
+					LiferayWindowState.EXCLUSIVE.toString()) &&
+				!_windowStateString.equals(
+					LiferayWindowState.POP_UP.toString())) {
 
 				sb.append("wsrp-fragmentID");
 				sb.append(StringPool.EQUAL);
@@ -1148,12 +1165,9 @@ public class PortletURLImpl
 
 		StringBundler parameterSb = new StringBundler();
 
-		Iterator<Map.Entry<String, String[]>> itr =
-			_params.entrySet().iterator();
+		int previousSbIndex = sb.index();
 
-		while (itr.hasNext()) {
-			Map.Entry<String, String[]> entry = itr.next();
-
+		for (Map.Entry<String, String[]> entry : _params.entrySet()) {
 			String name = entry.getKey();
 			String[] values = entry.getValue();
 
@@ -1174,11 +1188,12 @@ public class PortletURLImpl
 				parameterSb.append(name);
 				parameterSb.append(StringPool.EQUAL);
 				parameterSb.append(HttpUtil.encodeURL(values[i]));
-
-				if ((i + 1 < values.length) || itr.hasNext()) {
-					parameterSb.append(StringPool.AMPERSAND);
-				}
+				parameterSb.append(StringPool.AMPERSAND);
 			}
+		}
+
+		if (sb.index() > previousSbIndex) {
+			sb.setIndex(sb.index() - 1);
 		}
 
 		sb.append("wsrp-navigationalState");
@@ -1229,7 +1244,7 @@ public class PortletURLImpl
 
 	protected boolean isBlankValue(String[] value) {
 		if ((value != null) && (value.length == 1) &&
-			(value[0].equals(StringPool.BLANK))) {
+			value[0].equals(StringPool.BLANK)) {
 
 			return true;
 		}
@@ -1246,16 +1261,18 @@ public class PortletURLImpl
 		Map<String, String[]> renderParameters = RenderParametersPool.get(
 			_request, layout.getPlid(), getPortlet().getPortletId());
 
-		Iterator<Map.Entry<String, String[]>> itr =
-			renderParameters.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<String, String[]> entry = itr.next();
-
+		for (Map.Entry<String, String[]> entry : renderParameters.entrySet()) {
 			String name = entry.getKey();
 
 			if (name.indexOf(namespace) != -1) {
 				name = name.substring(namespace.length());
+			}
+
+			if (!_lifecycle.equals(PortletRequest.RESOURCE_PHASE) &&
+				(_removedParameterNames != null) &&
+				_removedParameterNames.contains(name)) {
+
+				continue;
 			}
 
 			String[] oldValues = entry.getValue();
@@ -1334,7 +1351,7 @@ public class PortletURLImpl
 
 				redirect = HttpUtil.decodeURL(redirect);
 
-				String newURL = shortenURL(redirect, --count);
+				String newURL = shortenURL(redirect, count - 1);
 
 				if (newURL != null) {
 					newURL = HttpUtil.encodeURL(newURL);
@@ -1343,7 +1360,7 @@ public class PortletURLImpl
 					sb.append(StringPool.EQUAL);
 					sb.append(newURL);
 
-					if (i < params.length - 1) {
+					if (i < (params.length - 1)) {
 						sb.append(StringPool.AMPERSAND);
 					}
 				}
@@ -1351,7 +1368,7 @@ public class PortletURLImpl
 			else {
 				sb.append(param);
 
-				if (i < params.length - 1) {
+				if (i < (params.length - 1)) {
 					sb.append(StringPool.AMPERSAND);
 				}
 			}
@@ -1382,17 +1399,18 @@ public class PortletURLImpl
 	private long _plid;
 	private Portlet _portlet;
 	private String _portletId;
-	private PortletMode _portletMode;
+	private String _portletModeString;
 	private PortletRequest _portletRequest;
 	private long _refererPlid;
+	private Set<String> _removedParameterNames;
 	private Map<String, String[]> _removePublicRenderParameters;
 	private HttpServletRequest _request;
 	private Map<String, String> _reservedParameters;
 	private String _resourceID;
 	private boolean _secure;
 	private String _toString;
-	private WindowState _windowState;
 	private boolean _windowStateRestoreCurrentView;
+	private String _windowStateString;
 	private boolean _wsrp;
 
 }

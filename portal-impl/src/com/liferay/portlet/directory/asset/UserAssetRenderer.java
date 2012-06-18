@@ -42,6 +42,10 @@ public class UserAssetRenderer extends BaseAssetRenderer {
 		_user = user;
 	}
 
+	public String getAssetRendererFactoryClassName() {
+		return UserAssetRendererFactory.CLASS_NAME;
+	}
+
 	public long getClassPK() {
 		return _user.getPrimaryKey();
 	}
@@ -97,6 +101,10 @@ public class UserAssetRenderer extends BaseAssetRenderer {
 
 	public long getUserId() {
 		return _user.getUserId();
+	}
+
+	public String getUserName() {
+		return _user.getFullName();
 	}
 
 	public String getUuid() {

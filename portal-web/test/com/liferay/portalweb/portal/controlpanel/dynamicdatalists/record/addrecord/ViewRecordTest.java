@@ -24,6 +24,9 @@ public class ViewRecordTest extends BaseTestCase {
 	public void testViewRecord() throws Exception {
 		selenium.open("/web/guest/home/");
 		loadRequiredJavaScriptModules();
+		assertEquals(RuntimeVariables.replace("Go to"),
+			selenium.getText("//li[@id='_145_mySites']/a/span"));
+		selenium.mouseOver("//li[@id='_145_mySites']/a/span");
 
 		for (int second = 0;; second++) {
 			if (second >= 90) {
@@ -31,7 +34,7 @@ public class ViewRecordTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isElementPresent("link=Control Panel")) {
+				if (selenium.isVisible("link=Control Panel")) {
 					break;
 				}
 			}
@@ -75,11 +78,11 @@ public class ViewRecordTest extends BaseTestCase {
 			selenium.getText("//tr[3]/td[3]"));
 		assertEquals(RuntimeVariables.replace("Documents and Media"),
 			selenium.getText("//tr[1]/th[4]"));
-		assertEquals(RuntimeVariables.replace("document.txt"),
+		assertEquals(RuntimeVariables.replace("Document_1.txt"),
 			selenium.getText("//tr[3]/td[4]"));
 		assertEquals(RuntimeVariables.replace("File Upload"),
 			selenium.getText("//tr[1]/th[5]"));
-		assertTrue(selenium.isPartialText("//tr[3]/td[5]", "document2.txt"));
+		assertTrue(selenium.isPartialText("//tr[3]/td[5]", "Document_2.txt"));
 		assertEquals(RuntimeVariables.replace("Integer"),
 			selenium.getText("//tr[1]/th[6]"));
 		assertEquals(RuntimeVariables.replace("123"),
@@ -116,7 +119,7 @@ public class ViewRecordTest extends BaseTestCase {
 
 			try {
 				if (selenium.isVisible(
-							"//div[@class='lfr-component lfr-menu-list']/ul/li[1]/a")) {
+							"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'View')]/a")) {
 					break;
 				}
 			}
@@ -128,9 +131,9 @@ public class ViewRecordTest extends BaseTestCase {
 
 		assertEquals(RuntimeVariables.replace("View"),
 			selenium.getText(
-				"//div[@class='lfr-component lfr-menu-list']/ul/li[1]/a"));
+				"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'View')]/a"));
 		selenium.click(RuntimeVariables.replace(
-				"//div[@class='lfr-component lfr-menu-list']/ul/li[1]/a"));
+				"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'View')]/a"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
 		assertEquals(RuntimeVariables.replace("Boolean true"),
@@ -140,11 +143,11 @@ public class ViewRecordTest extends BaseTestCase {
 		assertEquals(RuntimeVariables.replace("Decimal 1.23"),
 			selenium.getText("//div[@class='aui-fieldset-content ']/div[3]"));
 		assertEquals(RuntimeVariables.replace(
-				"Documents and Media document.txt"),
+				"Documents and Media Document_1.txt"),
 			selenium.getText("//div[@class='aui-fieldset-content ']/div[4]"));
 		assertTrue(selenium.isPartialText(
 				"//div[@class='aui-fieldset-content ']/div[5]",
-				"File Upload document2.txt"));
+				"File Upload Document_2.txt"));
 		assertEquals(RuntimeVariables.replace("Integer 123"),
 			selenium.getText("//div[@class='aui-fieldset-content ']/div[6]"));
 		assertEquals(RuntimeVariables.replace("Number 456"),
@@ -159,6 +162,9 @@ public class ViewRecordTest extends BaseTestCase {
 			selenium.getText("//div[@class='aui-fieldset-content ']/div[11]"));
 		selenium.open("/web/guest/home/");
 		loadRequiredJavaScriptModules();
+		assertEquals(RuntimeVariables.replace("Go to"),
+			selenium.getText("//li[@id='_145_mySites']/a/span"));
+		selenium.mouseOver("//li[@id='_145_mySites']/a/span");
 
 		for (int second = 0;; second++) {
 			if (second >= 90) {
@@ -166,7 +172,7 @@ public class ViewRecordTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isElementPresent("link=Control Panel")) {
+				if (selenium.isVisible("link=Control Panel")) {
 					break;
 				}
 			}
@@ -204,7 +210,7 @@ public class ViewRecordTest extends BaseTestCase {
 
 			try {
 				if (selenium.isVisible(
-							"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a")) {
+							"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a")) {
 					break;
 				}
 			}
@@ -216,9 +222,9 @@ public class ViewRecordTest extends BaseTestCase {
 
 		assertEquals(RuntimeVariables.replace("Spreadsheet View"),
 			selenium.getText(
-				"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a"));
+				"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a"));
 		selenium.click(RuntimeVariables.replace(
-				"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a"));
+				"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
 		assertEquals(RuntimeVariables.replace("True"),
@@ -227,9 +233,9 @@ public class ViewRecordTest extends BaseTestCase {
 			selenium.getText("//td[2]/div"));
 		assertEquals(RuntimeVariables.replace("1.23"),
 			selenium.getText("//td[3]/div"));
-		assertEquals(RuntimeVariables.replace("(File)"),
+		assertEquals(RuntimeVariables.replace("Document_1.txt"),
 			selenium.getText("//td[4]/div"));
-		assertEquals(RuntimeVariables.replace("document2.txt"),
+		assertEquals(RuntimeVariables.replace("Document_2.txt"),
 			selenium.getText("//td[5]/div"));
 		assertEquals(RuntimeVariables.replace("123"),
 			selenium.getText("//td[6]/div"));

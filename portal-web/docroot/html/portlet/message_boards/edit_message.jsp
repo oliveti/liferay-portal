@@ -369,9 +369,9 @@ if (Validator.isNull(redirect)) {
 	</aui:fieldset>
 
 	<c:if test="<%= (message == null) && PropsValues.CAPTCHA_CHECK_PORTLET_MESSAGE_BOARDS_EDIT_MESSAGE %>">
-		<portlet:actionURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>" var="captchaURL">
+		<portlet:resourceURL var="captchaURL">
 			<portlet:param name="struts_action" value="/message_boards/captcha" />
-		</portlet:actionURL>
+		</portlet:resourceURL>
 
 		<liferay-ui:captcha url="<%= captchaURL %>" />
 	</c:if>
@@ -503,6 +503,7 @@ if (Validator.isNull(redirect)) {
 	<%
 	for (int i = 1; i <= existingAttachments.length; i++) {
 	%>
+
 		var removeExisting = A.one("#<portlet:namespace />removeExisting" + <%= i %>);
 
 		if (removeExisting) {
@@ -527,6 +528,7 @@ if (Validator.isNull(redirect)) {
 				}
 			);
 		}
+
 	<%
 	}
 	%>

@@ -38,7 +38,9 @@ import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The base model implementation for the DLFileEntry service. Represents a row in the &quot;DLFileEntry&quot; database table, with each column mapped to a property of this class.
@@ -110,10 +112,11 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	public static long FILEENTRYTYPEID_COLUMN_BITMASK = 2L;
 	public static long FOLDERID_COLUMN_BITMASK = 4L;
 	public static long GROUPID_COLUMN_BITMASK = 8L;
-	public static long NAME_COLUMN_BITMASK = 16L;
-	public static long TITLE_COLUMN_BITMASK = 32L;
-	public static long USERID_COLUMN_BITMASK = 64L;
-	public static long UUID_COLUMN_BITMASK = 128L;
+	public static long MIMETYPE_COLUMN_BITMASK = 16L;
+	public static long NAME_COLUMN_BITMASK = 32L;
+	public static long TITLE_COLUMN_BITMASK = 64L;
+	public static long USERID_COLUMN_BITMASK = 128L;
+	public static long UUID_COLUMN_BITMASK = 256L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -198,6 +201,199 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 
 	public String getModelClassName() {
 		return DLFileEntry.class.getName();
+	}
+
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("uuid", getUuid());
+		attributes.put("fileEntryId", getFileEntryId());
+		attributes.put("groupId", getGroupId());
+		attributes.put("companyId", getCompanyId());
+		attributes.put("userId", getUserId());
+		attributes.put("userName", getUserName());
+		attributes.put("versionUserId", getVersionUserId());
+		attributes.put("versionUserName", getVersionUserName());
+		attributes.put("createDate", getCreateDate());
+		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("repositoryId", getRepositoryId());
+		attributes.put("folderId", getFolderId());
+		attributes.put("name", getName());
+		attributes.put("extension", getExtension());
+		attributes.put("mimeType", getMimeType());
+		attributes.put("title", getTitle());
+		attributes.put("description", getDescription());
+		attributes.put("extraSettings", getExtraSettings());
+		attributes.put("fileEntryTypeId", getFileEntryTypeId());
+		attributes.put("version", getVersion());
+		attributes.put("size", getSize());
+		attributes.put("readCount", getReadCount());
+		attributes.put("smallImageId", getSmallImageId());
+		attributes.put("largeImageId", getLargeImageId());
+		attributes.put("custom1ImageId", getCustom1ImageId());
+		attributes.put("custom2ImageId", getCustom2ImageId());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		String uuid = (String)attributes.get("uuid");
+
+		if (uuid != null) {
+			setUuid(uuid);
+		}
+
+		Long fileEntryId = (Long)attributes.get("fileEntryId");
+
+		if (fileEntryId != null) {
+			setFileEntryId(fileEntryId);
+		}
+
+		Long groupId = (Long)attributes.get("groupId");
+
+		if (groupId != null) {
+			setGroupId(groupId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
+		}
+
+		Long userId = (Long)attributes.get("userId");
+
+		if (userId != null) {
+			setUserId(userId);
+		}
+
+		String userName = (String)attributes.get("userName");
+
+		if (userName != null) {
+			setUserName(userName);
+		}
+
+		Long versionUserId = (Long)attributes.get("versionUserId");
+
+		if (versionUserId != null) {
+			setVersionUserId(versionUserId);
+		}
+
+		String versionUserName = (String)attributes.get("versionUserName");
+
+		if (versionUserName != null) {
+			setVersionUserName(versionUserName);
+		}
+
+		Date createDate = (Date)attributes.get("createDate");
+
+		if (createDate != null) {
+			setCreateDate(createDate);
+		}
+
+		Date modifiedDate = (Date)attributes.get("modifiedDate");
+
+		if (modifiedDate != null) {
+			setModifiedDate(modifiedDate);
+		}
+
+		Long repositoryId = (Long)attributes.get("repositoryId");
+
+		if (repositoryId != null) {
+			setRepositoryId(repositoryId);
+		}
+
+		Long folderId = (Long)attributes.get("folderId");
+
+		if (folderId != null) {
+			setFolderId(folderId);
+		}
+
+		String name = (String)attributes.get("name");
+
+		if (name != null) {
+			setName(name);
+		}
+
+		String extension = (String)attributes.get("extension");
+
+		if (extension != null) {
+			setExtension(extension);
+		}
+
+		String mimeType = (String)attributes.get("mimeType");
+
+		if (mimeType != null) {
+			setMimeType(mimeType);
+		}
+
+		String title = (String)attributes.get("title");
+
+		if (title != null) {
+			setTitle(title);
+		}
+
+		String description = (String)attributes.get("description");
+
+		if (description != null) {
+			setDescription(description);
+		}
+
+		String extraSettings = (String)attributes.get("extraSettings");
+
+		if (extraSettings != null) {
+			setExtraSettings(extraSettings);
+		}
+
+		Long fileEntryTypeId = (Long)attributes.get("fileEntryTypeId");
+
+		if (fileEntryTypeId != null) {
+			setFileEntryTypeId(fileEntryTypeId);
+		}
+
+		String version = (String)attributes.get("version");
+
+		if (version != null) {
+			setVersion(version);
+		}
+
+		Long size = (Long)attributes.get("size");
+
+		if (size != null) {
+			setSize(size);
+		}
+
+		Integer readCount = (Integer)attributes.get("readCount");
+
+		if (readCount != null) {
+			setReadCount(readCount);
+		}
+
+		Long smallImageId = (Long)attributes.get("smallImageId");
+
+		if (smallImageId != null) {
+			setSmallImageId(smallImageId);
+		}
+
+		Long largeImageId = (Long)attributes.get("largeImageId");
+
+		if (largeImageId != null) {
+			setLargeImageId(largeImageId);
+		}
+
+		Long custom1ImageId = (Long)attributes.get("custom1ImageId");
+
+		if (custom1ImageId != null) {
+			setCustom1ImageId(custom1ImageId);
+		}
+
+		Long custom2ImageId = (Long)attributes.get("custom2ImageId");
+
+		if (custom2ImageId != null) {
+			setCustom2ImageId(custom2ImageId);
+		}
 	}
 
 	@JSON
@@ -445,7 +641,17 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	}
 
 	public void setMimeType(String mimeType) {
+		_columnBitmask |= MIMETYPE_COLUMN_BITMASK;
+
+		if (_originalMimeType == null) {
+			_originalMimeType = _mimeType;
+		}
+
 		_mimeType = mimeType;
+	}
+
+	public String getOriginalMimeType() {
+		return GetterUtil.getString(_originalMimeType);
 	}
 
 	@JSON
@@ -606,17 +812,15 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(getCompanyId(),
-					DLFileEntry.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(getCompanyId(),
+			DLFileEntry.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -734,6 +938,8 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 		dlFileEntryModelImpl._setOriginalFolderId = false;
 
 		dlFileEntryModelImpl._originalName = dlFileEntryModelImpl._name;
+
+		dlFileEntryModelImpl._originalMimeType = dlFileEntryModelImpl._mimeType;
 
 		dlFileEntryModelImpl._originalTitle = dlFileEntryModelImpl._title;
 
@@ -1086,6 +1292,7 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	private String _originalName;
 	private String _extension;
 	private String _mimeType;
+	private String _originalMimeType;
 	private String _title;
 	private String _originalTitle;
 	private String _description;
@@ -1100,7 +1307,6 @@ public class DLFileEntryModelImpl extends BaseModelImpl<DLFileEntry>
 	private long _largeImageId;
 	private long _custom1ImageId;
 	private long _custom2ImageId;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private DLFileEntry _escapedModelProxy;
 }

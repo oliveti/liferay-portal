@@ -15,7 +15,6 @@
 package com.liferay.portlet.mobiledevicerules.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class MDRRuleLocalServiceUtil {
 	* Deletes the m d r rule with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param ruleId the primary key of the m d r rule
+	* @return the m d r rule that was removed
 	* @throws PortalException if a m d r rule with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMDRRule(long ruleId)
+	public static com.liferay.portlet.mobiledevicerules.model.MDRRule deleteMDRRule(
+		long ruleId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMDRRule(ruleId);
+		return getService().deleteMDRRule(ruleId);
 	}
 
 	/**
 	* Deletes the m d r rule from the database. Also notifies the appropriate model listeners.
 	*
 	* @param mdrRule the m d r rule
+	* @return the m d r rule that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMDRRule(
+	public static com.liferay.portlet.mobiledevicerules.model.MDRRule deleteMDRRule(
 		com.liferay.portlet.mobiledevicerules.model.MDRRule mdrRule)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMDRRule(mdrRule);
+		return getService().deleteMDRRule(mdrRule);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -396,20 +402,15 @@ public class MDRRuleLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(MDRRuleLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(MDRRuleLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(MDRRuleLocalService service) {
-		MethodCache.remove(MDRRuleLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(MDRRuleLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(MDRRuleLocalService.class);
 	}
 
 	private static MDRRuleLocalService _service;

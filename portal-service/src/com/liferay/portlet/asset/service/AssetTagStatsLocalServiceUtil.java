@@ -15,7 +15,6 @@
 package com.liferay.portlet.asset.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class AssetTagStatsLocalServiceUtil {
 	* Deletes the asset tag stats with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param tagStatsId the primary key of the asset tag stats
+	* @return the asset tag stats that was removed
 	* @throws PortalException if a asset tag stats with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteAssetTagStats(long tagStatsId)
+	public static com.liferay.portlet.asset.model.AssetTagStats deleteAssetTagStats(
+		long tagStatsId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteAssetTagStats(tagStatsId);
+		return getService().deleteAssetTagStats(tagStatsId);
 	}
 
 	/**
 	* Deletes the asset tag stats from the database. Also notifies the appropriate model listeners.
 	*
 	* @param assetTagStats the asset tag stats
+	* @return the asset tag stats that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteAssetTagStats(
+	public static com.liferay.portlet.asset.model.AssetTagStats deleteAssetTagStats(
 		com.liferay.portlet.asset.model.AssetTagStats assetTagStats)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteAssetTagStats(assetTagStats);
+		return getService().deleteAssetTagStats(assetTagStats);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -390,20 +396,15 @@ public class AssetTagStatsLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(AssetTagStatsLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(AssetTagStatsLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(AssetTagStatsLocalService service) {
-		MethodCache.remove(AssetTagStatsLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(AssetTagStatsLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(AssetTagStatsLocalService.class);
 	}
 
 	private static AssetTagStatsLocalService _service;

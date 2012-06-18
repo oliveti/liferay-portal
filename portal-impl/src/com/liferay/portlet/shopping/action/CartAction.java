@@ -68,7 +68,7 @@ public void processAction(
 			if (e instanceof NoSuchItemException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.shopping.error");
 			}
@@ -78,7 +78,7 @@ public void processAction(
 					 e instanceof CouponStartDateException ||
 					 e instanceof NoSuchCouponException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName(), e);
+				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
 			else {
 				throw e;

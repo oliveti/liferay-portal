@@ -31,7 +31,6 @@ Role role = (Role)objArray[1];
 		<portlet:param name="<%= Constants.CMD %>" value="delete_permission" />
 		<portlet:param name="redirect" value="<%= currentURL %>" />
 		<portlet:param name="roleId" value="<%= String.valueOf(role.getRoleId()) %>" />
-		<portlet:param name="permissionId" value="<%= String.valueOf(permission.getPermissionId()) %>" />
 		<portlet:param name="name" value="<%= permission.getName() %>" />
 		<portlet:param name="scope" value="<%= String.valueOf(permission.getScope()) %>" />
 		<portlet:param name="primKey" value="<%= permission.getPrimKey() %>" />

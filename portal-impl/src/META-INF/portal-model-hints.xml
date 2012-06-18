@@ -119,8 +119,11 @@
 		<field name="userName" type="String" />
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
 		<field name="accountId" type="long" />
 		<field name="parentContactId" type="long" />
+		<field name="emailAddress" type="String" />
 		<field name="firstName" type="String" />
 		<field name="middleName" type="String" />
 		<field name="lastName" type="String" />
@@ -478,11 +481,6 @@
 			<hint name="display-width">400</hint>
 		</field>
 	</model>
-	<model name="com.liferay.portal.model.OrgGroupPermission">
-		<field name="organizationId" type="long" />
-		<field name="groupId" type="long" />
-		<field name="permissionId" type="long" />
-	</model>
 	<model name="com.liferay.portal.model.OrgGroupRole">
 		<field name="organizationId" type="long" />
 		<field name="groupId" type="long" />
@@ -568,12 +566,6 @@
 		<field name="userId" type="long" />
 		<field name="createDate" type="Date" />
 		<field name="password" type="String" />
-	</model>
-	<model name="com.liferay.portal.model.Permission">
-		<field name="permissionId" type="long" />
-		<field name="companyId" type="long" />
-		<field name="actionId" type="String" />
-		<field name="resourceId" type="long" />
 	</model>
 	<model name="com.liferay.portal.model.Phone">
 		<field name="phoneId" type="long" />
@@ -661,6 +653,7 @@
 		<field name="buildNumber" type="int" />
 		<field name="buildDate" type="Date" />
 		<field name="verified" type="boolean" />
+		<field name="state" type="int" />
 		<field name="testString" type="String">
 			<hint name="max-length">1024</hint>
 		</field>
@@ -692,13 +685,6 @@
 		<field name="repositoryId" type="long" />
 		<field name="mappedId" type="String" />
 	</model>
-	<model name="com.liferay.portal.model.Resource">
-		<field name="resourceId" type="long" />
-		<field name="codeId" type="long" />
-		<field name="primKey" type="String">
-			<hint name="max-length">255</hint>
-		</field>
-	</model>
 	<model name="com.liferay.portal.model.ResourceAction">
 		<field name="resourceActionId" type="long" />
 		<field name="name" type="String">
@@ -720,14 +706,6 @@
 		<field name="resourceBlockId" type="long" />
 		<field name="roleId" type="long" />
 		<field name="actionIds" type="long" />
-	</model>
-	<model name="com.liferay.portal.model.ResourceCode">
-		<field name="codeId" type="long" />
-		<field name="companyId" type="long" />
-		<field name="name" type="String">
-			<hint name="max-length">255</hint>
-		</field>
-		<field name="scope" type="int" />
 	</model>
 	<model name="com.liferay.portal.model.ResourcePermission">
 		<field name="resourcePermissionId" type="long" />
@@ -1394,6 +1372,7 @@
 		<field name="userId" type="long" />
 		<field name="createDate" type="Date" />
 		<field name="fileEntryId" type="long" />
+		<field name="active" type="boolean" />
 	</model>
 	<model name="com.liferay.portlet.documentlibrary.model.DLFileShortcut">
 		<field name="uuid" type="String" />
@@ -1407,6 +1386,7 @@
 		<field name="repositoryId" type="long" />
 		<field name="folderId" type="long" />
 		<field name="toFileEntryId" type="long" />
+		<field name="active" type="boolean" />
 		<field name="status" type="int" />
 		<field name="statusByUserId" type="long" />
 		<field name="statusByUserName" type="String" />
@@ -1466,6 +1446,10 @@
 		<field name="lastPostDate" type="Date" />
 		<field name="defaultFileEntryTypeId" type="long" />
 		<field name="overrideFileEntryTypes" type="boolean" />
+		<field name="status" type="int" />
+		<field name="statusByUserId" type="long" />
+		<field name="statusByUserName" type="String" />
+		<field name="statusDate" type="Date" />
 	</model>
 	<model name="com.liferay.portlet.documentlibrary.model.DLSync">
 		<field name="syncId" type="long" />
@@ -1478,6 +1462,9 @@
 		<field name="parentFolderId" type="long" />
 		<field name="name" type="String">
 			<hint name="max-length">255</hint>
+		</field>
+		<field name="description" type="String">
+			<hint-collection name="TEXTAREA" />
 		</field>
 		<field name="event" type="String" />
 		<field name="type" type="String" />
@@ -1606,7 +1593,9 @@
 		<field name="userName" type="String" />
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
-		<field name="structureId" type="long" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
+		<field name="templateKey" type="String" />
 		<field name="name" type="String" localized="true">
 			<validator name="required" />
 		</field>
@@ -1669,6 +1658,7 @@
 		<field name="userName" type="String" />
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
+		<field name="folderId" type="long" />
 		<field name="classNameId" type="long" />
 		<field name="classPK" type="long" />
 		<field name="articleId" type="String">
@@ -1783,6 +1773,24 @@
 		<field name="contentField" type="String" />
 		<field name="feedType" type="String" />
 		<field name="feedVersion" type="double" />
+	</model>
+	<model name="com.liferay.portlet.journal.model.JournalFolder">
+		<field name="uuid" type="String" />
+		<field name="folderId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="parentFolderId" type="long" />
+		<field name="name" type="String">
+			<hint name="max-length">100</hint>
+			<validator name="required" />
+		</field>
+		<field name="description" type="String">
+			<hint-collection name="TEXTAREA" />
+		</field>
 	</model>
 	<model name="com.liferay.portlet.journal.model.JournalStructure">
 		<field name="uuid" type="String" />
@@ -2378,6 +2386,7 @@
 		<field name="graceValue" type="int" />
 		<field name="startPeriod" type="int" />
 		<field name="endPeriod" type="int" />
+		<field name="active" type="boolean" />
 	</model>
 	<model name="com.liferay.portlet.social.model.SocialActivityLimit">
 		<field name="activityLimitId" type="long" />
@@ -2521,17 +2530,26 @@
 		</field>
 		<field name="repoStoreArtifact" type="boolean" />
 	</model>
-	<model name="com.liferay.portlet.usernotifications.model.UserNotificationEvent">
-		<field name="uuid" type="String" />
-		<field name="userNotificationEventId" type="long" />
+	<model name="com.liferay.portlet.trash.model.TrashEntry">
+		<field name="entryId" type="long" />
+		<field name="groupId" type="long" />
 		<field name="companyId" type="long" />
-		<field name="type" type="String" />
 		<field name="userId" type="long" />
-		<field name="payload" type="String">
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
+		<field name="typeSettings" type="String">
 			<hint-collection name="CLOB" />
 		</field>
-		<field name="timestamp" type="long" />
-		<field name="deliverBy" type="long" />
+		<field name="status" type="int" />
+	</model>
+	<model name="com.liferay.portlet.trash.model.TrashVersion">
+		<field name="versionId" type="long" />
+		<field name="entryId" type="long" />
+		<field name="classNameId" type="long" />
+		<field name="classPK" type="long" />
+		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.portlet.wiki.model.WikiNode">
 		<field name="uuid" type="String" />

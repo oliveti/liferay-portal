@@ -95,7 +95,10 @@ public class EditEntryAction extends PortletAction {
 				oldUrlTitle = ((String)returnValue[1]);
 			}
 			else if (cmd.equals(Constants.DELETE)) {
-				deleteEntries(actionRequest);
+				deleteEntries(actionRequest, false);
+			}
+			else if (cmd.equals(Constants.MOVE_TO_TRASH)) {
+				deleteEntries(actionRequest, true);
 			}
 			else if (cmd.equals(Constants.SUBSCRIBE)) {
 				subscribe(actionRequest);
@@ -111,7 +114,7 @@ public class EditEntryAction extends PortletAction {
 				oldUrlTitle += "/maximized";
 			}
 
-			if ((entry != null) && (Validator.isNotNull(oldUrlTitle)) &&
+			if ((entry != null) && Validator.isNotNull(oldUrlTitle) &&
 				(redirect.endsWith("/blogs/" + oldUrlTitle) ||
 				 redirect.contains("/blogs/" + oldUrlTitle + "?") ||
 				 redirect.contains("/blog/" + oldUrlTitle + "?"))) {
@@ -132,8 +135,7 @@ public class EditEntryAction extends PortletAction {
 				}
 
 				if (pos < redirect.length()) {
-					newRedirect +=
-						"?" + redirect.substring(pos + 1, redirect.length());
+					newRedirect += "?" + redirect.substring(pos + 1);
 				}
 
 				redirect = newRedirect;
@@ -185,7 +187,7 @@ public class EditEntryAction extends PortletAction {
 			if (e instanceof NoSuchEntryException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.blogs.error");
 			}
@@ -195,12 +197,12 @@ public class EditEntryAction extends PortletAction {
 					 e instanceof EntrySmallImageSizeException ||
 					 e instanceof EntryTitleException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else if (e instanceof AssetCategoryException ||
 					 e instanceof AssetTagException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName(), e);
+				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
 			else {
 				throw e;
@@ -236,7 +238,7 @@ public class EditEntryAction extends PortletAction {
 			if (e instanceof NoSuchEntryException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass().getName());
+				SessionErrors.add(renderRequest, e.getClass());
 
 				return mapping.findForward("portlet.blogs.error");
 			}
@@ -249,18 +251,28 @@ public class EditEntryAction extends PortletAction {
 			getForward(renderRequest, "portlet.blogs.edit_entry"));
 	}
 
-	protected void deleteEntries(ActionRequest actionRequest) throws Exception {
+	protected void deleteEntries(
+			ActionRequest actionRequest, boolean moveToTrash)
+		throws Exception {
+
+		long[] deleteEntryIds = null;
+
 		long entryId = ParamUtil.getLong(actionRequest, "entryId");
 
 		if (entryId > 0) {
-			BlogsEntryServiceUtil.deleteEntry(entryId);
+			deleteEntryIds = new long[] {entryId};
 		}
 		else {
-			long[] deleteEntryIds = StringUtil.split(
+			deleteEntryIds = StringUtil.split(
 				ParamUtil.getString(actionRequest, "deleteEntryIds"), 0L);
+		}
 
-			for (int i = 0; i < deleteEntryIds.length; i++) {
-				BlogsEntryServiceUtil.deleteEntry(deleteEntryIds[i]);
+		for (long deleteEntryId : deleteEntryIds) {
+			if (moveToTrash) {
+				BlogsEntryServiceUtil.moveEntryToTrash(deleteEntryId);
+			}
+			else {
+				BlogsEntryServiceUtil.deleteEntry(deleteEntryId);
 			}
 		}
 	}

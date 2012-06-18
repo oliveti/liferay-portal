@@ -148,7 +148,8 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 
 	public Modifications getLDAPGroupModifications(
 			long ldapServerId, UserGroup userGroup, User user,
-			Properties groupMappings, Properties userMappings)
+			Properties groupMappings, Properties userMappings,
+			LDAPOperation ldapOperation)
 		throws Exception {
 
 		Modifications modifications = Modifications.getInstance();
@@ -156,12 +157,21 @@ public class DefaultPortalToLDAPConverter implements PortalToLDAPConverter {
 		String groupDN = getGroupDNName(ldapServerId, userGroup, groupMappings);
 		String userDN = getUserDNName(ldapServerId, user, userMappings);
 
-		if (!PortalLDAPUtil.isGroupMember(
+		if (PortalLDAPUtil.isGroupMember(
 				ldapServerId, user.getCompanyId(), groupDN, userDN)) {
 
-			modifications.addItem(
-				DirContext.ADD_ATTRIBUTE,
-				groupMappings.getProperty(GroupConverterKeys.USER), userDN);
+			if (ldapOperation == LDAPOperation.REMOVE) {
+				modifications.addItem(
+					DirContext.REMOVE_ATTRIBUTE,
+					groupMappings.getProperty(GroupConverterKeys.USER), userDN);
+			}
+		}
+		else {
+			if (ldapOperation == LDAPOperation.ADD) {
+				modifications.addItem(
+					DirContext.ADD_ATTRIBUTE,
+					groupMappings.getProperty(GroupConverterKeys.USER), userDN);
+			}
 		}
 
 		return modifications;

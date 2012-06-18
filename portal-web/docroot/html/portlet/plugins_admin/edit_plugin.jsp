@@ -69,7 +69,7 @@ if (pluginType.equals(Plugin.TYPE_PORTLET)) {
 
 		<c:choose>
 			<c:when test="<%= pluginType.equals(Plugin.TYPE_PORTLET) %>">
-				<aui:field-wrapper label="permissions" helpMessage="edit-plugin-permissions-help">
+				<aui:field-wrapper helpMessage="edit-plugin-permissions-help" label="permissions">
 
 					<%
 					List curActions = ResourceActionsUtil.getResourceActions(portlet.getPortletId(), null);
@@ -225,11 +225,6 @@ private List<Role> _filterRoles(List<Role> roles, String portletId, String actio
 }
 
 private boolean _hasPermission(Role role, String actionId, String resourceName, Integer scope) throws Exception {
-	if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) {
-		return ResourcePermissionLocalServiceUtil.hasScopeResourcePermission(role.getCompanyId(), resourceName, scope, role.getRoleId(), actionId);
-	}
-	else {
-		return PermissionLocalServiceUtil.hasRolePermission(role.getRoleId(), role.getCompanyId(), resourceName, scope, actionId);
-	}
+	return ResourcePermissionLocalServiceUtil.hasScopeResourcePermission(role.getCompanyId(), resourceName, scope, role.getRoleId(), actionId);
 }
 %>

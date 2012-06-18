@@ -31,6 +31,9 @@ import java.io.Serializable;
 
 import java.sql.Types;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The base model implementation for the ResourceAction service. Represents a row in the &quot;ResourceAction&quot; database table, with each column mapped to a property of this class.
  *
@@ -104,6 +107,45 @@ public class ResourceActionModelImpl extends BaseModelImpl<ResourceAction>
 
 	public String getModelClassName() {
 		return ResourceAction.class.getName();
+	}
+
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("resourceActionId", getResourceActionId());
+		attributes.put("name", getName());
+		attributes.put("actionId", getActionId());
+		attributes.put("bitwiseValue", getBitwiseValue());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		Long resourceActionId = (Long)attributes.get("resourceActionId");
+
+		if (resourceActionId != null) {
+			setResourceActionId(resourceActionId);
+		}
+
+		String name = (String)attributes.get("name");
+
+		if (name != null) {
+			setName(name);
+		}
+
+		String actionId = (String)attributes.get("actionId");
+
+		if (actionId != null) {
+			setActionId(actionId);
+		}
+
+		Long bitwiseValue = (Long)attributes.get("bitwiseValue");
+
+		if (bitwiseValue != null) {
+			setBitwiseValue(bitwiseValue);
+		}
 	}
 
 	public long getResourceActionId() {
@@ -187,17 +229,15 @@ public class ResourceActionModelImpl extends BaseModelImpl<ResourceAction>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(0,
-					ResourceAction.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(0,
+			ResourceAction.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -364,7 +404,6 @@ public class ResourceActionModelImpl extends BaseModelImpl<ResourceAction>
 	private String _actionId;
 	private String _originalActionId;
 	private long _bitwiseValue;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private ResourceAction _escapedModelProxy;
 }

@@ -76,14 +76,14 @@ public class EditRecordAction extends PortletAction {
 			if (e instanceof NoSuchRecordException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.dynamic_data_lists.error");
 			}
 			else if (e instanceof FileSizeException ||
 					 e instanceof StorageFieldRequiredException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else {
 				throw e;
@@ -104,7 +104,7 @@ public class EditRecordAction extends PortletAction {
 			if (e instanceof NoSuchRecordException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass().getName());
+				SessionErrors.add(renderRequest, e.getClass());
 
 				return mapping.findForward("portlet.dynamic_data_lists.error");
 			}
@@ -118,9 +118,7 @@ public class EditRecordAction extends PortletAction {
 				renderRequest, "portlet.dynamic_data_lists.edit_record"));
 	}
 
-	protected void deleteRecord(ActionRequest actionRequest)
-		throws Exception {
-
+	protected void deleteRecord(ActionRequest actionRequest) throws Exception {
 		long recordId = ParamUtil.getLong(actionRequest, "recordId");
 
 		DDLRecordLocalServiceUtil.deleteRecord(recordId);

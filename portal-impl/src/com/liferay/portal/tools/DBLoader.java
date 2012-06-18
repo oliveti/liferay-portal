@@ -58,11 +58,9 @@ public class DBLoader {
 				if (line.endsWith(";")) {
 					String sql = sb.toString();
 
-					sql =
-						StringUtil.replace(
-							sql,
-							new String[] {"\\\"", "\\\\", "\\n", "\\r"},
-							new String[] {"\"", "\\", "\\u000a", "\\u000a"});
+					sql = StringUtil.replace(
+						sql, new String[] {"\\\"", "\\\\", "\\n", "\\r"},
+						new String[] {"\"", "\\", "\\u000a", "\\u000a"});
 
 					sb.setIndex(0);
 
@@ -150,9 +148,7 @@ public class DBLoader {
 		}
 	}
 
-	private void _loadDerby(Connection con, String fileName)
-		throws Exception {
-
+	private void _loadDerby(Connection con, String fileName) throws Exception {
 		StringBundler sb = new StringBundler();
 
 		UnsyncBufferedReader unsyncBufferedReader = new UnsyncBufferedReader(
@@ -167,11 +163,9 @@ public class DBLoader {
 				if (line.endsWith(";")) {
 					String sql = sb.toString();
 
-					sql =
-						StringUtil.replace(
-							sql,
-							new String[] {"\\'", "\\\"", "\\\\", "\\n", "\\r"},
-							new String[] {"''", "\"", "\\", "\n", "\r"});
+					sql = StringUtil.replace(
+						sql, new String[] {"\\'", "\\\"", "\\\\", "\\n", "\\r"},
+						new String[] {"''", "\"", "\\", "\n", "\r"});
 
 					sql = sql.substring(0, sql.length() - 1);
 

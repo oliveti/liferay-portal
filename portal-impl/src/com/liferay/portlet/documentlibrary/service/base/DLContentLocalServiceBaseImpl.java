@@ -21,23 +21,19 @@ import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
-import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.model.PersistedModel;
+import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.service.ResourceLocalService;
-import com.liferay.portal.service.ResourceService;
 import com.liferay.portal.service.UserLocalService;
 import com.liferay.portal.service.UserService;
-import com.liferay.portal.service.persistence.ResourceFinder;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserFinder;
 import com.liferay.portal.service.persistence.UserPersistence;
 
@@ -73,6 +69,7 @@ import com.liferay.portlet.documentlibrary.service.persistence.DLFileShortcutPer
 import com.liferay.portlet.documentlibrary.service.persistence.DLFileVersionPersistence;
 import com.liferay.portlet.documentlibrary.service.persistence.DLFolderFinder;
 import com.liferay.portlet.documentlibrary.service.persistence.DLFolderPersistence;
+import com.liferay.portlet.documentlibrary.service.persistence.DLSyncFinder;
 import com.liferay.portlet.documentlibrary.service.persistence.DLSyncPersistence;
 
 import java.io.Serializable;
@@ -93,7 +90,7 @@ import javax.sql.DataSource;
  * @see com.liferay.portlet.documentlibrary.service.DLContentLocalServiceUtil
  * @generated
  */
-public abstract class DLContentLocalServiceBaseImpl
+public abstract class DLContentLocalServiceBaseImpl extends BaseLocalServiceImpl
 	implements DLContentLocalService, IdentifiableBean {
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -108,26 +105,12 @@ public abstract class DLContentLocalServiceBaseImpl
 	 * @return the document library content that was added
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DLContent addDLContent(DLContent dlContent)
 		throws SystemException {
 		dlContent.setNew(true);
 
-		dlContent = dlContentPersistence.update(dlContent, false);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(dlContent);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return dlContent;
+		return dlContentPersistence.update(dlContent, false);
 	}
 
 	/**
@@ -144,48 +127,34 @@ public abstract class DLContentLocalServiceBaseImpl
 	 * Deletes the document library content with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param contentId the primary key of the document library content
+	 * @return the document library content that was removed
 	 * @throws PortalException if a document library content with the primary key could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteDLContent(long contentId)
+	@Indexable(type = IndexableType.DELETE)
+	public DLContent deleteDLContent(long contentId)
 		throws PortalException, SystemException {
-		DLContent dlContent = dlContentPersistence.remove(contentId);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.delete(dlContent);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return dlContentPersistence.remove(contentId);
 	}
 
 	/**
 	 * Deletes the document library content from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param dlContent the document library content
+	 * @return the document library content that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteDLContent(DLContent dlContent) throws SystemException {
-		dlContentPersistence.remove(dlContent);
+	@Indexable(type = IndexableType.DELETE)
+	public DLContent deleteDLContent(DLContent dlContent)
+		throws SystemException {
+		return dlContentPersistence.remove(dlContent);
+	}
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
+	public DynamicQuery dynamicQuery() {
+		Class<?> clazz = getClass();
 
-		if (indexer != null) {
-			try {
-				indexer.delete(dlContent);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return DynamicQueryFactoryUtil.forClass(DLContent.class,
+			clazz.getClassLoader());
 	}
 
 	/**
@@ -310,6 +279,7 @@ public abstract class DLContentLocalServiceBaseImpl
 	 * @return the document library content that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DLContent updateDLContent(DLContent dlContent)
 		throws SystemException {
 		return updateDLContent(dlContent, true);
@@ -323,26 +293,12 @@ public abstract class DLContentLocalServiceBaseImpl
 	 * @return the document library content that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DLContent updateDLContent(DLContent dlContent, boolean merge)
 		throws SystemException {
 		dlContent.setNew(false);
 
-		dlContent = dlContentPersistence.update(dlContent, merge);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(dlContent);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return dlContent;
+		return dlContentPersistence.update(dlContent, merge);
 	}
 
 	public DLContentDataBlobModel getDataBlobModel(Serializable primaryKey)
@@ -942,6 +898,24 @@ public abstract class DLContentLocalServiceBaseImpl
 	}
 
 	/**
+	 * Returns the d l sync finder.
+	 *
+	 * @return the d l sync finder
+	 */
+	public DLSyncFinder getDLSyncFinder() {
+		return dlSyncFinder;
+	}
+
+	/**
+	 * Sets the d l sync finder.
+	 *
+	 * @param dlSyncFinder the d l sync finder
+	 */
+	public void setDLSyncFinder(DLSyncFinder dlSyncFinder) {
+		this.dlSyncFinder = dlSyncFinder;
+	}
+
+	/**
 	 * Returns the counter local service.
 	 *
 	 * @return the counter local service
@@ -976,60 +950,6 @@ public abstract class DLContentLocalServiceBaseImpl
 	public void setResourceLocalService(
 		ResourceLocalService resourceLocalService) {
 		this.resourceLocalService = resourceLocalService;
-	}
-
-	/**
-	 * Returns the resource remote service.
-	 *
-	 * @return the resource remote service
-	 */
-	public ResourceService getResourceService() {
-		return resourceService;
-	}
-
-	/**
-	 * Sets the resource remote service.
-	 *
-	 * @param resourceService the resource remote service
-	 */
-	public void setResourceService(ResourceService resourceService) {
-		this.resourceService = resourceService;
-	}
-
-	/**
-	 * Returns the resource persistence.
-	 *
-	 * @return the resource persistence
-	 */
-	public ResourcePersistence getResourcePersistence() {
-		return resourcePersistence;
-	}
-
-	/**
-	 * Sets the resource persistence.
-	 *
-	 * @param resourcePersistence the resource persistence
-	 */
-	public void setResourcePersistence(ResourcePersistence resourcePersistence) {
-		this.resourcePersistence = resourcePersistence;
-	}
-
-	/**
-	 * Returns the resource finder.
-	 *
-	 * @return the resource finder
-	 */
-	public ResourceFinder getResourceFinder() {
-		return resourceFinder;
-	}
-
-	/**
-	 * Sets the resource finder.
-	 *
-	 * @param resourceFinder the resource finder
-	 */
-	public void setResourceFinder(ResourceFinder resourceFinder) {
-		this.resourceFinder = resourceFinder;
 	}
 
 	/**
@@ -1221,16 +1141,12 @@ public abstract class DLContentLocalServiceBaseImpl
 	protected DLSyncService dlSyncService;
 	@BeanReference(type = DLSyncPersistence.class)
 	protected DLSyncPersistence dlSyncPersistence;
+	@BeanReference(type = DLSyncFinder.class)
+	protected DLSyncFinder dlSyncFinder;
 	@BeanReference(type = CounterLocalService.class)
 	protected CounterLocalService counterLocalService;
 	@BeanReference(type = ResourceLocalService.class)
 	protected ResourceLocalService resourceLocalService;
-	@BeanReference(type = ResourceService.class)
-	protected ResourceService resourceService;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
-	@BeanReference(type = ResourceFinder.class)
-	protected ResourceFinder resourceFinder;
 	@BeanReference(type = UserLocalService.class)
 	protected UserLocalService userLocalService;
 	@BeanReference(type = UserService.class)
@@ -1241,6 +1157,5 @@ public abstract class DLContentLocalServiceBaseImpl
 	protected UserFinder userFinder;
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
 	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
-	private static Log _log = LogFactoryUtil.getLog(DLContentLocalServiceBaseImpl.class);
 	private String _beanIdentifier;
 }

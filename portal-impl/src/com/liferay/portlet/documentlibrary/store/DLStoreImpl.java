@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.TermQuery;
@@ -45,7 +47,7 @@ import com.liferay.portlet.documentlibrary.FileNameException;
 import com.liferay.portlet.documentlibrary.FileSizeException;
 import com.liferay.portlet.documentlibrary.SourceFileNameException;
 import com.liferay.portlet.documentlibrary.antivirus.AntivirusScannerUtil;
-import com.liferay.portlet.documentlibrary.model.DLFileEntry;
+import com.liferay.portlet.documentlibrary.model.DLFileEntryConstants;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.permission.DLFolderPermission;
 
@@ -216,6 +218,8 @@ public class DLStoreImpl implements DLStore {
 	public File getFile(long companyId, long repositoryId, String fileName)
 		throws PortalException, SystemException {
 
+		validate(fileName, false);
+
 		return store.getFile(companyId, repositoryId, fileName);
 	}
 
@@ -224,12 +228,16 @@ public class DLStoreImpl implements DLStore {
 			String versionLabel)
 		throws PortalException, SystemException {
 
+		validate(fileName, false);
+
 		return store.getFile(companyId, repositoryId, fileName, versionLabel);
 	}
 
 	public byte[] getFileAsBytes(
 			long companyId, long repositoryId, String fileName)
 		throws PortalException, SystemException {
+
+		validate(fileName, false);
 
 		return store.getFileAsBytes(companyId, repositoryId, fileName);
 	}
@@ -239,6 +247,8 @@ public class DLStoreImpl implements DLStore {
 			String versionLabel)
 		throws PortalException, SystemException {
 
+		validate(fileName, false);
+
 		return store.getFileAsBytes(
 			companyId, repositoryId, fileName, versionLabel);
 	}
@@ -246,6 +256,8 @@ public class DLStoreImpl implements DLStore {
 	public InputStream getFileAsStream(
 			long companyId, long repositoryId, String fileName)
 		throws PortalException, SystemException {
+
+		validate(fileName, false);
 
 		return store.getFileAsStream(companyId, repositoryId, fileName);
 	}
@@ -255,6 +267,8 @@ public class DLStoreImpl implements DLStore {
 			String versionLabel)
 		throws PortalException, SystemException {
 
+		validate(fileName, false);
+
 		return store.getFileAsStream(
 			companyId, repositoryId, fileName, versionLabel);
 	}
@@ -263,11 +277,17 @@ public class DLStoreImpl implements DLStore {
 			long companyId, long repositoryId, String dirName)
 		throws PortalException, SystemException {
 
+		if (!isValidName(dirName)) {
+			throw new DirectoryNameException(dirName);
+		}
+
 		return store.getFileNames(companyId, repositoryId, dirName);
 	}
 
 	public long getFileSize(long companyId, long repositoryId, String fileName)
 		throws PortalException, SystemException {
+
+		validate(fileName, false);
 
 		return store.getFileSize(companyId, repositoryId, fileName);
 	}
@@ -276,11 +296,17 @@ public class DLStoreImpl implements DLStore {
 			long companyId, long repositoryId, String dirName)
 		throws PortalException, SystemException {
 
+		if (!isValidName(dirName)) {
+			throw new DirectoryNameException(dirName);
+		}
+
 		return store.hasDirectory(companyId, repositoryId, dirName);
 	}
 
 	public boolean hasFile(long companyId, long repositoryId, String fileName)
 		throws PortalException, SystemException {
+
+		validate(fileName, false);
 
 		return store.hasFile(companyId, repositoryId, fileName);
 	}
@@ -289,6 +315,8 @@ public class DLStoreImpl implements DLStore {
 			long companyId, long repositoryId, String fileName,
 			String versionLabel)
 		throws PortalException, SystemException {
+
+		validate(fileName, false);
 
 		return store.hasFile(companyId, repositoryId, fileName, versionLabel);
 	}
@@ -305,7 +333,19 @@ public class DLStoreImpl implements DLStore {
 		try {
 			SearchContext searchContext = new SearchContext();
 
-			searchContext.setSearchEngineId(SearchEngineUtil.SYSTEM_ENGINE_ID);
+			searchContext.setCompanyId(companyId);
+			searchContext.setEnd(end);
+			searchContext.setEntryClassNames(
+				new String[] {DLFileEntryConstants.getClassName()});
+			searchContext.setGroupIds(new long[] {groupId});
+
+			Indexer indexer = IndexerRegistryUtil.getIndexer(
+				DLFileEntryConstants.getClassName());
+
+			searchContext.setSearchEngineId(indexer.getSearchEngineId());
+
+			searchContext.setStart(start);
+			searchContext.setUserId(userId);
 
 			BooleanQuery contextQuery = BooleanQueryFactoryUtil.create(
 				searchContext);
@@ -372,9 +412,7 @@ public class DLStoreImpl implements DLStore {
 				fullQuery.add(searchQuery, BooleanClauseOccur.MUST);
 			}
 
-			return SearchEngineUtil.search(
-				companyId, new long[] {groupId}, userId,
-				DLFileEntry.class.getName(), fullQuery, start, end);
+			return SearchEngineUtil.search(searchContext, fullQuery);
 		}
 		catch (Exception e) {
 			throw new SystemException(e);
@@ -503,9 +541,9 @@ public class DLStoreImpl implements DLStore {
 			String[] fileExtensions = PrefsPropsUtil.getStringArray(
 				PropsKeys.DL_FILE_EXTENSIONS, StringPool.COMMA);
 
-			for (int i = 0; i < fileExtensions.length; i++) {
-				if (StringPool.STAR.equals(fileExtensions[i]) ||
-					StringUtil.endsWith(fileName, fileExtensions[i])) {
+			for (String fileExtension : fileExtensions) {
+				if (StringPool.STAR.equals(fileExtension) ||
+					StringUtil.endsWith(fileName, fileExtension)) {
 
 					validFileExtension = true;
 

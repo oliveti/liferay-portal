@@ -18,8 +18,6 @@ import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
-import com.liferay.portal.kernel.messaging.MessageBusException;
-import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.process.ClassPathUtil;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.process.ProcessException;
@@ -31,17 +29,18 @@ import com.liferay.portal.kernel.util.InstancePool;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.SystemEnv;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.kernel.xuggler.XugglerUtil;
 import com.liferay.portal.log.Log4jLogFactoryImpl;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileVersion;
-import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.documentlibrary.NoSuchFileEntryException;
-import com.liferay.portlet.documentlibrary.store.DLStoreUtil;
 import com.liferay.util.log4j.Log4JUtil;
 
 import java.io.File;
@@ -49,8 +48,10 @@ import java.io.InputStream;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.Future;
 
 import org.apache.commons.lang.time.StopWatch;
 
@@ -60,38 +61,33 @@ import org.apache.commons.lang.time.StopWatch;
  * @author Mika Koivisto
  */
 public class AudioProcessorImpl
-	extends DefaultPreviewableProcessor implements AudioProcessor {
+	extends DLPreviewableProcessor implements AudioProcessor {
 
 	public static AudioProcessorImpl getInstance() {
 		return _instance;
 	}
 
-	public void exportGeneratedFiles(
-			PortletDataContext portletDataContext, FileEntry fileEntry,
-			Element fileEntryElement)
+	public void generateAudio(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
 		throws Exception {
 
-		exportPreviews(portletDataContext, fileEntry, fileEntryElement);
-	}
-
-	public void generateAudio(FileVersion fileVersion) throws Exception {
-		_instance._generateAudio(fileVersion);
+		_instance._generateAudio(sourceFileVersion, destinationFileVersion);
 	}
 
 	public Set<String> getAudioMimeTypes() {
 		return _instance._audioMimeTypes;
 	}
 
-	public InputStream getPreviewAsStream(FileVersion fileVersion)
+	public InputStream getPreviewAsStream(FileVersion fileVersion, String type)
 		throws Exception {
 
-		return _instance.doGetPreviewAsStream(fileVersion);
+		return _instance.doGetPreviewAsStream(fileVersion, type);
 	}
 
-	public long getPreviewFileSize(FileVersion fileVersion)
+	public long getPreviewFileSize(FileVersion fileVersion, String type)
 		throws Exception {
 
-		return _instance.doGetPreviewFileSize(fileVersion);
+		return _instance.doGetPreviewFileSize(fileVersion, type);
 	}
 
 	public boolean hasAudio(FileVersion fileVersion) {
@@ -101,7 +97,7 @@ public class AudioProcessorImpl
 			hasAudio = _instance._hasAudio(fileVersion);
 
 			if (!hasAudio && _instance.isSupported(fileVersion)) {
-				_instance._queueGeneration(fileVersion);
+				_instance._queueGeneration(null, fileVersion);
 			}
 		}
 		catch (Exception e) {
@@ -109,15 +105,6 @@ public class AudioProcessorImpl
 		}
 
 		return hasAudio;
-	}
-
-	public void importGeneratedFiles(
-			PortletDataContext portletDataContext, FileEntry fileEntry,
-			FileEntry importedFileEntry, Element fileEntryElement)
-		throws Exception {
-
-		importPreviews(portletDataContext, fileEntry, importedFileEntry,
-			fileEntryElement);
 	}
 
 	public boolean isAudioSupported(FileVersion fileVersion) {
@@ -134,9 +121,7 @@ public class AudioProcessorImpl
 		}
 
 		try {
-			if (PrefsPropsUtil.getBoolean(
-					PropsKeys.XUGGLER_ENABLED, PropsValues.XUGGLER_ENABLED)) {
-
+			if (XugglerUtil.isEnabled()) {
 				return _audioMimeTypes.contains(mimeType);
 			}
 		}
@@ -146,26 +131,29 @@ public class AudioProcessorImpl
 		return false;
 	}
 
-	public void trigger(FileVersion fileVersion) {
-		_instance._queueGeneration(fileVersion);
+	public void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
+
+		_instance._queueGeneration(sourceFileVersion, destinationFileVersion);
 	}
 
-	protected void exportPreview(
+	@Override
+	protected void doExportGeneratedFiles(
 			PortletDataContext portletDataContext, FileEntry fileEntry,
-			Element fileEntryElement, String binPathName, String previewType)
+			Element fileEntryElement)
 		throws Exception {
 
-		String binPath = getBinPath(portletDataContext, fileEntry, previewType);
+		exportPreviews(portletDataContext, fileEntry, fileEntryElement);
+	}
 
-		fileEntryElement.addAttribute(binPathName, binPath);
+	@Override
+	protected void doImportGeneratedFiles(
+			PortletDataContext portletDataContext, FileEntry fileEntry,
+			FileEntry importedFileEntry, Element fileEntryElement)
+		throws Exception {
 
-		FileVersion fileVersion = fileEntry.getFileVersion();
-
-		InputStream is = doGetPreviewAsStream(fileVersion, previewType);
-
-		exportBinary(
-			portletDataContext, fileEntryElement, fileVersion, is, binPath,
-			binPathName);
+		importPreviews(
+			portletDataContext, fileEntry, importedFileEntry, fileEntryElement);
 	}
 
 	protected void exportPreviews(
@@ -175,20 +163,33 @@ public class AudioProcessorImpl
 
 		FileVersion fileVersion = fileEntry.getFileVersion();
 
-		if (!isSupported(fileVersion)) {
+		if (!isSupported(fileVersion) || !hasPreviews(fileVersion)) {
 			return;
 		}
 
 		if (!portletDataContext.isPerformDirectBinaryImport()) {
-			exportPreview(
-				portletDataContext, fileEntry, fileEntryElement,
-				"bin-path-audio-preview-" + PREVIEW_TYPE, PREVIEW_TYPE);
+			if ((_PREVIEW_TYPES.length == 0) || (_PREVIEW_TYPES.length > 2)) {
+				return;
+			}
+
+			for (String previewType : _PREVIEW_TYPES) {
+				if (previewType.equals("mp3") || previewType.equals("ogg")) {
+					exportPreview(
+						portletDataContext, fileEntry, fileEntryElement,
+						"audio", previewType);
+				}
+			}
 		}
 	}
 
 	@Override
 	protected String getPreviewType(FileVersion fileVersion) {
-		return PREVIEW_TYPE;
+		return _PREVIEW_TYPES[0];
+	}
+
+	@Override
+	protected String[] getPreviewTypes() {
+		return _PREVIEW_TYPES;
 	}
 
 	@Override
@@ -196,78 +197,95 @@ public class AudioProcessorImpl
 		return null;
 	}
 
-	protected void importPreviewFromLAR(
-			PortletDataContext portletDataContext, FileEntry fileEntry,
-			Element fileEntryElement, String binPathName, String previewType)
-		throws Exception {
-
-		FileVersion fileVersion = fileEntry.getFileVersion();
-
-		String previewFilePath = getPreviewFilePath(fileVersion, previewType);
-
-		String binPath = fileEntryElement.attributeValue(binPathName);
-
-		InputStream is = portletDataContext.getZipEntryAsInputStream(binPath);
-
-		addFileToStore(
-			portletDataContext.getCompanyId(), PREVIEW_PATH, previewFilePath,
-			is);
-	}
-
 	protected void importPreviews(
 			PortletDataContext portletDataContext, FileEntry fileEntry,
 			FileEntry importedFileEntry, Element fileEntryElement)
 		throws Exception {
 
-		if (!portletDataContext.isPerformDirectBinaryImport()) {
-			importPreviewFromLAR(
-				portletDataContext, importedFileEntry, fileEntryElement,
-				"bin-path-audio-preview-" + PREVIEW_TYPE, PREVIEW_TYPE);
+		if ((_PREVIEW_TYPES.length == 0) || (_PREVIEW_TYPES.length > 2)) {
+			return;
 		}
-		else {
-			FileVersion importedFileVersion =
-				importedFileEntry.getFileVersion();
 
-			String previewFilePath = getPreviewFilePath(
-				importedFileVersion, PREVIEW_TYPE);
-
-			FileVersion fileVersion = fileEntry.getFileVersion();
-
-			InputStream is = doGetPreviewAsStream(fileVersion, PREVIEW_TYPE);
-
-			addFileToStore(
-				portletDataContext.getCompanyId(), PREVIEW_PATH,
-				previewFilePath, is);
+		for (String previewType : _PREVIEW_TYPES) {
+			if (previewType.equals("mp3") || previewType.equals("ogg")) {
+				importPreview(
+					portletDataContext, fileEntry, importedFileEntry,
+					fileEntryElement, "audio", previewType);
+			}
 		}
 	}
 
 	private AudioProcessorImpl() {
+		boolean valid = true;
+
+		if ((_PREVIEW_TYPES.length == 0) || (_PREVIEW_TYPES.length > 2)) {
+			valid = false;
+		}
+		else {
+			for (String previewType : _PREVIEW_TYPES) {
+				if (!previewType.equals("mp3") && !previewType.equals("ogg")) {
+					valid = false;
+
+					break;
+				}
+			}
+		}
+
+		if (!valid && _log.isWarnEnabled()) {
+			StringBundler sb = new StringBundler(5);
+
+			sb.append("Liferay is incorrectly configured to generate video ");
+			sb.append("previews using video containers other than MP3 or ");
+			sb.append("OGG. Please change the property ");
+			sb.append(PropsKeys.DL_FILE_ENTRY_PREVIEW_AUDIO_CONTAINERS);
+			sb.append(" in portal-ext.properties.");
+
+			_log.warn(sb.toString());
+		}
+
 		FileUtil.mkdirs(PREVIEW_TMP_PATH);
 	}
 
-	private void _generateAudio(FileVersion fileVersion) throws Exception {
-		String tempFileId = DLUtil.getTempFileId(
-			fileVersion.getFileEntryId(), fileVersion.getVersion());
+	private void _generateAudio(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
+		throws Exception {
 
-		File audioTempFile = _getAudioTempFile(
-			tempFileId, fileVersion.getExtension());
-		File previewTempFile = getPreviewTempFile(tempFileId);
+		String tempFileId = DLUtil.getTempFileId(
+			destinationFileVersion.getFileEntryId(),
+			destinationFileVersion.getVersion());
+
+		File[] previewTempFiles = new File[_PREVIEW_TYPES.length];
+
+		for (int i = 0; i < _PREVIEW_TYPES.length; i++) {
+			previewTempFiles[i] = getPreviewTempFile(
+				tempFileId, _PREVIEW_TYPES[i]);
+		}
+
+		File audioTempFile = null;
+
+		InputStream inputStream = null;
 
 		try {
-			if (!PrefsPropsUtil.getBoolean(
-					PropsKeys.XUGGLER_ENABLED, PropsValues.XUGGLER_ENABLED) ||
-				_hasAudio(fileVersion)) {
+			if (sourceFileVersion != null) {
+				copy(sourceFileVersion, destinationFileVersion);
 
 				return;
 			}
 
-			if (_isGeneratePreview(fileVersion)) {
+			if (!XugglerUtil.isEnabled() || _hasAudio(destinationFileVersion)) {
+				return;
+			}
+
+			audioTempFile = FileUtil.createTempFile(
+				destinationFileVersion.getExtension());
+
+			if (!hasPreviews(destinationFileVersion)) {
 				File file = null;
 
-				if (fileVersion instanceof LiferayFileVersion) {
+				if (destinationFileVersion instanceof LiferayFileVersion) {
 					try {
 						LiferayFileVersion liferayFileVersion =
-							(LiferayFileVersion)fileVersion;
+							(LiferayFileVersion)destinationFileVersion;
 
 						file = liferayFileVersion.getFile(false);
 					}
@@ -276,7 +294,7 @@ public class AudioProcessorImpl
 				}
 
 				if (file == null) {
-					InputStream inputStream = fileVersion.getContentStream(
+					inputStream = destinationFileVersion.getContentStream(
 						false);
 
 					FileUtil.write(audioTempFile, inputStream);
@@ -285,7 +303,8 @@ public class AudioProcessorImpl
 				}
 
 				try {
-					_generateAudioXuggler(fileVersion, file, previewTempFile);
+					_generateAudioXuggler(
+						destinationFileVersion, file, previewTempFiles);
 				}
 				catch (Exception e) {
 					_log.error(e, e);
@@ -295,16 +314,26 @@ public class AudioProcessorImpl
 		catch (NoSuchFileEntryException nsfee) {
 		}
 		finally {
-			_fileVersionIds.remove(fileVersion.getFileVersionId());
+			StreamUtil.cleanUp(inputStream);
+
+			_fileVersionIds.remove(destinationFileVersion.getFileVersionId());
+
+			for (int i = 0; i < previewTempFiles.length; i++) {
+				FileUtil.delete(previewTempFiles[i]);
+			}
 
 			FileUtil.delete(audioTempFile);
-			FileUtil.delete(previewTempFile);
 		}
 	}
 
 	private void _generateAudioXuggler(
-			FileVersion fileVersion, File srcFile, File destFile)
+			FileVersion fileVersion, File srcFile, File destFile,
+			String containerType)
 		throws Exception {
+
+		if (hasPreview(fileVersion, containerType)) {
+			return;
+		}
 
 		StopWatch stopWatch = null;
 
@@ -321,15 +350,22 @@ public class AudioProcessorImpl
 						ServerDetector.getServerId(),
 						PropsUtil.get(PropsKeys.LIFERAY_HOME),
 						Log4JUtil.getCustomLogSettings(),
-						srcFile.getCanonicalPath(),
-						destFile.getCanonicalPath());
+						srcFile.getCanonicalPath(), destFile.getCanonicalPath(),
+						containerType,
+						PropsUtil.getProperties(
+							PropsKeys.DL_FILE_ENTRY_PREVIEW_AUDIO, false));
 
-				ProcessExecutor.execute(
-					processCallable, ClassPathUtil.getPortalClassPath());
+				Future<String> future = ProcessExecutor.execute(
+					ClassPathUtil.getPortalClassPath(), processCallable);
+
+				future.get();
 			}
 			else {
 				LiferayConverter liferayConverter = new LiferayAudioConverter(
-					srcFile.getCanonicalPath(), destFile.getCanonicalPath());
+					srcFile.getCanonicalPath(), destFile.getCanonicalPath(),
+					containerType,
+					PropsUtil.getProperties(
+						PropsKeys.DL_FILE_ENTRY_PREVIEW_AUDIO, false));
 
 				liferayConverter.convert();
 			}
@@ -340,38 +376,28 @@ public class AudioProcessorImpl
 
 		addFileToStore(
 			fileVersion.getCompanyId(), PREVIEW_PATH,
-			getPreviewFilePath(fileVersion), destFile);
+			getPreviewFilePath(fileVersion, containerType), destFile);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"Xuggler generated a preview audio for " +
-					fileVersion.getTitle() + " in " + stopWatch);
+				"Xuggler generated a " + containerType + " preview audio for " +
+					fileVersion.getFileVersionId() + " in " +
+						stopWatch.getTime() + "ms");
 		}
 	}
 
-	private File _getAudioTempFile(String tempFileId, String targetExtension) {
-		String audioTempFilePath = _getAudioTempFilePath(
-			tempFileId, targetExtension);
+	private void _generateAudioXuggler(
+		FileVersion fileVersion, File srcFile, File[] destFiles) {
 
-		return new File(audioTempFilePath);
-	}
-
-	private String _getAudioTempFilePath(
-		String tempFileId, String targetExtension) {
-
-		StringBundler sb = new StringBundler(5);
-
-		sb.append(PREVIEW_TMP_PATH);
-		sb.append(tempFileId);
-
-		if (PREVIEW_TYPE.equals(targetExtension)) {
-			sb.append("_tmp");
+		try {
+			for (int i = 0; i < destFiles.length; i++) {
+				_generateAudioXuggler(
+					fileVersion, srcFile, destFiles[i], _PREVIEW_TYPES[i]);
+			}
 		}
-
-		sb.append(StringPool.PERIOD);
-		sb.append(targetExtension);
-
-		return sb.toString();
+		catch (Exception e) {
+			_log.error(e, e);
+		}
 	}
 
 	private boolean _hasAudio(FileVersion fileVersion) throws Exception {
@@ -379,61 +405,31 @@ public class AudioProcessorImpl
 			return false;
 		}
 
-		boolean previewExists = DLStoreUtil.hasFile(
-			fileVersion.getCompanyId(), REPOSITORY_ID,
-			getPreviewFilePath(fileVersion));
-
-		if (PropsValues.DL_FILE_ENTRY_PREVIEW_ENABLED && previewExists) {
-			return true;
-		}
-
-		return false;
+		return hasPreviews(fileVersion);
 	}
 
-	private boolean _isGeneratePreview(FileVersion fileVersion)
-		throws Exception {
+	private void _queueGeneration(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
 
-		String previewFilePath = getPreviewFilePath(fileVersion);
-
-		if (PropsValues.DL_FILE_ENTRY_PREVIEW_ENABLED &&
-			!DLStoreUtil.hasFile(
-				fileVersion.getCompanyId(), REPOSITORY_ID, previewFilePath)) {
-
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-
-	private void _queueGeneration(FileVersion fileVersion) {
-		if (_fileVersionIds.contains(fileVersion.getFileVersionId()) ||
-			!isSupported(fileVersion)) {
+		if (_fileVersionIds.contains(
+				destinationFileVersion.getFileVersionId()) ||
+			!isSupported(destinationFileVersion)) {
 
 			return;
 		}
 
-		_fileVersionIds.add(fileVersion.getFileVersionId());
+		_fileVersionIds.add(destinationFileVersion.getFileVersionId());
 
-		if (PropsValues.DL_FILE_ENTRY_PROCESSORS_TRIGGER_SYNCHRONOUSLY) {
-			try {
-				MessageBusUtil.sendSynchronousMessage(
-					DestinationNames.DOCUMENT_LIBRARY_AUDIO_PROCESSOR,
-					fileVersion);
-			}
-			catch (MessageBusException mbe) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(mbe, mbe);
-				}
-			}
-		}
-		else {
-			MessageBusUtil.sendMessage(
-				DestinationNames.DOCUMENT_LIBRARY_AUDIO_PROCESSOR, fileVersion);
-		}
+		sendGenerationMessage(
+			DestinationNames.DOCUMENT_LIBRARY_AUDIO_PROCESSOR,
+			PropsValues.DL_FILE_ENTRY_PROCESSORS_TRIGGER_SYNCHRONOUSLY,
+			sourceFileVersion, destinationFileVersion);
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(AudioProcessorImpl.class);
+	private static final String[] _PREVIEW_TYPES =
+		PropsValues.DL_FILE_ENTRY_PREVIEW_AUDIO_CONTAINERS;
+
+	private static Log _log = LogFactoryUtil.getLog(AudioProcessor.class);
 
 	private static AudioProcessorImpl _instance = new AudioProcessorImpl();
 
@@ -451,16 +447,23 @@ public class AudioProcessorImpl
 		public LiferayAudioProcessCallable(
 			String serverId, String liferayHome,
 			Map<String, String> customLogSettings, String inputURL,
-			String outputURL) {
+			String outputURL, String audioContainer,
+			Properties audioProperties) {
 
 			_serverId = serverId;
 			_liferayHome = liferayHome;
 			_customLogSettings = customLogSettings;
 			_inputURL = inputURL;
 			_outputURL = outputURL;
+			_audioContainer = audioContainer;
+			_audioProperties = audioProperties;
 		}
 
 		public String call() throws ProcessException {
+			Properties systemProperties = System.getProperties();
+
+			SystemEnv.setProperties(systemProperties);
+
 			Class<?> clazz = getClass();
 
 			ClassLoader classLoader = clazz.getClassLoader();
@@ -471,7 +474,7 @@ public class AudioProcessorImpl
 
 			try {
 				LiferayConverter liferayConverter = new LiferayAudioConverter(
-					_inputURL, _outputURL);
+					_inputURL, _outputURL, _audioContainer, _audioProperties);
 
 				liferayConverter.convert();
 			}
@@ -482,6 +485,8 @@ public class AudioProcessorImpl
 			return StringPool.BLANK;
 		}
 
+		private String _audioContainer;
+		private Properties _audioProperties;
 		private Map<String, String> _customLogSettings;
 		private String _inputURL;
 		private String _liferayHome;

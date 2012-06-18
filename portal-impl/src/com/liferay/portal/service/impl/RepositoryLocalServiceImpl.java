@@ -68,6 +68,7 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 
 		Repository repository = repositoryPersistence.create(repositoryId);
 
+		repository.setUuid(serviceContext.getUuid());
 		repository.setGroupId(groupId);
 		repository.setCompanyId(user.getCompanyId());
 		repository.setUserId(user.getUserId());
@@ -131,7 +132,7 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 	}
 
 	@Override
-	public void deleteRepository(long repositoryId)
+	public Repository deleteRepository(long repositoryId)
 		throws PortalException, SystemException {
 
 		Repository repository = repositoryPersistence.fetchByPrimaryKey(
@@ -151,6 +152,8 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 
 			repositoryEntryPersistence.removeByRepositoryId(repositoryId);
 		}
+
+		return repository;
 	}
 
 	public LocalRepository getLocalRepositoryImpl(long repositoryId)
@@ -226,13 +229,6 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 			repositoryEntryId, localRepositoryImpl);
 
 		return localRepositoryImpl;
-	}
-
-	@Override
-	public Repository getRepository(long repositoryId)
-		throws PortalException, SystemException {
-
-		return repositoryPersistence.findByPrimaryKey(repositoryId);
 	}
 
 	public com.liferay.portal.kernel.repository.Repository getRepositoryImpl(

@@ -185,7 +185,7 @@ if (layout != null) {
 				<c:if test="<%= layoutSetBranches.size() > _MAX_INLINE_BRANCHES %>">
 					<li class="aui-state-default aui-tab go-to-layout-set-branches-tab">
 						<span class="aui-tab-content">
-							<liferay-ui:icon-menu align="left" cssClass="aui-tab-label layoutset-branches-menu" direction="down" extended="<%= false %>" icon='<%= themeDisplay.getPathThemeImages() + "/dock/staging.png" %>' message='<%= LanguageUtil.format(pageContext, "site-pages-variations-x", layoutSetBranches.size()) %>'>
+							<liferay-ui:icon-menu align="left" cssClass="aui-tab-label layoutset-branches-menu" direction="down" extended="<%= false %>" icon='<%= themeDisplay.getPathThemeImages() + "/common/staging.png" %>' message='<%= LanguageUtil.format(pageContext, "site-pages-variations-x", layoutSetBranches.size()) %>'>
 
 								<%
 								for (int i = 0; i < layoutSetBranches.size(); i++) {
@@ -219,7 +219,7 @@ if (layout != null) {
 					</li>
 				</c:if>
 
-				<portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>" var="layoutSetBranchesURL">
+				<portlet:renderURL var="layoutSetBranchesURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
 					<portlet:param name="struts_action" value="/staging_bar/view_layout_set_branches" />
 				</portlet:renderURL>
 
@@ -296,7 +296,7 @@ if (layout != null) {
 								<aui:input name="layoutSetBranchId" type="hidden" value="<%= layoutRevision.getLayoutSetBranchId() %>" />
 								<aui:input name="updateRecentLayoutRevisionId" type="hidden" value="<%= false %>" />
 
-								<portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>" var="layoutBranchesURL">
+								<portlet:renderURL var="layoutBranchesURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
 									<portlet:param name="struts_action" value="/staging_bar/view_layout_branches" />
 									<portlet:param name="layoutSetBranchId" value="<%= String.valueOf(layoutSetBranch.getLayoutSetBranchId()) %>" />
 								</portlet:renderURL>
@@ -551,7 +551,7 @@ if (layout != null) {
 
 												if (Validator.isNotNull(lastImportUserUuid)) {
 													try {
-														User publisher = UserLocalServiceUtil.getUserByUuid(lastImportUserUuid);
+														User publisher = UserLocalServiceUtil.getUserByUuidAndCompanyId(lastImportUserUuid, company.getCompanyId());
 
 														publisherName = publisher.getFullName();
 													}

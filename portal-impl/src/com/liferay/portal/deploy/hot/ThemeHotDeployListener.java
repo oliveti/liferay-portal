@@ -21,7 +21,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.FileTimestampUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.ThemeLocalServiceUtil;
 import com.liferay.portal.velocity.LiferayResourceCacheUtil;
 
@@ -83,7 +83,9 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 			return;
 		}
 
-		logRegistration(servletContextName);
+		if (_log.isInfoEnabled()) {
+			_log.info("Registering themes for " + servletContextName);
+		}
 
 		List<String> themeIds = ThemeLocalServiceUtil.init(
 			servletContextName, servletContext, null, true, xmls,
@@ -91,7 +93,7 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 
 		FileTimestampUtil.reset();
 
-		_vars.put(servletContextName, themeIds);
+		_themeIds.put(servletContextName, themeIds);
 
 		if (_log.isInfoEnabled()) {
 			if (themeIds.size() == 1) {
@@ -118,7 +120,7 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 			_log.debug("Invoking undeploy for " + servletContextName);
 		}
 
-		List<String> themeIds = _vars.remove(servletContextName);
+		List<String> themeIds = _themeIds.remove(servletContextName);
 
 		if (themeIds != null) {
 			if (_log.isInfoEnabled()) {
@@ -138,18 +140,17 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 
 		// LEP-2057
 
-		Thread currentThread = Thread.currentThread();
-
-		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+		ClassLoader contextClassLoader =
+			PACLClassLoaderUtil.getContextClassLoader();
 
 		try {
-			currentThread.setContextClassLoader(
-				PortalClassLoaderUtil.getClassLoader());
+			PACLClassLoaderUtil.setContextClassLoader(
+				PACLClassLoaderUtil.getPortalClassLoader());
 
 			LiferayResourceCacheUtil.clear();
 		}
 		finally {
-			currentThread.setContextClassLoader(contextClassLoader);
+			PACLClassLoaderUtil.setContextClassLoader(contextClassLoader);
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -165,16 +166,10 @@ public class ThemeHotDeployListener extends BaseHotDeployListener {
 		}
 	}
 
-	protected void logRegistration(String servletContextName) {
-		if (_log.isInfoEnabled()) {
-			_log.info("Registering themes for " + servletContextName);
-		}
-	}
-
 	private static Log _log = LogFactoryUtil.getLog(
 		ThemeHotDeployListener.class);
 
-	private static Map<String, List<String>> _vars =
+	private static Map<String, List<String>> _themeIds =
 		new HashMap<String, List<String>>();
 
 }

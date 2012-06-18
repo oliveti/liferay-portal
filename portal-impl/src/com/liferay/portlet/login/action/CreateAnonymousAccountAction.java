@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.model.Company;
 import com.liferay.portal.model.User;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.service.ServiceContext;
@@ -78,9 +79,9 @@ public class CreateAnonymousAccountAction extends PortletAction {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String portletName = portletConfig.getPortletName();
+		Company company = themeDisplay.getCompany();
 
-		if (!portletName.equals(PortletKeys.FAST_LOGIN)) {
+		if (!company.isStrangers()) {
 			throw new PrincipalException();
 		}
 
@@ -132,7 +133,7 @@ public class CreateAnonymousAccountAction extends PortletAction {
 					themeDisplay.getCompanyId(), emailAddress);
 
 				if (user.getStatus() != WorkflowConstants.STATUS_INCOMPLETE) {
-					SessionErrors.add(actionRequest, e.getClass().getName());
+					SessionErrors.add(actionRequest, e.getClass());
 				}
 				else {
 					sendRedirect(
@@ -149,7 +150,7 @@ public class CreateAnonymousAccountAction extends PortletAction {
 					 e instanceof ReservedUserEmailAddressException ||
 					 e instanceof UserEmailAddressException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName(), e);
+				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
 			else {
 				_log.error("Unable to create anonymous account", e);
@@ -168,9 +169,9 @@ public class CreateAnonymousAccountAction extends PortletAction {
 		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String portletName = portletConfig.getPortletName();
+		Company company = themeDisplay.getCompany();
 
-		if (!portletName.equals(PortletKeys.FAST_LOGIN)) {
+		if (!company.isStrangers()) {
 			return mapping.findForward("portlet.login.login");
 		}
 
@@ -238,6 +239,18 @@ public class CreateAnonymousAccountAction extends PortletAction {
 		SessionMessages.add(request, "user_added", user.getEmailAddress());
 		SessionMessages.add(
 			request, "user_added_password", user.getPasswordUnencrypted());
+	}
+
+	@Override
+	protected void addSuccessMessage(
+		ActionRequest actionRequest, ActionResponse actionResponse) {
+
+		String portletId = (String)actionRequest.getAttribute(
+			WebKeys.PORTLET_ID);
+
+		if (!portletId.equals(PortletKeys.FAST_LOGIN)) {
+			super.addSuccessMessage(actionRequest, actionResponse);
+		}
 	}
 
 	@Override

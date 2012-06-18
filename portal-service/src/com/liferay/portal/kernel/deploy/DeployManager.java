@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.deploy;
 
+import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 
-import java.io.File;
-
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Jonathan Potter
@@ -27,9 +27,8 @@ import java.util.List;
  */
 public interface DeployManager {
 
-	public void deploy(File file) throws Exception;
-
-	public void deploy(File file, String context) throws Exception;
+	public void deploy(AutoDeploymentContext autoDeploymentContext)
+		throws Exception;
 
 	public String getDeployDir() throws Exception;
 
@@ -40,6 +39,11 @@ public interface DeployManager {
 	public List<PluginPackage> getInstalledPluginPackages();
 
 	public boolean isDeployed(String context);
+
+	public PluginPackage readPluginPackageProperties(
+		String displayName, Properties properties);
+
+	public PluginPackage readPluginPackageXml(String xml) throws Exception;
 
 	public void redeploy(String context) throws Exception;
 

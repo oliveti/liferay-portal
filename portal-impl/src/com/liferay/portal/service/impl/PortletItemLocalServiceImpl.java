@@ -64,13 +64,6 @@ public class PortletItemLocalServiceImpl
 		return portletItem;
 	}
 
-	@Override
-	public PortletItem getPortletItem(long portletItemId)
-		throws PortalException, SystemException {
-
-		return portletItemPersistence.findByPrimaryKey(portletItemId);
-	}
-
 	public PortletItem getPortletItem(
 			long groupId, String name, String portletId, String className)
 		throws PortalException, SystemException {
@@ -118,7 +111,7 @@ public class PortletItemLocalServiceImpl
 
 			portletItemPersistence.update(portletItem, false);
 		}
-		catch (NoSuchPortletItemException nsste) {
+		catch (NoSuchPortletItemException nspie) {
 			portletItem = addPortletItem(
 				userId, groupId, name, portletId,
 				PortletPreferences.class.getName());

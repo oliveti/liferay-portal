@@ -125,24 +125,44 @@ public class PasswordPolicyLocalServiceImpl
 
 			addPasswordPolicy(
 				defaultUserId, true, defaultPasswordPolicyName,
-				defaultPasswordPolicyName, true, true, 0, false, true, 0, 6, 0,
-				1, 0, 1, false, 6, false, 8640000, 86400, 0, false, 3, 0, 600,
-				86400);
+				defaultPasswordPolicyName,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_CHANGEABLE,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_CHANGE_REQUIRED,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_AGE,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_CHECK_SYNTAX,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_ALLOW_DICTIONARY_WORDS,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_ALPHANUMERIC,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_LENGTH,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_LOWERCASE,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_NUMBERS,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_SYMBOLS,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MIN_UPPERCASE,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_HISTORY,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_HISTORY_COUNT,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_EXPIREABLE,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MAX_AGE,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_WARNING_TIME,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_GRACE_LIMIT,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_LOCKOUT,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_MAX_FAILURE,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_LOCKOUT_DURATION,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_RESET_FAILURE_COUNT,
+				PropsValues.PASSWORDS_DEFAULT_POLICY_RESET_TICKET_MAX_AGE);
 		}
 	}
 
 	@Override
-	public void deletePasswordPolicy(long passwordPolicyId)
+	public PasswordPolicy deletePasswordPolicy(long passwordPolicyId)
 		throws PortalException, SystemException {
 
 		PasswordPolicy passwordPolicy =
 			passwordPolicyPersistence.findByPrimaryKey(passwordPolicyId);
 
-		deletePasswordPolicy(passwordPolicy);
+		return deletePasswordPolicy(passwordPolicy);
 	}
 
 	@Override
-	public void deletePasswordPolicy(PasswordPolicy passwordPolicy)
+	public PasswordPolicy deletePasswordPolicy(PasswordPolicy passwordPolicy)
 		throws PortalException, SystemException {
 
 		if (passwordPolicy.isDefaultPolicy()) {
@@ -163,7 +183,7 @@ public class PasswordPolicyLocalServiceImpl
 
 		// Password policy
 
-		passwordPolicyPersistence.remove(passwordPolicy);
+		return passwordPolicyPersistence.remove(passwordPolicy);
 	}
 
 	public PasswordPolicy getDefaultPasswordPolicy(long companyId)
@@ -174,13 +194,6 @@ public class PasswordPolicyLocalServiceImpl
 		}
 
 		return passwordPolicyPersistence.findByC_DP(companyId, true);
-	}
-
-	@Override
-	public PasswordPolicy getPasswordPolicy(long passwordPolicyId)
-		throws PortalException, SystemException {
-
-		return passwordPolicyPersistence.findByPrimaryKey(passwordPolicyId);
 	}
 
 	/**
@@ -274,9 +287,7 @@ public class PasswordPolicyLocalServiceImpl
 		return passwordPolicyFinder.findByC_N(companyId, name, start, end, obc);
 	}
 
-	public int searchCount(long companyId, String name)
-		throws SystemException {
-
+	public int searchCount(long companyId, String name) throws SystemException {
 		return passwordPolicyFinder.countByC_N(companyId, name);
 	}
 
@@ -337,7 +348,7 @@ public class PasswordPolicyLocalServiceImpl
 	protected void validate(long passwordPolicyId, long companyId, String name)
 		throws PortalException, SystemException {
 
-		if ((Validator.isNull(name)) || (Validator.isNumber(name)) ||
+		if (Validator.isNull(name) || Validator.isNumber(name) ||
 			(name.indexOf(CharPool.COMMA) != -1) ||
 			(name.indexOf(CharPool.STAR) != -1)) {
 

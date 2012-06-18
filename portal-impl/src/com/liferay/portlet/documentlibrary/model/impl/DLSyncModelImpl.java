@@ -37,7 +37,9 @@ import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The base model implementation for the DLSync service. Represents a row in the &quot;DLSync&quot; database table, with each column mapped to a property of this class.
@@ -71,11 +73,12 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 			{ "repositoryId", Types.BIGINT },
 			{ "parentFolderId", Types.BIGINT },
 			{ "name", Types.VARCHAR },
+			{ "description", Types.VARCHAR },
 			{ "event", Types.VARCHAR },
 			{ "type_", Types.VARCHAR },
 			{ "version", Types.VARCHAR }
 		};
-	public static final String TABLE_SQL_CREATE = "create table DLSync (syncId LONG not null primary key,companyId LONG,createDate DATE null,modifiedDate DATE null,fileId LONG,fileUuid VARCHAR(75) null,repositoryId LONG,parentFolderId LONG,name VARCHAR(255) null,event VARCHAR(75) null,type_ VARCHAR(75) null,version VARCHAR(75) null)";
+	public static final String TABLE_SQL_CREATE = "create table DLSync (syncId LONG not null primary key,companyId LONG,createDate DATE null,modifiedDate DATE null,fileId LONG,fileUuid VARCHAR(75) null,repositoryId LONG,parentFolderId LONG,name VARCHAR(255) null,description STRING null,event VARCHAR(75) null,type_ VARCHAR(75) null,version VARCHAR(75) null)";
 	public static final String TABLE_SQL_DROP = "drop table DLSync";
 	public static final String ORDER_BY_JPQL = " ORDER BY dlSync.companyId ASC, dlSync.repositoryId ASC, dlSync.modifiedDate ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY DLSync.companyId ASC, DLSync.repositoryId ASC, DLSync.modifiedDate ASC";
@@ -114,6 +117,7 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 		model.setRepositoryId(soapModel.getRepositoryId());
 		model.setParentFolderId(soapModel.getParentFolderId());
 		model.setName(soapModel.getName());
+		model.setDescription(soapModel.getDescription());
 		model.setEvent(soapModel.getEvent());
 		model.setType(soapModel.getType());
 		model.setVersion(soapModel.getVersion());
@@ -165,6 +169,108 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 
 	public String getModelClassName() {
 		return DLSync.class.getName();
+	}
+
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("syncId", getSyncId());
+		attributes.put("companyId", getCompanyId());
+		attributes.put("createDate", getCreateDate());
+		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("fileId", getFileId());
+		attributes.put("fileUuid", getFileUuid());
+		attributes.put("repositoryId", getRepositoryId());
+		attributes.put("parentFolderId", getParentFolderId());
+		attributes.put("name", getName());
+		attributes.put("description", getDescription());
+		attributes.put("event", getEvent());
+		attributes.put("type", getType());
+		attributes.put("version", getVersion());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		Long syncId = (Long)attributes.get("syncId");
+
+		if (syncId != null) {
+			setSyncId(syncId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
+		}
+
+		Date createDate = (Date)attributes.get("createDate");
+
+		if (createDate != null) {
+			setCreateDate(createDate);
+		}
+
+		Date modifiedDate = (Date)attributes.get("modifiedDate");
+
+		if (modifiedDate != null) {
+			setModifiedDate(modifiedDate);
+		}
+
+		Long fileId = (Long)attributes.get("fileId");
+
+		if (fileId != null) {
+			setFileId(fileId);
+		}
+
+		String fileUuid = (String)attributes.get("fileUuid");
+
+		if (fileUuid != null) {
+			setFileUuid(fileUuid);
+		}
+
+		Long repositoryId = (Long)attributes.get("repositoryId");
+
+		if (repositoryId != null) {
+			setRepositoryId(repositoryId);
+		}
+
+		Long parentFolderId = (Long)attributes.get("parentFolderId");
+
+		if (parentFolderId != null) {
+			setParentFolderId(parentFolderId);
+		}
+
+		String name = (String)attributes.get("name");
+
+		if (name != null) {
+			setName(name);
+		}
+
+		String description = (String)attributes.get("description");
+
+		if (description != null) {
+			setDescription(description);
+		}
+
+		String event = (String)attributes.get("event");
+
+		if (event != null) {
+			setEvent(event);
+		}
+
+		String type = (String)attributes.get("type");
+
+		if (type != null) {
+			setType(type);
+		}
+
+		String version = (String)attributes.get("version");
+
+		if (version != null) {
+			setVersion(version);
+		}
 	}
 
 	@JSON
@@ -305,6 +411,20 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 	}
 
 	@JSON
+	public String getDescription() {
+		if (_description == null) {
+			return StringPool.BLANK;
+		}
+		else {
+			return _description;
+		}
+	}
+
+	public void setDescription(String description) {
+		_description = description;
+	}
+
+	@JSON
 	public String getEvent() {
 		if (_event == null) {
 			return StringPool.BLANK;
@@ -363,17 +483,15 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(getCompanyId(),
-					DLSync.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(getCompanyId(),
+			DLSync.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -389,6 +507,7 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 		dlSyncImpl.setRepositoryId(getRepositoryId());
 		dlSyncImpl.setParentFolderId(getParentFolderId());
 		dlSyncImpl.setName(getName());
+		dlSyncImpl.setDescription(getDescription());
 		dlSyncImpl.setEvent(getEvent());
 		dlSyncImpl.setType(getType());
 		dlSyncImpl.setVersion(getVersion());
@@ -537,6 +656,14 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 			dlSyncCacheModel.name = null;
 		}
 
+		dlSyncCacheModel.description = getDescription();
+
+		String description = dlSyncCacheModel.description;
+
+		if ((description != null) && (description.length() == 0)) {
+			dlSyncCacheModel.description = null;
+		}
+
 		dlSyncCacheModel.event = getEvent();
 
 		String event = dlSyncCacheModel.event;
@@ -566,7 +693,7 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(25);
+		StringBundler sb = new StringBundler(27);
 
 		sb.append("{syncId=");
 		sb.append(getSyncId());
@@ -586,6 +713,8 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 		sb.append(getParentFolderId());
 		sb.append(", name=");
 		sb.append(getName());
+		sb.append(", description=");
+		sb.append(getDescription());
 		sb.append(", event=");
 		sb.append(getEvent());
 		sb.append(", type=");
@@ -598,7 +727,7 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 	}
 
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(40);
+		StringBundler sb = new StringBundler(43);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.portlet.documentlibrary.model.DLSync");
@@ -641,6 +770,10 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 		sb.append(getName());
 		sb.append("]]></column-value></column>");
 		sb.append(
+			"<column><column-name>description</column-name><column-value><![CDATA[");
+		sb.append(getDescription());
+		sb.append("]]></column-value></column>");
+		sb.append(
 			"<column><column-name>event</column-name><column-value><![CDATA[");
 		sb.append(getEvent());
 		sb.append("]]></column-value></column>");
@@ -678,10 +811,10 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 	private boolean _setOriginalRepositoryId;
 	private long _parentFolderId;
 	private String _name;
+	private String _description;
 	private String _event;
 	private String _type;
 	private String _version;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private DLSync _escapedModelProxy;
 }

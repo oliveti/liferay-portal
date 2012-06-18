@@ -31,7 +31,7 @@ public class TearDownPermissionsTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isVisible("link=Control Panel")) {
+				if (selenium.isElementPresent("link=Control Panel")) {
 					break;
 				}
 			}
@@ -55,8 +55,8 @@ public class TearDownPermissionsTest extends BaseTestCase {
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
 		assertEquals(RuntimeVariables.replace("Organization User"),
-			selenium.getText("//tr[6]/td[1]/a"));
-		selenium.clickAt("//tr[6]/td[1]/a",
+			selenium.getText("//tr[contains(.,'Organization User')]/td[1]/a"));
+		selenium.clickAt("//tr[contains(.,'Organization User')]/td[1]/a",
 			RuntimeVariables.replace("Organization User"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();

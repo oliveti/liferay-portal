@@ -29,18 +29,27 @@ DDMTemplate template = (DDMTemplate)request.getAttribute(WebKeys.DYNAMIC_DATA_MA
 long templateId = BeanParamUtil.getLong(template, request, "templateId");
 
 long groupId = BeanParamUtil.getLong(template, request, "groupId", scopeGroupId);
+long classNameId = BeanParamUtil.getLong(template, request, "classNameId");
+long classPK = BeanParamUtil.getLong(template, request, "classPK");
 
 DDMStructure structure = (DDMStructure)request.getAttribute(WebKeys.DYNAMIC_DATA_MAPPING_STRUCTURE);
 
 if ((structure == null) && (template != null)) {
-	structure = template.getStructure();
+	structure = DDMTemplateHelperUtil.fetchStructure(template);
 }
-
-long structureId = BeanParamUtil.getLong(structure, request, "structureId");
 
 String mode = BeanParamUtil.getString(template, request, "mode", "create");
 String type = BeanParamUtil.getString(template, request, "type", "detail");
 String script = BeanParamUtil.getString(template, request, "script");
+
+if (Validator.isNull(script)) {
+	if (classNameId == PortalUtil.getClassNameId(AssetEntry.class)) {
+		script = ContentUtil.get(PropsUtil.get(PropsKeys.ASSET_PUBLISHER_DISPLAY_STYLES_TEMPLATE_CONTENT));
+	}
+	else if (!type.equals("detail")) {
+		script = ContentUtil.get(PropsUtil.get(PropsKeys.DYNAMIC_DATA_MAPPING_TEMPLATE_LANGUAGE_CONTENT, new Filter(DDMTemplateConstants.LANG_TYPE_VM)));
+	}
+}
 
 JSONArray scriptJSONArray = null;
 
@@ -65,7 +74,8 @@ if (Validator.isNotNull(structureAvailableFields)) {
 	<aui:input name="portletResource" type="hidden" value="<%= portletResource %>" />
 	<aui:input name="templateId" type="hidden" value="<%= templateId %>" />
 	<aui:input name="groupId" type="hidden" value="<%= groupId %>" />
-	<aui:input name="structureId" type="hidden" value="<%= structureId %>" />
+	<aui:input name="classNameId" type="hidden" value="<%= classNameId %>" />
+	<aui:input name="classPK" type="hidden" value="<%= classPK %>" />
 	<aui:input name="type" type="hidden" value="<%= type %>" />
 	<aui:input name="structureAvailableFields" type="hidden" value="<%= structureAvailableFields %>" />
 	<aui:input name="saveCallback" type="hidden" value="<%= saveCallback %>" />
@@ -84,6 +94,12 @@ if (Validator.isNotNull(structureAvailableFields)) {
 		else {
 			title = LanguageUtil.format(pageContext, "new-template-for-structure-x", structure.getName(locale), false);
 		}
+	}
+	else if (template != null) {
+		title = template.getName(locale);
+	}
+	else {
+		title = LanguageUtil.get(pageContext, "new-display-style");
 	}
 	%>
 

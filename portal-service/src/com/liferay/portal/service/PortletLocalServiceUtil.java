@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -65,24 +64,31 @@ public class PortletLocalServiceUtil {
 	* Deletes the portlet with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param id the primary key of the portlet
+	* @return the portlet that was removed
 	* @throws PortalException if a portlet with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deletePortlet(long id)
+	public static com.liferay.portal.model.Portlet deletePortlet(long id)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deletePortlet(id);
+		return getService().deletePortlet(id);
 	}
 
 	/**
 	* Deletes the portlet from the database. Also notifies the appropriate model listeners.
 	*
 	* @param portlet the portlet
+	* @return the portlet that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deletePortlet(com.liferay.portal.model.Portlet portlet)
+	public static com.liferay.portal.model.Portlet deletePortlet(
+		com.liferay.portal.model.Portlet portlet)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deletePortlet(portlet);
+		return getService().deletePortlet(portlet);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -427,20 +433,15 @@ public class PortletLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(PortletLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(PortletLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(PortletLocalService service) {
-		MethodCache.remove(PortletLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(PortletLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(PortletLocalService.class);
 	}
 
 	private static PortletLocalService _service;

@@ -67,10 +67,6 @@ request.setAttribute("view.jsp-repositoryId", String.valueOf(repositoryId));
 			<liferay-util:include page="/html/portlet/document_library/display_style_buttons.jsp" />
 		</span>
 
-		<span id="<portlet:namespace />fileEntrySearch">
-			<liferay-util:include page="/html/portlet/document_library/file_entry_search.jsp" />
-		</span>
-
 		<span id="<portlet:namespace />sortButton">
 			<liferay-util:include page="/html/portlet/document_library/sort_button.jsp" />
 		</span>
@@ -81,7 +77,7 @@ request.setAttribute("view.jsp-repositoryId", String.valueOf(repositoryId));
 			</div>
 
 			<div class="portal-breadcrumb">
-				<liferay-ui:breadcrumb showCurrentGroup="<%= layout.isTypeControlPanel() %>" showParentGroups="<%= false %>" showCurrentPortlet="<%= layout.isTypeControlPanel() %>" showGuestGroup="<%= !layout.isTypeControlPanel() %>" showLayout="<%= true %>" showPortletBreadcrumb="<%= true %>" />
+				<liferay-ui:breadcrumb showCurrentGroup="<%= layout.isTypeControlPanel() %>" showCurrentPortlet="<%= layout.isTypeControlPanel() %>" showGuestGroup="<%= !layout.isTypeControlPanel() %>" showLayout="<%= true %>" showParentGroups="<%= false %>" showPortletBreadcrumb="<%= true %>" />
 			</div>
 		</span>
 	</c:if>

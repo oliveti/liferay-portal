@@ -46,6 +46,8 @@ public class LayoutBranchLocalServiceImpl
 		LayoutSetBranch layoutSetBranch =
 			layoutSetBranchPersistence.findByPrimaryKey(layoutSetBranchId);
 
+		validate(0, layoutSetBranchId, plid, name);
+
 		long layoutBranchId = counterLocalService.increment();
 
 		LayoutBranch layoutBranch = layoutBranchPersistence.create(
@@ -74,10 +76,6 @@ public class LayoutBranchLocalServiceImpl
 		LayoutRevision layoutRevision =
 			layoutRevisionPersistence.findByPrimaryKey(layoutRevisionId);
 
-		validate(
-			0, layoutRevision.getLayoutSetBranchId(), layoutRevision.getPlid(),
-			name);
-
 		LayoutBranch layoutBranch = addLayoutBranch(
 			layoutRevision.getLayoutSetBranchId(), layoutRevision.getPlid(),
 			name, description, master, serviceContext);
@@ -100,7 +98,7 @@ public class LayoutBranchLocalServiceImpl
 	}
 
 	@Override
-	public void deleteLayoutBranch(long layoutBranchId)
+	public LayoutBranch deleteLayoutBranch(long layoutBranchId)
 		throws PortalException, SystemException {
 
 		LayoutBranch layoutBranch = layoutBranchPersistence.findByPrimaryKey(
@@ -110,7 +108,7 @@ public class LayoutBranchLocalServiceImpl
 			layoutBranch.getLayoutSetBranchId(), layoutBranchId,
 			layoutBranch.getPlid());
 
-		layoutBranchLocalService.deleteLayoutBranch(layoutBranch);
+		return layoutBranchLocalService.deleteLayoutBranch(layoutBranch);
 	}
 
 	public void deleteLayoutSetBranchLayoutBranches(long layoutSetBranchId)
@@ -122,13 +120,6 @@ public class LayoutBranchLocalServiceImpl
 		for (LayoutBranch layoutBranch : layoutBranches) {
 			deleteLayoutBranch(layoutBranch.getLayoutBranchId());
 		}
-	}
-
-	@Override
-	public LayoutBranch getLayoutBranch(long layoutBranchId)
-		throws PortalException, SystemException {
-
-		return layoutBranchPersistence.findByPrimaryKey(layoutBranchId);
 	}
 
 	public List<LayoutBranch> getLayoutBranches(
@@ -198,7 +189,7 @@ public class LayoutBranchLocalServiceImpl
 					LayoutBranchNameException.DUPLICATE);
 			}
 		}
-		catch (NoSuchLayoutBranchException nsbe) {
+		catch (NoSuchLayoutBranchException nslbe) {
 		}
 	}
 

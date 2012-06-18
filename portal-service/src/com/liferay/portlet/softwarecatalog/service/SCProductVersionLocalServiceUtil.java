@@ -15,7 +15,6 @@
 package com.liferay.portlet.softwarecatalog.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class SCProductVersionLocalServiceUtil {
 	* Deletes the s c product version with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param productVersionId the primary key of the s c product version
+	* @return the s c product version that was removed
 	* @throws PortalException if a s c product version with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSCProductVersion(long productVersionId)
+	public static com.liferay.portlet.softwarecatalog.model.SCProductVersion deleteSCProductVersion(
+		long productVersionId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSCProductVersion(productVersionId);
+		return getService().deleteSCProductVersion(productVersionId);
 	}
 
 	/**
 	* Deletes the s c product version from the database. Also notifies the appropriate model listeners.
 	*
 	* @param scProductVersion the s c product version
+	* @return the s c product version that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSCProductVersion(
+	public static com.liferay.portlet.softwarecatalog.model.SCProductVersion deleteSCProductVersion(
 		com.liferay.portlet.softwarecatalog.model.SCProductVersion scProductVersion)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSCProductVersion(scProductVersion);
+		return getService().deleteSCProductVersion(scProductVersion);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -338,20 +344,15 @@ public class SCProductVersionLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(SCProductVersionLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(SCProductVersionLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(SCProductVersionLocalService service) {
-		MethodCache.remove(SCProductVersionLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(SCProductVersionLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(SCProductVersionLocalService.class);
 	}
 
 	private static SCProductVersionLocalService _service;

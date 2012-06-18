@@ -550,12 +550,14 @@ public class PollsVoteUtil {
 	*
 	* @param questionId the question ID
 	* @param userId the user ID
+	* @return the polls vote that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByQ_U(long questionId, long userId)
+	public static com.liferay.portlet.polls.model.PollsVote removeByQ_U(
+		long questionId, long userId)
 		throws com.liferay.portal.kernel.exception.SystemException,
 			com.liferay.portlet.polls.NoSuchVoteException {
-		getPersistence().removeByQ_U(questionId, userId);
+		return getPersistence().removeByQ_U(questionId, userId);
 	}
 
 	/**
@@ -627,10 +629,10 @@ public class PollsVoteUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(PollsVotePersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(PollsVoteUtil.class, "_persistence");
 	}
 
 	private static PollsVotePersistence _persistence;

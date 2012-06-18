@@ -989,13 +989,14 @@ public class SocialActivityAchievementUtil {
 	* @param groupId the group ID
 	* @param userId the user ID
 	* @param name the name
+	* @return the social activity achievement that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByG_U_N(long groupId, long userId,
-		java.lang.String name)
+	public static com.liferay.portlet.social.model.SocialActivityAchievement removeByG_U_N(
+		long groupId, long userId, java.lang.String name)
 		throws com.liferay.portal.kernel.exception.SystemException,
 			com.liferay.portlet.social.NoSuchActivityAchievementException {
-		getPersistence().removeByG_U_N(groupId, userId, name);
+		return getPersistence().removeByG_U_N(groupId, userId, name);
 	}
 
 	/**
@@ -1125,11 +1126,10 @@ public class SocialActivityAchievementUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(SocialActivityAchievementPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(SocialActivityAchievementUtil.class,
-			"_persistence");
 	}
 
 	private static SocialActivityAchievementPersistence _persistence;

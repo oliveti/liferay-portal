@@ -34,8 +34,7 @@ import net.sf.ehcache.Element;
 /**
  * @author Shuyang Zhou
  */
-public class ClusterLinkPortalCacheClusterListener
-	extends BaseMessageListener {
+public class ClusterLinkPortalCacheClusterListener extends BaseMessageListener {
 
 	public ClusterLinkPortalCacheClusterListener() {
 		LiferayEhcacheRegionFactory liferayEhcacheRegionFactory =
@@ -76,7 +75,7 @@ public class ClusterLinkPortalCacheClusterListener
 				portalCacheClusterEvent.getEventType();
 
 			if (portalCacheClusterEventType.equals(
-					PortalCacheClusterEventType.REMOVEALL)) {
+					PortalCacheClusterEventType.REMOVE_ALL)) {
 
 				ehcache.removeAll(true);
 			}

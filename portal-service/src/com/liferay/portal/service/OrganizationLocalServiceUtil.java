@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,27 +65,34 @@ public class OrganizationLocalServiceUtil {
 	* Deletes the organization with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param organizationId the primary key of the organization
+	* @return the organization that was removed
 	* @throws PortalException if a organization with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteOrganization(long organizationId)
+	public static com.liferay.portal.model.Organization deleteOrganization(
+		long organizationId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteOrganization(organizationId);
+		return getService().deleteOrganization(organizationId);
 	}
 
 	/**
 	* Deletes the organization from the database. Also notifies the appropriate model listeners.
 	*
 	* @param organization the organization
+	* @return the organization that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteOrganization(
+	public static com.liferay.portal.model.Organization deleteOrganization(
 		com.liferay.portal.model.Organization organization)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteOrganization(organization);
+		return getService().deleteOrganization(organization);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -556,6 +562,27 @@ public class OrganizationLocalServiceUtil {
 	}
 
 	/**
+	* Returns all the organizations associated with the user. If
+	* includeAdministrative is <code>true</code>, the result includes those
+	* organizations that are not directly associated to the user but he is an
+	* administrator or an owner of the organization.
+	*
+	* @param userId the primary key of the user
+	* @param includeAdministrative whether to includes organizations that are
+	indirectly associated to the user because he is an administrator
+	or an owner of the organization
+	* @return the organizations associated with the user
+	* @throws PortalException if a user with the primary key could not be found
+	* @throws SystemException if a system exception occurred
+	*/
+	public static java.util.List<com.liferay.portal.model.Organization> getUserOrganizations(
+		long userId, boolean includeAdministrative)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().getUserOrganizations(userId, includeAdministrative);
+	}
+
+	/**
 	* Returns a range of all the organizations associated with the user.
 	*
 	* <p>
@@ -718,8 +745,6 @@ public class OrganizationLocalServiceUtil {
 	* @throws PortalException if an organization with the primary key could not
 	be found
 	* @throws SystemException if a system exception occurred
-	* @see com.liferay.portal.service.persistence.OrganizationPersistence#rebuildTree(
-	long, boolean)
 	*/
 	public static void rebuildTree(long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -1259,20 +1284,15 @@ public class OrganizationLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(OrganizationLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(OrganizationLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(OrganizationLocalService service) {
-		MethodCache.remove(OrganizationLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(OrganizationLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(OrganizationLocalService.class);
 	}
 
 	private static OrganizationLocalService _service;

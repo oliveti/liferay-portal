@@ -10,11 +10,11 @@
 </thead><tbody>
 <tr>
 	<td>open</td>
-	<td>/user/joebloggs/home/</td>
+	<td>/web/guest/home/</td>
 	<td></td>
 </tr>
 <tr>
-	<td>waitForVisible</td>
+	<td>waitForElementPresent</td>
 	<td>link=Control Panel</td>
 	<td>Control Panel</td>
 </tr>
@@ -29,9 +29,14 @@
 	<td>Users and Organizations</td>
 </tr>
 <tr>
+	<td>clickAtAndWait</td>
+	<td>link=Search All Users</td>
+	<td>Search All Users</td>
+</tr>
+<tr>
 	<td>type</td>
-	<td>//input[@id='_125_keywords']</td>
-	<td>socialofficefriendfn</td>
+	<td>//input[@id='_125_toggle_id_users_admin_user_searchkeywords']</td>
+	<td>socialoffice01</td>
 </tr>
 <tr>
 	<td>clickAtAndWait</td>
@@ -40,53 +45,53 @@
 </tr>
 <tr>
 	<td>assertText</td>
-	<td>//td[2]/a</td>
-	<td>socialofficefriendfn</td>
+	<td>//a[contains(.,'Social01')]</td>
+	<td>Social01</td>
 </tr>
 <tr>
 	<td>clickAtAndWait</td>
-	<td>//td[2]/a</td>
-	<td>socialofficefriendfn</td>
+	<td>//a[contains(.,'Social01')]</td>
+	<td>Social01</td>
 </tr>
 <tr>
 	<td>assertText</td>
 	<td>//div[2]/h1/span</td>
-	<td>socialofficefriendfn socialofficefriendmn socialofficefriendln</td>
+	<td>Social01 Office01 User01</td>
 </tr>
 <tr>
 	<td>waitForVisible</td>
-	<td>//a[@id='_125_expertiseLink']</td>
-	<td>Expertise</td>
+	<td>//a[@id='_125_projectsLink']</td>
+	<td>Projects</td>
 </tr>
 <tr>
 	<td>assertPartialText</td>
-	<td>//a[@id='_125_expertiseLink']</td>
-	<td>Expertise</td>
+	<td>//a[@id='_125_projectsLink']</td>
+	<td>Projects</td>
 </tr>
 <tr>
 	<td>clickAt</td>
-	<td>//a[@id='_125_expertiseLink']</td>
-	<td>Expertise</td>
+	<td>//a[@id='_125_projectsLink']</td>
+	<td>Projects</td>
 </tr>
 <tr>
 	<td>waitForVisible</td>
-	<td>//input[@id='_125_projectsEntryTitle0']</td>
-	<td>Expertise Title</td>
+	<td>//input[contains(@id,'_125_projectsEntryTitle')]</td>
+	<td>Title</td>
 </tr>
 <tr>
 	<td>type</td>
-	<td>//input[@id='_125_projectsEntryTitle0']</td>
+	<td>//input[contains(@id,'_125_projectsEntryTitle')]</td>
 	<td>Expertise Title</td>
 </tr>
 <tr>
 	<td>waitForPartialText</td>
-	<td>//select[@id='_125_projectsEntryStartDateMonth0']</td>
-	<td>April</td>
+	<td>//select[contains(@id,'_125_projectsEntryStartDateMonth')]</td>
+	<td>January</td>
 </tr>
 <tr>
 	<td>select</td>
-	<td>//select[@id='_125_projectsEntryStartDateMonth0']</td>
-	<td>April</td>
+	<td>//select[contains(@id,'_125_projectsEntryStartDateMonth')]</td>
+	<td>January</td>
 </tr>
 <tr>
 	<td>assertElementPresent</td>
@@ -115,12 +120,12 @@
 </tr>
 <tr>
 	<td>waitForVisible</td>
-	<td>//textarea[@id='_125_projectsEntryDescription0']</td>
-	<td>Expertise Description</td>
+	<td>//textarea[contains(@id,'_125_projectsEntryDescription')]</td>
+	<td>Description</td>
 </tr>
 <tr>
 	<td>type</td>
-	<td>//textarea[@id='_125_projectsEntryDescription0']</td>
+	<td>//textarea[contains(@id,'_125_projectsEntryDescription')]</td>
 	<td>Expertise Description</td>
 </tr>
 <tr>
@@ -146,19 +151,18 @@
 <tr>
 	<td>assertSelectedLabel</td>
 	<td>//select[@id='_125_projectsEntryStartDateMonth0']</td>
-	<td>April</td>
+	<td>January</td>
 </tr>
 <tr>
 	<td>assertChecked</td>
 	<td>//input[@id='_125_projectsEntryCurrent0Checkbox']</td>
-	<td>Current Expertise</td>
+	<td>Current</td>
 </tr>
 <tr>
 	<td>assertText</td>
 	<td>//textarea[@id='_125_projectsEntryDescription0']</td>
 	<td>Expertise Description</td>
 </tr>
-
 </tbody></table>
 </body>
 </html>

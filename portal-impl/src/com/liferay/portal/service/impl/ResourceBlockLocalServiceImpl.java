@@ -147,6 +147,10 @@ public class ResourceBlockLocalServiceImpl
 	 *
 	 * @param  companyId the primary key of the resource block's company
 	 * @param  groupId the primary key of the resource block's group
+	 * @param  name the resource block's name
+	 * @param  permissionsHash the resource block's permission hash
+	 * @param  resourceBlockPermissionsContainer the resource block's
+	 *         permissions container
 	 * @return the new resource block
 	 * @throws SystemException if a system exception occurred
 	 */
@@ -176,23 +180,23 @@ public class ResourceBlockLocalServiceImpl
 	}
 
 	@Override
-	public void deleteResourceBlock(long resourceBlockId)
+	public ResourceBlock deleteResourceBlock(long resourceBlockId)
 		throws PortalException, SystemException {
 
 		ResourceBlock resourceBlock = resourceBlockPersistence.findByPrimaryKey(
 			resourceBlockId);
 
-		deleteResourceBlock(resourceBlock);
+		return deleteResourceBlock(resourceBlock);
 	}
 
 	@Override
-	public void deleteResourceBlock(ResourceBlock resourceBlock)
+	public ResourceBlock deleteResourceBlock(ResourceBlock resourceBlock)
 		throws SystemException {
 
 		resourceBlockPermissionLocalService.deleteResourceBlockPermissions(
 			resourceBlock.getPrimaryKey());
 
-		resourceBlockPersistence.remove(resourceBlock);
+		return resourceBlockPersistence.remove(resourceBlock);
 	}
 
 	public long getActionId(String name, String actionId)
@@ -412,6 +416,8 @@ public class ResourceBlockLocalServiceImpl
 	 * zero.
 	 *
 	 * @param  resourceBlockId the primary key of the resource block
+	 * @throws PortalException if a resource block with the primary key could
+	 *         not be found
 	 * @throws SystemException if a system exception occurred
 	 */
 	public void releaseResourceBlock(long resourceBlockId)
@@ -562,6 +568,8 @@ public class ResourceBlockLocalServiceImpl
 	 * the database.
 	 *
 	 * @param  resourceBlockId the primary key of the resource block
+	 * @throws PortalException if a resource block with the primary key could
+	 *         not be found
 	 * @throws SystemException if a system exception occurred
 	 */
 	public void retainResourceBlock(long resourceBlockId)
@@ -611,8 +619,8 @@ public class ResourceBlockLocalServiceImpl
 		throws PortalException, SystemException {
 
 		updateGroupScopePermissions(
-			companyId, groupId, name, roleId,
-			getActionIds(name, actionIds), ResourceBlockConstants.OPERATOR_SET);
+			companyId, groupId, name, roleId, getActionIds(name, actionIds),
+			ResourceBlockConstants.OPERATOR_SET);
 	}
 
 	public void setGroupScopePermissions(

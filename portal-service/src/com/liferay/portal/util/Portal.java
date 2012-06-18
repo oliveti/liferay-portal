@@ -27,7 +27,6 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.Portlet;
-import com.liferay.portal.model.Resource;
 import com.liferay.portal.model.ResourcePermission;
 import com.liferay.portal.model.User;
 import com.liferay.portal.theme.ThemeDisplay;
@@ -248,6 +247,8 @@ public interface Portal {
 	 *
 	 * @param  request the servlet request for the page
 	 * @return the array of alternate locales
+	 * @throws PortalException if a portal exception occurred
+	 * @throws SystemException if a system exception occurred
 	 */
 	public Locale[] getAlternateLocales(HttpServletRequest request)
 		throws PortalException, SystemException;
@@ -281,19 +282,6 @@ public interface Portal {
 	 *         authentication token
 	 */
 	public Set<String> getAuthTokenIgnorePortlets();
-
-	/**
-	 * Returns the base model instance for the resource.
-	 *
-	 * @param  resource the resource
-	 * @return the base model instance, or <code>null</code> if the resource
-	 *         does not have a base model instance (such as if its a portlet)
-	 * @throws PortalException if a base model instance for the resource could
-	 *         not be found
-	 * @throws SystemException if a system exception occurred
-	 */
-	public BaseModel<?> getBaseModel(Resource resource)
-		throws PortalException, SystemException;
 
 	/**
 	 * Returns the base model instance for the resource permission.
@@ -390,6 +378,7 @@ public interface Portal {
 	 * Returns the insecure (HTTP) content distribution network (CDN) host
 	 * address
 	 *
+	 * @param  companyId the company ID of a site TODO?
 	 * @return the CDN host address
 	 */
 	public String getCDNHostHttp(long companyId);
@@ -398,6 +387,7 @@ public interface Portal {
 	 * Returns the secure (HTTPS) content distribution network (CDN) host
 	 * address
 	 *
+	 * @param  companyId the company ID of a site TODO?
 	 * @return the CDN host address
 	 */
 	public String getCDNHostHttps(long companyId);
@@ -898,9 +888,6 @@ public interface Portal {
 			PortletRequest portletRequest, boolean checkPermission)
 		throws PortalException, SystemException;
 
-	public ServletContext getServletContext(
-		Portlet portlet, ServletContext servletContext);
-
 	/**
 	 * Returns the URL of the login page for the current site if one is
 	 * available.
@@ -935,6 +922,10 @@ public interface Portal {
 	public String[] getSystemRoles();
 
 	public String[] getSystemSiteRoles();
+
+	public String getUniqueElementId(HttpServletRequest request, String id);
+
+	public String getUniqueElementId(PortletRequest request, String id);
 
 	public UploadPortletRequest getUploadPortletRequest(
 		PortletRequest portletRequest);
@@ -1076,31 +1067,6 @@ public interface Portal {
 
 	public void removePortalPortEventListener(
 		PortalPortEventListener portalPortEventListener);
-
-	public String renderPage(
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response, String path)
-		throws IOException, ServletException;
-
-	public String renderPortlet(
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response, Portlet portlet, String queryString,
-			boolean writeOutput)
-		throws IOException, ServletException;
-
-	public String renderPortlet(
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response, Portlet portlet, String queryString,
-			String columnId, Integer columnPos, Integer columnCount,
-			boolean writeOutput)
-		throws IOException, ServletException;
-
-	public String renderPortlet(
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response, Portlet portlet, String queryString,
-			String columnId, Integer columnPos, Integer columnCount,
-			String path, boolean writeOutput)
-		throws IOException, ServletException;
 
 	public void resetCDNHosts();
 

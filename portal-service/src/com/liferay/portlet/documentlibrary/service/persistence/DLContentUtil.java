@@ -754,13 +754,16 @@ public class DLContentUtil {
 	* @param repositoryId the repository ID
 	* @param path the path
 	* @param version the version
+	* @return the document library content that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByC_R_P_V(long companyId, long repositoryId,
-		java.lang.String path, java.lang.String version)
+	public static com.liferay.portlet.documentlibrary.model.DLContent removeByC_R_P_V(
+		long companyId, long repositoryId, java.lang.String path,
+		java.lang.String version)
 		throws com.liferay.portal.kernel.exception.SystemException,
 			com.liferay.portlet.documentlibrary.NoSuchContentException {
-		getPersistence().removeByC_R_P_V(companyId, repositoryId, path, version);
+		return getPersistence()
+				   .removeByC_R_P_V(companyId, repositoryId, path, version);
 	}
 
 	/**
@@ -855,10 +858,10 @@ public class DLContentUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(DLContentPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(DLContentUtil.class, "_persistence");
 	}
 
 	private static DLContentPersistence _persistence;

@@ -103,10 +103,12 @@ public class PortalServiceImpl extends PortalServiceBaseImpl {
 		throw new SystemException();
 	}
 
-	public void testDeleteClassName()
-		throws PortalException, SystemException {
-
+	public void testDeleteClassName() throws PortalException, SystemException {
 		classNamePersistence.removeByValue(PortalService.class.getName());
+	}
+
+	public int testGetBuildNumber() {
+		return portalService.getBuildNumber();
 	}
 
 	public void testGetUserId() {
@@ -116,7 +118,7 @@ public class PortalServiceImpl extends PortalServiceBaseImpl {
 			userId = getUserId();
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			_log.error(e, e);
 		}
 
 		if (_log.isInfoEnabled()) {

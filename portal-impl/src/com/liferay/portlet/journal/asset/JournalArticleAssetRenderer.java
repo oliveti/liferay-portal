@@ -55,6 +55,10 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 		return _article;
 	}
 
+	public String getAssetRendererFactoryClassName() {
+		return JournalArticleAssetRendererFactory.CLASS_NAME;
+	}
+
 	@Override
 	public String[] getAvailableLocales() {
 		return _article.getAvailableLocales();
@@ -143,7 +147,7 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 		throws Exception {
 
 		if (Validator.isNull(_article.getLayoutUuid())) {
-			return null;
+			return noSuchEntryRedirect;
 		}
 
 		ThemeDisplay themeDisplay =
@@ -166,6 +170,10 @@ public class JournalArticleAssetRenderer extends BaseAssetRenderer {
 
 	public long getUserId() {
 		return _article.getUserId();
+	}
+
+	public String getUserName() {
+		return _article.getUserName();
 	}
 
 	public String getUuid() {

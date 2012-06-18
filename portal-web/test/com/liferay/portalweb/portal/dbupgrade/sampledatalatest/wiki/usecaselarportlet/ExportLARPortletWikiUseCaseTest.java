@@ -101,6 +101,7 @@ public class ExportLARPortletWikiUseCaseTest extends BaseTestCase {
 		Thread.sleep(5000);
 		selenium.clickAt("//input[@value='Export']",
 			RuntimeVariables.replace("Export"));
-		selenium.downloadFile("Wiki_Use_Case.Portlet.lar");
+		Thread.sleep(5000);
+		selenium.downloadTempFile("Wiki_Use_Case.Portlet.lar");
 	}
 }

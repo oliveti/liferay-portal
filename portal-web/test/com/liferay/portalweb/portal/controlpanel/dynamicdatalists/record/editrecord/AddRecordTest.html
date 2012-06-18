@@ -19,7 +19,17 @@
 	<td></td>
 </tr>
 <tr>
-	<td>waitForElementPresent</td>
+	<td>assertText</td>
+	<td>//li[@id='_145_mySites']/a/span</td>
+	<td>Go to</td>
+</tr>
+<tr>
+	<td>mouseOver</td>
+	<td>//li[@id='_145_mySites']/a/span</td>
+	<td>Go to</td>
+</tr>
+<tr>
+	<td>waitForVisible</td>
 	<td>link=Control Panel</td>
 	<td>Control Panel</td>
 </tr>
@@ -131,12 +141,12 @@
 <tr>
 	<td>waitForValue</td>
 	<td>//div[4]/div/span/span/span/input</td>
-	<td>document.txt</td>
+	<td>Document_1.txt</td>
 </tr>
 <tr>
 	<td>assertValue</td>
 	<td>//div[4]/div/span/span/span/input</td>
-	<td>document.txt</td>
+	<td>Document_1.txt</td>
 </tr>
 <tr>
 	<td>assertPartialText</td>
@@ -144,9 +154,9 @@
 	<td>File Upload</td>
 </tr>
 <tr>
-	<td>type</td>
+	<td>uploadCommonFile</td>
 	<td>//div[@class='aui-fieldset-content ']/div[5]/span/span/span/input</td>
-	<td>L:\portal\build\portal-web\test\com\liferay\portalweb\portal\controlpanel\dynamicdatalists\dependencies\document2.txt</td>
+	<td>Document_2.txt</td>
 </tr>
 <tr>
 	<td>assertText</td>
@@ -237,6 +247,11 @@
 	<td>type</td>
 	<td>//div[@class='aui-fieldset-content ']/div[10]/span/span/span/textarea</td>
 	<td>Text<br />Box</td>
+</tr>
+<tr>
+	<td>pause</td>
+	<td>5000</td>
+	<td></td>
 </tr>
 <tr>
 	<td>clickAtAndWait</td>

@@ -18,9 +18,9 @@
 
 <portlet:defineObjects />
 
-<tiles:useAttribute id="tilesPortletContent" name="portlet_content" classname="java.lang.String" ignore="true" />
-<tiles:useAttribute id="tilesPortletDecorate" name="portlet_decorate" classname="java.lang.String" ignore="true" />
-<tiles:useAttribute id="tilesPortletPadding" name="portlet_padding" classname="java.lang.String" ignore="true" />
+<tiles:useAttribute classname="java.lang.String" id="tilesPortletContent" ignore="true" name="portlet_content" />
+<tiles:useAttribute classname="java.lang.String" id="tilesPortletDecorate" ignore="true" name="portlet_decorate" />
+<tiles:useAttribute classname="java.lang.String" id="tilesPortletPadding" ignore="true" name="portlet_padding" />
 
 <%
 Portlet portlet = (Portlet)request.getAttribute(WebKeys.RENDER_PORTLET);
@@ -143,7 +143,18 @@ boolean wsrp = ParamUtil.getBoolean(request, "wsrp");
 			<c:otherwise>
 
 				<%
-				boolean showPortletActions = tilesPortletDecorateBoolean && (portletDisplay.isShowPortletCssIcon() || portletDisplay.isShowConfigurationIcon() || portletDisplay.isShowEditIcon() || portletDisplay.isShowCloseIcon());
+				boolean showPortletActions =
+					(group.isLayoutPrototype() || tilesPortletDecorateBoolean) &&
+					(portletDisplay.isShowCloseIcon() ||
+					 portletDisplay.isShowConfigurationIcon() ||
+					 portletDisplay.isShowEditDefaultsIcon() ||
+					 portletDisplay.isShowEditGuestIcon() ||
+					 portletDisplay.isShowEditIcon() ||
+					 portletDisplay.isShowExportImportIcon() ||
+					 portletDisplay.isShowHelpIcon() ||
+					 portletDisplay.isShowPortletCssIcon() ||
+					 portletDisplay.isShowPrintIcon() ||
+					 portletDisplay.isShowRefreshIcon());
 				%>
 
 				<div class="portlet-borderless-container" <%= containerStyles %>>
@@ -163,7 +174,7 @@ boolean wsrp = ParamUtil.getBoolean(request, "wsrp");
 										<span class="portlet-action portlet-close">
 											<span class="portlet-action-separator">-</span>
 
-											<a href="<%= portletDisplay.getURLClose() %>" title="<liferay-ui:message key="close" />"><liferay-ui:message key="close" /></a>
+											<liferay-portlet:icon-close />
 										</span>
 									</c:if>
 

@@ -24,8 +24,7 @@ import java.util.Comparator;
 /**
  * @author Bruno Farache
  */
-public class FileVersionVersionComparator
-	implements Comparator<DLFileVersion> {
+public class FileVersionVersionComparator implements Comparator<DLFileVersion> {
 
 	public FileVersionVersionComparator() {
 		this(false);
@@ -62,10 +61,10 @@ public class FileVersionVersionComparator
 		if ((versionParts1.length != 2) && (versionParts2.length != 2)) {
 			value = 0;
 		}
-		else if ((versionParts1.length != 2)) {
+		else if (versionParts1.length != 2) {
 			value = -1;
 		}
-		else if ((versionParts2.length != 2)) {
+		else if (versionParts2.length != 2) {
 			value = 1;
 		}
 		else if (versionParts1[0] > versionParts2[0]) {

@@ -99,7 +99,15 @@ public class MBeanRegistry {
 			ObjectName objectName = _objectNameCache.get(objectNameCacheKey);
 
 			if (objectName == null) {
-				_mBeanServer.unregisterMBean(defaultObjectName);
+				try {
+					_mBeanServer.unregisterMBean(defaultObjectName);
+				}
+				catch (InstanceNotFoundException infe) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							"Unable to unregister " + defaultObjectName, infe);
+					}
+				}
 			}
 			else {
 				_objectNameCache.remove(objectNameCacheKey);

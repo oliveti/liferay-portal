@@ -61,25 +61,32 @@ public class SocialActivitySettingLocalServiceWrapper
 	* Deletes the social activity setting with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param activitySettingId the primary key of the social activity setting
+	* @return the social activity setting that was removed
 	* @throws PortalException if a social activity setting with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteSocialActivitySetting(long activitySettingId)
+	public com.liferay.portlet.social.model.SocialActivitySetting deleteSocialActivitySetting(
+		long activitySettingId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_socialActivitySettingLocalService.deleteSocialActivitySetting(activitySettingId);
+		return _socialActivitySettingLocalService.deleteSocialActivitySetting(activitySettingId);
 	}
 
 	/**
 	* Deletes the social activity setting from the database. Also notifies the appropriate model listeners.
 	*
 	* @param socialActivitySetting the social activity setting
+	* @return the social activity setting that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteSocialActivitySetting(
+	public com.liferay.portlet.social.model.SocialActivitySetting deleteSocialActivitySetting(
 		com.liferay.portlet.social.model.SocialActivitySetting socialActivitySetting)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		_socialActivitySettingLocalService.deleteSocialActivitySetting(socialActivitySetting);
+		return _socialActivitySettingLocalService.deleteSocialActivitySetting(socialActivitySetting);
+	}
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return _socialActivitySettingLocalService.dynamicQuery();
 	}
 
 	/**
@@ -259,6 +266,18 @@ public class SocialActivitySettingLocalServiceWrapper
 		_socialActivitySettingLocalService.setBeanIdentifier(beanIdentifier);
 	}
 
+	public void deleteActivitySetting(long groupId, java.lang.String className,
+		long classPK)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_socialActivitySettingLocalService.deleteActivitySetting(groupId,
+			className, classPK);
+	}
+
+	public void deleteActivitySettings(long groupId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_socialActivitySettingLocalService.deleteActivitySettings(groupId);
+	}
+
 	public com.liferay.portlet.social.model.SocialActivityDefinition getActivityDefinition(
 		long groupId, java.lang.String className, int activityType)
 		throws com.liferay.portal.kernel.exception.SystemException {
@@ -284,6 +303,12 @@ public class SocialActivitySettingLocalServiceWrapper
 		return _socialActivitySettingLocalService.isEnabled(groupId, classNameId);
 	}
 
+	public boolean isEnabled(long groupId, long classNameId, long classPK)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _socialActivitySettingLocalService.isEnabled(groupId,
+			classNameId, classPK);
+	}
+
 	public void updateActivitySetting(long groupId, java.lang.String className,
 		boolean enabled)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -299,6 +324,14 @@ public class SocialActivitySettingLocalServiceWrapper
 			com.liferay.portal.kernel.exception.SystemException {
 		_socialActivitySettingLocalService.updateActivitySetting(groupId,
 			className, activityType, activityCounterDefinition);
+	}
+
+	public void updateActivitySetting(long groupId, java.lang.String className,
+		long classPK, boolean enabled)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_socialActivitySettingLocalService.updateActivitySetting(groupId,
+			className, classPK, enabled);
 	}
 
 	public void updateActivitySettings(long groupId,

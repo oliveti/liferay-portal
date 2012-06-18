@@ -84,7 +84,7 @@ request.setAttribute("view.jsp-showIconLabel", true);
 					</c:if>
 
 					<div class="locale-actions">
-						<liferay-ui:language languageIds="<%= availableLocales %>" displayStyle="<%= 0 %>" />
+						<liferay-ui:language displayStyle="<%= 0 %>" languageIds="<%= availableLocales %>" />
 					</div>
 				</c:if>
 			</c:if>
@@ -144,7 +144,9 @@ request.setAttribute("view.jsp-showIconLabel", true);
 		request.setAttribute(WebKeys.ASSET_RENDERER, assetRenderer);
 		%>
 
-		<liferay-util:include page="<%= path %>" portletId="<%= assetRendererFactory.getPortletId() %>" />
+		<liferay-util:include page="<%= path %>" portletId="<%= assetRendererFactory.getPortletId() %>">
+			<liferay-util:param name="showHeader" value="<%= Boolean.FALSE.toString() %>" />
+		</liferay-util:include>
 
 		<c:if test="<%= enableFlags %>">
 			<div class="asset-flag">

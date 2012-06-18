@@ -98,9 +98,7 @@ public class DeployUtil {
 		return destDir;
 	}
 
-	public static String getResourcePath(String resource)
-		throws Exception {
-
+	public static String getResourcePath(String resource) throws Exception {
 		return _instance._getResourcePath(resource);
 	}
 
@@ -142,7 +140,8 @@ public class DeployUtil {
 		if (!appServerType.equals(ServerDetector.GLASSFISH_ID) &&
 			!appServerType.equals(ServerDetector.JBOSS_ID) &&
 			!appServerType.equals(ServerDetector.JETTY_ID) &&
-			!appServerType.equals(ServerDetector.TOMCAT_ID)) {
+			!appServerType.equals(ServerDetector.TOMCAT_ID) &&
+			!appServerType.equals(ServerDetector.WEBLOGIC_ID)) {
 
 			return;
 		}

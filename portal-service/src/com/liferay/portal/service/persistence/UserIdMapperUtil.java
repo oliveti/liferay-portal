@@ -465,12 +465,14 @@ public class UserIdMapperUtil {
 	*
 	* @param userId the user ID
 	* @param type the type
+	* @return the user ID mapper that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByU_T(long userId, java.lang.String type)
+	public static com.liferay.portal.model.UserIdMapper removeByU_T(
+		long userId, java.lang.String type)
 		throws com.liferay.portal.NoSuchUserIdMapperException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getPersistence().removeByU_T(userId, type);
+		return getPersistence().removeByU_T(userId, type);
 	}
 
 	/**
@@ -478,13 +480,14 @@ public class UserIdMapperUtil {
 	*
 	* @param type the type
 	* @param externalUserId the external user ID
+	* @return the user ID mapper that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByT_E(java.lang.String type,
-		java.lang.String externalUserId)
+	public static com.liferay.portal.model.UserIdMapper removeByT_E(
+		java.lang.String type, java.lang.String externalUserId)
 		throws com.liferay.portal.NoSuchUserIdMapperException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getPersistence().removeByT_E(type, externalUserId);
+		return getPersistence().removeByT_E(type, externalUserId);
 	}
 
 	/**
@@ -558,11 +561,10 @@ public class UserIdMapperUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(UserIdMapperPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(UserIdMapperUtil.class,
-			"_persistence");
 	}
 
 	private static UserIdMapperPersistence _persistence;

@@ -108,9 +108,7 @@ public class ExpandoColumnLocalServiceImpl
 		deleteColumn(table.getTableId(), name);
 	}
 
-	public void deleteColumn(long tableId, String name)
-		throws SystemException {
-
+	public void deleteColumn(long tableId, String name) throws SystemException {
 		List<ExpandoColumn> columns = expandoColumnPersistence.findByT_N(
 			tableId, name);
 
@@ -205,9 +203,7 @@ public class ExpandoColumnLocalServiceImpl
 		return getColumn(companyId, classNameId, tableName, name);
 	}
 
-	public List<ExpandoColumn> getColumns(long tableId)
-		throws SystemException {
-
+	public List<ExpandoColumn> getColumns(long tableId) throws SystemException {
 		return expandoColumnPersistence.findByTableId(tableId);
 	}
 
@@ -432,6 +428,8 @@ public class ExpandoColumnLocalServiceImpl
 			(type != ExpandoColumnConstants.INTEGER_ARRAY) &&
 			(type != ExpandoColumnConstants.LONG) &&
 			(type != ExpandoColumnConstants.LONG_ARRAY) &&
+			(type != ExpandoColumnConstants.NUMBER) &&
+			(type != ExpandoColumnConstants.NUMBER_ARRAY) &&
 			(type != ExpandoColumnConstants.SHORT) &&
 			(type != ExpandoColumnConstants.SHORT_ARRAY) &&
 			(type != ExpandoColumnConstants.STRING) &&
@@ -480,6 +478,12 @@ public class ExpandoColumnLocalServiceImpl
 			}
 			else if (type == ExpandoColumnConstants.LONG_ARRAY) {
 				value.setLongArray((long[])defaultData);
+			}
+			else if (type == ExpandoColumnConstants.NUMBER) {
+				value.setNumber((Number)defaultData);
+			}
+			else if (type == ExpandoColumnConstants.NUMBER_ARRAY) {
+				value.setNumberArray((Number[])defaultData);
 			}
 			else if (type == ExpandoColumnConstants.SHORT) {
 				value.setShort((Short)defaultData);

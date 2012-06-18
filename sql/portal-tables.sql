@@ -340,8 +340,11 @@ create table Contact_ (
 	userName VARCHAR(75) null,
 	createDate DATE null,
 	modifiedDate DATE null,
+	classNameId LONG,
+	classPK LONG,
 	accountId LONG,
 	parentContactId LONG,
+	emailAddress VARCHAR(75) null,
 	firstName VARCHAR(75) null,
 	middleName VARCHAR(75) null,
 	lastName VARCHAR(75) null,
@@ -500,7 +503,9 @@ create table DDMTemplate (
 	userName VARCHAR(75) null,
 	createDate DATE null,
 	modifiedDate DATE null,
-	structureId LONG,
+	classNameId LONG,
+	classPK LONG,
+	templateKey VARCHAR(75) null,
 	name STRING null,
 	description STRING null,
 	type_ VARCHAR(75) null,
@@ -590,7 +595,8 @@ create table DLFileRank (
 	companyId LONG,
 	userId LONG,
 	createDate DATE null,
-	fileEntryId LONG
+	fileEntryId LONG,
+	active_ BOOLEAN
 );
 
 create table DLFileShortcut (
@@ -605,6 +611,7 @@ create table DLFileShortcut (
 	repositoryId LONG,
 	folderId LONG,
 	toFileEntryId LONG,
+	active_ BOOLEAN,
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,
@@ -654,7 +661,11 @@ create table DLFolder (
 	description STRING null,
 	lastPostDate DATE null,
 	defaultFileEntryTypeId LONG,
-	overrideFileEntryTypes BOOLEAN
+	overrideFileEntryTypes BOOLEAN,
+	status INTEGER,
+	statusByUserId LONG,
+	statusByUserName VARCHAR(75) null,
+	statusDate DATE null
 );
 
 create table DLSync (
@@ -667,6 +678,7 @@ create table DLSync (
 	repositoryId LONG,
 	parentFolderId LONG,
 	name VARCHAR(255) null,
+	description STRING null,
 	event VARCHAR(75) null,
 	type_ VARCHAR(75) null,
 	version VARCHAR(75) null
@@ -744,12 +756,6 @@ create table Groups_Orgs (
 	primary key (groupId, organizationId)
 );
 
-create table Groups_Permissions (
-	groupId LONG not null,
-	permissionId LONG not null,
-	primary key (groupId, permissionId)
-);
-
 create table Groups_Roles (
 	groupId LONG not null,
 	roleId LONG not null,
@@ -782,6 +788,7 @@ create table JournalArticle (
 	userName VARCHAR(75) null,
 	createDate DATE null,
 	modifiedDate DATE null,
+	folderId LONG,
 	classNameId LONG,
 	classPK LONG,
 	articleId VARCHAR(75) null,
@@ -859,6 +866,20 @@ create table JournalFeed (
 	contentField VARCHAR(75) null,
 	feedType VARCHAR(75) null,
 	feedVersion DOUBLE
+);
+
+create table JournalFolder (
+	uuid_ VARCHAR(75) null,
+	folderId LONG not null primary key,
+	groupId LONG,
+	companyId LONG,
+	userId LONG,
+	userName VARCHAR(75) null,
+	createDate DATE null,
+	modifiedDate DATE null,
+	parentFolderId LONG,
+	name VARCHAR(100) null,
+	description STRING null
 );
 
 create table JournalStructure (
@@ -1280,13 +1301,6 @@ create table Organization_ (
 	comments STRING null
 );
 
-create table OrgGroupPermission (
-	organizationId LONG not null,
-	groupId LONG not null,
-	permissionId LONG not null,
-	primary key (organizationId, groupId, permissionId)
-);
-
 create table OrgGroupRole (
 	organizationId LONG not null,
 	groupId LONG not null,
@@ -1361,13 +1375,6 @@ create table PasswordTracker (
 	userId LONG,
 	createDate DATE null,
 	password_ VARCHAR(75) null
-);
-
-create table Permission_ (
-	permissionId LONG not null primary key,
-	companyId LONG,
-	actionId VARCHAR(75) null,
-	resourceId LONG
 );
 
 create table Phone (
@@ -1503,6 +1510,7 @@ create table Release_ (
 	buildNumber INTEGER,
 	buildDate DATE null,
 	verified BOOLEAN,
+	state_ INTEGER,
 	testString VARCHAR(1024) null
 );
 
@@ -1556,24 +1564,11 @@ create table ResourceTypePermission (
 	actionIds LONG
 );
 
-create table Resource_ (
-	resourceId LONG not null primary key,
-	codeId LONG,
-	primKey VARCHAR(255) null
-);
-
 create table ResourceAction (
 	resourceActionId LONG not null primary key,
 	name VARCHAR(255) null,
 	actionId VARCHAR(75) null,
 	bitwiseValue LONG
-);
-
-create table ResourceCode (
-	codeId LONG not null primary key,
-	companyId LONG,
-	name VARCHAR(255) null,
-	scope INTEGER
 );
 
 create table ResourcePermission (
@@ -1597,12 +1592,6 @@ create table Role_ (
 	description STRING null,
 	type_ INTEGER,
 	subtype VARCHAR(75) null
-);
-
-create table Roles_Permissions (
-	roleId LONG not null,
-	permissionId LONG not null,
-	primary key (roleId, permissionId)
 );
 
 create table SCFrameworkVersi_SCProductVers (
@@ -1908,7 +1897,8 @@ create table SocialActivityCounter (
 	totalValue INTEGER,
 	graceValue INTEGER,
 	startPeriod INTEGER,
-	endPeriod INTEGER
+	endPeriod INTEGER,
+	active_ BOOLEAN
 );
 
 create table SocialActivityLimit (
@@ -1993,6 +1983,27 @@ create table Ticket (
 	type_ INTEGER,
 	extraInfo TEXT null,
 	expirationDate DATE null
+);
+
+create table TrashEntry (
+	entryId LONG not null primary key,
+	groupId LONG,
+	companyId LONG,
+	userId LONG,
+	userName VARCHAR(75) null,
+	createDate DATE null,
+	classNameId LONG,
+	classPK LONG,
+	typeSettings TEXT null,
+	status INTEGER
+);
+
+create table TrashVersion (
+	versionId LONG not null primary key,
+	entryId LONG,
+	classNameId LONG,
+	classPK LONG,
+	status INTEGER
 );
 
 create table User_ (
@@ -2098,12 +2109,6 @@ create table Users_Orgs (
 	primary key (userId, organizationId)
 );
 
-create table Users_Permissions (
-	userId LONG not null,
-	permissionId LONG not null,
-	primary key (userId, permissionId)
-);
-
 create table Users_Roles (
 	userId LONG not null,
 	roleId LONG not null,
@@ -2145,19 +2150,6 @@ create table VirtualHost (
 	companyId LONG,
 	layoutSetId LONG,
 	hostname VARCHAR(75) null
-);
-
-create table Vocabulary (
-	vocabularyId LONG not null primary key,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	name VARCHAR(75) null,
-	description VARCHAR(75) null,
-	folksonomy BOOLEAN
 );
 
 create table WebDAVProps (

@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class LayoutSetLocalServiceUtil {
 	* Deletes the layout set with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param layoutSetId the primary key of the layout set
+	* @return the layout set that was removed
 	* @throws PortalException if a layout set with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteLayoutSet(long layoutSetId)
+	public static com.liferay.portal.model.LayoutSet deleteLayoutSet(
+		long layoutSetId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteLayoutSet(layoutSetId);
+		return getService().deleteLayoutSet(layoutSetId);
 	}
 
 	/**
 	* Deletes the layout set from the database. Also notifies the appropriate model listeners.
 	*
 	* @param layoutSet the layout set
+	* @return the layout set that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteLayoutSet(
+	public static com.liferay.portal.model.LayoutSet deleteLayoutSet(
 		com.liferay.portal.model.LayoutSet layoutSet)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteLayoutSet(layoutSet);
+		return getService().deleteLayoutSet(layoutSet);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -425,20 +431,15 @@ public class LayoutSetLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(LayoutSetLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(LayoutSetLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(LayoutSetLocalService service) {
-		MethodCache.remove(LayoutSetLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(LayoutSetLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(LayoutSetLocalService.class);
 	}
 
 	private static LayoutSetLocalService _service;

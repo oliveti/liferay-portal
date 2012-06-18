@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.AuditedModel;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.PortletPreferencesIds;
 import com.liferay.portal.model.Role;
 import com.liferay.portal.model.RoleConstants;
@@ -148,7 +149,7 @@ public class ServiceContext implements Cloneable, Serializable {
 				modelName);
 
 		for (String roleName : roleNames) {
-			for (String action: supportedActions) {
+			for (String action : supportedActions) {
 				if (roleName.equals(RoleConstants.GUEST) &&
 					!guestUnsupportedActions.contains(action) &&
 					guestDefaultActions.contains(action) &&
@@ -519,12 +520,11 @@ public class ServiceContext implements Cloneable, Serializable {
 	 * @see    com.liferay.portal.model.PortletPreferencesIds
 	 */
 	public String getPortletId() {
-		if (_portletPreferencesIds != null) {
-			return _portletPreferencesIds.getPortletId();
-		}
-		else {
+		if (_portletPreferencesIds == null) {
 			return null;
 		}
+
+		return _portletPreferencesIds.getPortletId();
 	}
 
 	/**
@@ -567,6 +567,16 @@ public class ServiceContext implements Cloneable, Serializable {
 		return _request;
 	}
 
+	public String getRootPortletId() {
+		String portletId = getPortletId();
+
+		if (portletId == null) {
+			return null;
+		}
+
+		return PortletConstants.getRootPortletId(portletId);
+	}
+
 	/**
 	 * Returns the ID of the group corresponding to the current data scope of
 	 * this service context.
@@ -585,11 +595,11 @@ public class ServiceContext implements Cloneable, Serializable {
 	 * @see    com.liferay.portal.kernel.servlet.HttpHeaders
 	 */
 	public String getUserAgent() {
-		if (_headers == null) {
+		if (_request == null) {
 			return null;
 		}
 
-		return _headers.get(HttpHeaders.USER_AGENT);
+		return _request.getHeader(HttpHeaders.USER_AGENT);
 	}
 
 	/**
@@ -1169,7 +1179,7 @@ public class ServiceContext implements Cloneable, Serializable {
 	 * as parameter to a method that processes a workflow action.
 	 *
 	 * @param workflowAction workflow action to take (default is {@link
-	 *        com.liferay.portal.kernel.workflow.WorkflowConstants.ACTION_PUBLISH})
+	 *        com.liferay.portal.kernel.workflow.WorkflowConstants#ACTION_PUBLISH})
 	 */
 	public void setWorkflowAction(int workflowAction) {
 		_workflowAction = workflowAction;

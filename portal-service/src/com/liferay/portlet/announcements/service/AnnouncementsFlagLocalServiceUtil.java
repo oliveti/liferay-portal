@@ -15,7 +15,6 @@
 package com.liferay.portlet.announcements.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class AnnouncementsFlagLocalServiceUtil {
 	* Deletes the announcements flag with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param flagId the primary key of the announcements flag
+	* @return the announcements flag that was removed
 	* @throws PortalException if a announcements flag with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteAnnouncementsFlag(long flagId)
+	public static com.liferay.portlet.announcements.model.AnnouncementsFlag deleteAnnouncementsFlag(
+		long flagId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteAnnouncementsFlag(flagId);
+		return getService().deleteAnnouncementsFlag(flagId);
 	}
 
 	/**
 	* Deletes the announcements flag from the database. Also notifies the appropriate model listeners.
 	*
 	* @param announcementsFlag the announcements flag
+	* @return the announcements flag that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteAnnouncementsFlag(
+	public static com.liferay.portlet.announcements.model.AnnouncementsFlag deleteAnnouncementsFlag(
 		com.liferay.portlet.announcements.model.AnnouncementsFlag announcementsFlag)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteAnnouncementsFlag(announcementsFlag);
+		return getService().deleteAnnouncementsFlag(announcementsFlag);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -296,20 +302,15 @@ public class AnnouncementsFlagLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(AnnouncementsFlagLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(AnnouncementsFlagLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(AnnouncementsFlagLocalService service) {
-		MethodCache.remove(AnnouncementsFlagLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(AnnouncementsFlagLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(AnnouncementsFlagLocalService.class);
 	}
 
 	private static AnnouncementsFlagLocalService _service;

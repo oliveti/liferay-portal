@@ -28,7 +28,6 @@ import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.ResourceActionsUtil;
 import com.liferay.portal.service.base.ResourceActionLocalServiceBaseImpl;
-import com.liferay.portal.util.PropsValues;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,10 +42,6 @@ public class ResourceActionLocalServiceImpl
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public void checkResourceActions() throws SystemException {
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 6) {
-			return;
-		}
-
 		List<ResourceAction> resourceActions =
 			resourceActionPersistence.findAll();
 
@@ -67,10 +62,6 @@ public class ResourceActionLocalServiceImpl
 	public void checkResourceActions(
 			String name, List<String> actionIds, boolean addDefaultActions)
 		throws SystemException {
-
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 6) {
-			return;
-		}
 
 		List<ResourceAction> resourceActions =
 			resourceActionPersistence.findByName(name);
@@ -139,6 +130,8 @@ public class ResourceActionLocalServiceImpl
 				name, actionId);
 
 			if (resourceAction != null) {
+				_resourceActions.put(key, resourceAction);
+
 				continue;
 			}
 

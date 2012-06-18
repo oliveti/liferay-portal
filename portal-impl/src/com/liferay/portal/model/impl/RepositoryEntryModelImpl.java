@@ -31,6 +31,9 @@ import java.io.Serializable;
 
 import java.sql.Types;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The base model implementation for the RepositoryEntry service. Represents a row in the &quot;RepositoryEntry&quot; database table, with each column mapped to a property of this class.
  *
@@ -105,6 +108,52 @@ public class RepositoryEntryModelImpl extends BaseModelImpl<RepositoryEntry>
 
 	public String getModelClassName() {
 		return RepositoryEntry.class.getName();
+	}
+
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("uuid", getUuid());
+		attributes.put("repositoryEntryId", getRepositoryEntryId());
+		attributes.put("groupId", getGroupId());
+		attributes.put("repositoryId", getRepositoryId());
+		attributes.put("mappedId", getMappedId());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		String uuid = (String)attributes.get("uuid");
+
+		if (uuid != null) {
+			setUuid(uuid);
+		}
+
+		Long repositoryEntryId = (Long)attributes.get("repositoryEntryId");
+
+		if (repositoryEntryId != null) {
+			setRepositoryEntryId(repositoryEntryId);
+		}
+
+		Long groupId = (Long)attributes.get("groupId");
+
+		if (groupId != null) {
+			setGroupId(groupId);
+		}
+
+		Long repositoryId = (Long)attributes.get("repositoryId");
+
+		if (repositoryId != null) {
+			setRepositoryId(repositoryId);
+		}
+
+		String mappedId = (String)attributes.get("mappedId");
+
+		if (mappedId != null) {
+			setMappedId(mappedId);
+		}
 	}
 
 	public String getUuid() {
@@ -216,17 +265,15 @@ public class RepositoryEntryModelImpl extends BaseModelImpl<RepositoryEntry>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(0,
-					RepositoryEntry.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(0,
+			RepositoryEntry.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -403,7 +450,6 @@ public class RepositoryEntryModelImpl extends BaseModelImpl<RepositoryEntry>
 	private boolean _setOriginalRepositoryId;
 	private String _mappedId;
 	private String _originalMappedId;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private RepositoryEntry _escapedModelProxy;
 }

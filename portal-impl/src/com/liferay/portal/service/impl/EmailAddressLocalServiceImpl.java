@@ -25,7 +25,6 @@ import com.liferay.portal.service.base.EmailAddressLocalServiceBaseImpl;
 import com.liferay.portal.util.PortalUtil;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -69,23 +68,6 @@ public class EmailAddressLocalServiceImpl
 		return emailAddress;
 	}
 
-	@Override
-	public void deleteEmailAddress(EmailAddress emailAddress)
-		throws SystemException {
-
-		emailAddressPersistence.remove(emailAddress);
-	}
-
-	@Override
-	public void deleteEmailAddress(long emailAddressId)
-		throws PortalException, SystemException {
-
-		EmailAddress emailAddress = emailAddressPersistence.findByPrimaryKey(
-			emailAddressId);
-
-		deleteEmailAddress(emailAddress);
-	}
-
 	public void deleteEmailAddresses(
 			long companyId, String className, long classPK)
 		throws SystemException {
@@ -98,13 +80,6 @@ public class EmailAddressLocalServiceImpl
 		for (EmailAddress emailAddress : emailAddresses) {
 			deleteEmailAddress(emailAddress);
 		}
-	}
-
-	@Override
-	public EmailAddress getEmailAddress(long emailAddressId)
-		throws PortalException, SystemException {
-
-		return emailAddressPersistence.findByPrimaryKey(emailAddressId);
 	}
 
 	public List<EmailAddress> getEmailAddresses() throws SystemException {
@@ -150,12 +125,11 @@ public class EmailAddressLocalServiceImpl
 		// true
 
 		if (primary) {
-			Iterator<EmailAddress> itr = emailAddressPersistence.findByC_C_C_P(
-				companyId, classNameId, classPK, primary).iterator();
+			List<EmailAddress> emailAddresses =
+				emailAddressPersistence.findByC_C_C_P(
+					companyId, classNameId, classPK, primary);
 
-			while (itr.hasNext()) {
-				EmailAddress emailAddress = itr.next();
-
+			for (EmailAddress emailAddress : emailAddresses) {
 				if ((emailAddressId <= 0) ||
 					(emailAddress.getEmailAddressId() != emailAddressId)) {
 

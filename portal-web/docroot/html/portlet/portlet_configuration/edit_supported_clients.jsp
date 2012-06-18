@@ -22,7 +22,7 @@ String returnToFullPageURL = ParamUtil.getString(request, "returnToFullPageURL")
 
 PortletPreferences portletSetup = PortletPreferencesFactoryUtil.getLayoutPortletSetup(layout, portletResource);
 
-Set allPortletModes = selPortlet.getAllPortletModes();
+Set<String> allPortletModes = selPortlet.getAllPortletModes();
 %>
 
 <liferay-util:include page="/html/portlet/portlet_configuration/tabs1.jsp">
@@ -39,11 +39,7 @@ Set allPortletModes = selPortlet.getAllPortletModes();
 	<aui:input name="portletResource" type="hidden" value="<%= portletResource %>" />
 
 	<%
-	Iterator itr = allPortletModes.iterator();
-
-	while (itr.hasNext()) {
-		String curPortletMode = (String)itr.next();
-
+	for (String curPortletMode : allPortletModes) {
 		String mobileDevicesParam = "portletSetupSupportedClientsMobileDevices_" + curPortletMode;
 		boolean mobileDevicesDefault = selPortlet.hasPortletMode(ContentTypes.XHTML_MP, PortletModeFactory.getPortletMode(curPortletMode));
 
@@ -51,7 +47,7 @@ Set allPortletModes = selPortlet.getAllPortletModes();
 	%>
 
 		<aui:fieldset label='<%= LanguageUtil.get(pageContext, "portlet-mode") + ": " + LanguageUtil.get(pageContext, curPortletMode) %>'>
-			<aui:input label="regular-browsers" name='<%= "regularBrowsersEnabled" + curPortletMode %>' type="checkbox" value="<%= true %>" disabled="<%= true %>" />
+			<aui:input disabled="<%= true %>" label="regular-browsers" name='<%= "regularBrowsersEnabled" + curPortletMode %>' type="checkbox" value="<%= true %>" />
 
 			<aui:input label="mobile-devices" name="<%= mobileDevicesParam %>" type="checkbox" value="<%= mobileDevices %>" />
 		</aui:fieldset>

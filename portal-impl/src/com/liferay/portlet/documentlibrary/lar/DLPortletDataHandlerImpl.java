@@ -27,22 +27,25 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Repository;
+import com.liferay.portal.model.RepositoryEntry;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
 import com.liferay.portal.service.GroupLocalServiceUtil;
+import com.liferay.portal.service.RepositoryEntryLocalServiceUtil;
 import com.liferay.portal.service.RepositoryLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portal.service.persistence.RepositoryEntryUtil;
 import com.liferay.portal.service.persistence.RepositoryUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
@@ -58,6 +61,7 @@ import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.service.DLAppServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryMetadataLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeServiceUtil;
@@ -70,6 +74,7 @@ import com.liferay.portlet.documentlibrary.util.DLProcessorThreadLocal;
 import com.liferay.portlet.documentlibrary.util.DLUtil;
 import com.liferay.portlet.dynamicdatamapping.lar.DDMPortletDataHandlerImpl;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
+import com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.service.persistence.DDMStructureUtil;
 import com.liferay.portlet.dynamicdatamapping.storage.Fields;
 import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
@@ -94,6 +99,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			PortletDataContext portletDataContext,
 			Element fileEntryTypesElement, Element foldersElement,
 			Element fileEntriesElement, Element fileRanksElement,
+			Element repositoriesElement, Element repositoryEntriesElement,
 			FileEntry fileEntry, boolean checkDateRange)
 		throws Exception {
 
@@ -104,9 +110,20 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			return;
 		}
 
+		if (!fileEntry.isDefaultRepository()) {
+			Repository repository = RepositoryUtil.findByPrimaryKey(
+				fileEntry.getRepositoryId());
+
+			exportRepository(
+				portletDataContext, repositoriesElement,
+				repositoryEntriesElement, repository);
+
+			return;
+		}
+
 		FileVersion fileVersion = fileEntry.getFileVersion();
 
-		if (fileVersion.getStatus() != WorkflowConstants.STATUS_APPROVED) {
+		if (!fileVersion.isApproved() && !fileVersion.isInTrash()) {
 			return;
 		}
 
@@ -121,14 +138,11 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		if (foldersElement != null) {
 			exportParentFolder(
 				portletDataContext, fileEntryTypesElement, foldersElement,
+				repositoriesElement, repositoryEntriesElement,
 				fileEntry.getFolderId());
 		}
 
 		if (!portletDataContext.isPerformDirectBinaryImport()) {
-			String binPath = getFileEntryBinPath(portletDataContext, fileEntry);
-
-			fileEntryElement.addAttribute("bin-path", binPath);
-
 			InputStream is = null;
 
 			try {
@@ -150,7 +164,12 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			}
 
 			try {
+				String binPath = getFileEntryBinPath(
+					portletDataContext, fileEntry);
+
 				portletDataContext.addZipEntry(binPath, is);
+
+				fileEntryElement.addAttribute("bin-path", binPath);
 			}
 			finally {
 				try {
@@ -202,6 +221,24 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		return sb.toString();
 	}
 
+	public static PortletDataHandlerControl[] getMetadataControls() {
+		return _metadataControls;
+	}
+
+	public static String getRepositoryEntryPath(
+		PortletDataContext portletDataContext, long repositoryEntryId) {
+
+		StringBundler sb = new StringBundler(4);
+
+		sb.append(
+			portletDataContext.getPortletPath(PortletKeys.DOCUMENT_LIBRARY));
+		sb.append("/repository-entries/");
+		sb.append(repositoryEntryId);
+		sb.append(".xml");
+
+		return sb.toString();
+	}
+
 	public static void importFileEntry(
 			PortletDataContext portletDataContext, Element fileEntryElement)
 		throws Exception {
@@ -234,12 +271,12 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		long userId = portletDataContext.getUserId(fileEntry.getUserUuid());
 
-		Map<Long, Long> folderPKs =
+		Map<Long, Long> folderIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				DLFolder.class);
 
 		long folderId = MapUtil.getLong(
-			folderPKs, fileEntry.getFolderId(), fileEntry.getFolderId());
+			folderIds, fileEntry.getFolderId(), fileEntry.getFolderId());
 
 		long[] assetCategoryIds = null;
 		String[] assetTagNames = null;
@@ -268,10 +305,24 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		if (Validator.isNull(binPath) &&
 			portletDataContext.isPerformDirectBinaryImport()) {
 
-			is = FileEntryUtil.getContentStream(fileEntry);
+			try {
+				is = FileEntryUtil.getContentStream(fileEntry);
+			}
+			catch (NoSuchFileException nsfe) {
+			}
 		}
 		else {
 			is = portletDataContext.getZipEntryAsInputStream(binPath);
+		}
+
+		if (is == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"No file found for file entry " +
+						fileEntry.getFileEntryId());
+			}
+
+			return;
 		}
 
 		if ((folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) &&
@@ -293,19 +344,17 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			importFolder(portletDataContext, folderPath, folderElement, folder);
 
 			folderId = MapUtil.getLong(
-				folderPKs, fileEntry.getFolderId(), fileEntry.getFolderId());
+				folderIds, fileEntry.getFolderId(), fileEntry.getFolderId());
 		}
 
 		importMetaData(portletDataContext, fileEntryElement, serviceContext);
 
 		FileEntry importedFileEntry = null;
 
-		String titleWithExtension = fileEntry.getTitle();
+		String titleWithExtension = DLUtil.getTitleWithExtension(fileEntry);
 		String extension = fileEntry.getExtension();
 
-		if (!titleWithExtension.endsWith(StringPool.PERIOD + extension)) {
-			titleWithExtension += StringPool.PERIOD + extension;
-		}
+		String dotExtension = StringPool.PERIOD + extension;
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			FileEntry existingFileEntry = FileEntryUtil.fetchByUUID_R(
@@ -314,53 +363,63 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			FileVersion fileVersion = fileEntry.getFileVersion();
 
 			if (existingFileEntry == null) {
+				String fileEntryTitle = fileEntry.getTitle();
+
 				FileEntry existingTitleFileEntry = FileEntryUtil.fetchByR_F_T(
 					portletDataContext.getScopeGroupId(), folderId,
-					fileEntry.getTitle());
+					fileEntryTitle);
 
 				if (existingTitleFileEntry != null) {
 					if (portletDataContext.
-							isDataStrategyMirrorWithOverwritting()) {
+							isDataStrategyMirrorWithOverwriting()) {
 
 						DLAppLocalServiceUtil.deleteFileEntry(
 							existingTitleFileEntry.getFileEntryId());
 					}
 					else {
-						String originalTitle = fileEntry.getTitle();
-						String dotExtension = StringPool.PERIOD + extension;
+						boolean titleHasExtension = false;
 
-						if (originalTitle.endsWith(dotExtension)) {
-							int pos = originalTitle.lastIndexOf(dotExtension);
+						if (fileEntryTitle.endsWith(dotExtension)) {
+							fileEntryTitle = FileUtil.stripExtension(
+								fileEntryTitle);
 
-							originalTitle = originalTitle.substring(0, pos);
+							titleHasExtension = true;
 						}
 
 						for (int i = 1;; i++) {
-							titleWithExtension =
-								originalTitle + StringPool.SPACE + i +
-									dotExtension;
+							fileEntryTitle += StringPool.SPACE + i;
 
-							existingTitleFileEntry = FileEntryUtil.findByR_F_T(
+							titleWithExtension = fileEntryTitle + dotExtension;
+
+							existingTitleFileEntry = FileEntryUtil.fetchByR_F_T(
 								portletDataContext.getScopeGroupId(), folderId,
 								titleWithExtension);
 
 							if (existingTitleFileEntry == null) {
+								if (titleHasExtension) {
+									fileEntryTitle += dotExtension;
+								}
+
 								break;
 							}
 						}
 					}
 				}
 
-				serviceContext.setUuid(fileEntry.getUuid());
-
 				serviceContext.setAttribute(
 					"fileVersionUuid", fileVersion.getUuid());
+				serviceContext.setUuid(fileEntry.getUuid());
 
 				importedFileEntry = DLAppLocalServiceUtil.addFileEntry(
 					userId, portletDataContext.getScopeGroupId(), folderId,
-					titleWithExtension, fileEntry.getMimeType(),
-					fileEntry.getTitle(), fileEntry.getDescription(), null, is,
-					fileEntry.getSize(), serviceContext);
+					titleWithExtension, fileEntry.getMimeType(), fileEntryTitle,
+					fileEntry.getDescription(), null, is, fileEntry.getSize(),
+					serviceContext);
+
+				if (fileVersion.isInTrash()) {
+					importedFileEntry = DLAppServiceUtil.moveFileEntryToTrash(
+						importedFileEntry.getFileEntryId());
+				}
 			}
 			else {
 				FileVersion latestExistingFileVersion =
@@ -383,13 +442,11 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 					serviceContext.setUuid(fileVersion.getUuid());
 
-					importedFileEntry =
-						DLAppLocalServiceUtil.updateFileEntry(
-							userId, existingFileEntry.getFileEntryId(),
-							fileEntry.getTitle(), fileEntry.getMimeType(),
-							fileEntry.getTitle(), fileEntry.getDescription(),
-							null, false, is, fileEntry.getSize(),
-							serviceContext);
+					importedFileEntry = DLAppLocalServiceUtil.updateFileEntry(
+						userId, existingFileEntry.getFileEntryId(),
+						fileEntry.getTitle(), fileEntry.getMimeType(),
+						fileEntry.getTitle(), fileEntry.getDescription(), null,
+						false, is, fileEntry.getSize(), serviceContext);
 				}
 				else {
 					DLAppLocalServiceUtil.updateAsset(
@@ -429,8 +486,8 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 					title += StringPool.PERIOD + titleParts[1];
 				}
 
-				if (!title.endsWith(StringPool.PERIOD + extension)) {
-					title += StringPool.PERIOD + extension;
+				if (!title.endsWith(dotExtension)) {
+					title += dotExtension;
 				}
 
 				importedFileEntry = DLAppLocalServiceUtil.addFileEntry(
@@ -493,21 +550,166 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		importFolder(portletDataContext, path, folderElement, folder);
 	}
 
+	public static void importRepository(
+			PortletDataContext portletDataContext, Element repositoryElement)
+		throws Exception {
+
+		String path = repositoryElement.attributeValue("path");
+
+		if (!portletDataContext.isPathNotProcessed(path)) {
+			return;
+		}
+
+		Repository repository =
+			(Repository)portletDataContext.getZipEntryAsObject(path);
+
+		long userId = portletDataContext.getUserId(repository.getUserUuid());
+		long classNameId = PortalUtil.getClassNameId(
+			repositoryElement.attributeValue("class-name"));
+
+		ServiceContext serviceContext = portletDataContext.createServiceContext(
+			repositoryElement, repository, _NAMESPACE);
+
+		long importedRepositoryId = 0;
+
+		try {
+			if (portletDataContext.isDataStrategyMirror()) {
+				Repository existingRepository = RepositoryUtil.fetchByUUID_G(
+					repository.getUuid(), portletDataContext.getScopeGroupId());
+
+				if (existingRepository == null) {
+					serviceContext.setUuid(repository.getUuid());
+
+					importedRepositoryId =
+						RepositoryLocalServiceUtil.addRepository(
+							userId, portletDataContext.getScopeGroupId(),
+							classNameId,
+							DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+							repository.getName(), repository.getDescription(),
+							repository.getPortletId(),
+							repository.getTypeSettingsProperties(),
+							serviceContext);
+				}
+				else {
+					RepositoryLocalServiceUtil.updateRepository(
+						existingRepository.getRepositoryId(),
+						repository.getName(), repository.getDescription());
+
+					importedRepositoryId = existingRepository.getRepositoryId();
+				}
+			}
+			else {
+				importedRepositoryId = RepositoryLocalServiceUtil.addRepository(
+					userId, portletDataContext.getScopeGroupId(), classNameId,
+					DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+					repository.getName(), repository.getDescription(),
+					repository.getPortletId(),
+					repository.getTypeSettingsProperties(), serviceContext);
+			}
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to connect to repository {name=" +
+						repository.getName() + ", typeSettings=" +
+							repository.getTypeSettingsProperties() + "}",
+					e);
+			}
+		}
+
+		Repository importedRepository =
+			RepositoryLocalServiceUtil.getRepository(importedRepositoryId);
+
+		portletDataContext.importClassedModel(
+			repository, importedRepository, _NAMESPACE);
+	}
+
+	public static void importRepositoryEntry(
+			PortletDataContext portletDataContext,
+			Element repositoryEntryElement)
+		throws Exception {
+
+		String path = repositoryEntryElement.attributeValue("path");
+
+		if (!portletDataContext.isPathNotProcessed(path)) {
+			return;
+		}
+
+		RepositoryEntry repositoryEntry =
+			(RepositoryEntry)portletDataContext.getZipEntryAsObject(path);
+
+		Map<Long, Long> repositoryIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				Repository.class);
+
+		long repositoryId = MapUtil.getLong(
+			repositoryIds, repositoryEntry.getRepositoryId(),
+			repositoryEntry.getRepositoryId());
+
+		ServiceContext serviceContext = portletDataContext.createServiceContext(
+			repositoryEntryElement, repositoryEntry, _NAMESPACE);
+
+		RepositoryEntry importedRepositoryEntry = null;
+
+		if (portletDataContext.isDataStrategyMirror()) {
+			RepositoryEntry existingRepositoryEntry =
+				RepositoryEntryUtil.fetchByUUID_G(
+					repositoryEntry.getUuid(),
+					portletDataContext.getScopeGroupId());
+
+			if (existingRepositoryEntry == null) {
+				serviceContext.setUuid(repositoryEntry.getUuid());
+
+				importedRepositoryEntry =
+					RepositoryEntryLocalServiceUtil.addRepositoryEntry(
+						portletDataContext.getScopeGroupId(), repositoryId,
+						repositoryEntry.getMappedId(), serviceContext);
+			}
+			else {
+				importedRepositoryEntry =
+					RepositoryEntryLocalServiceUtil.updateRepositoryEntry(
+						existingRepositoryEntry.getRepositoryEntryId(),
+						repositoryEntry.getMappedId());
+			}
+		}
+		else {
+			importedRepositoryEntry =
+				RepositoryEntryLocalServiceUtil.addRepositoryEntry(
+					portletDataContext.getScopeGroupId(), repositoryId,
+					repositoryEntry.getMappedId(), serviceContext);
+		}
+
+		portletDataContext.importClassedModel(
+			repositoryEntry, importedRepositoryEntry, _NAMESPACE);
+	}
+
 	@Override
 	public PortletDataHandlerControl[] getExportControls() {
 		return new PortletDataHandlerControl[] {
-			_repositories, _foldersAndDocuments, _shortcuts,
-			_previewsAndThumbnails, _ranks, _categories, _comments, _ratings,
-			_tags
+			_foldersAndDocuments, _shortcuts, _previewsAndThumbnails, _ranks
+		};
+	}
+
+	@Override
+	public PortletDataHandlerControl[] getExportMetadataControls() {
+		return new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(
+				_NAMESPACE, "folders-and-documents", true, _metadataControls)
 		};
 	}
 
 	@Override
 	public PortletDataHandlerControl[] getImportControls() {
 		return new PortletDataHandlerControl[] {
-			_repositories, _foldersAndDocuments, _shortcuts,
-			_previewsAndThumbnails, _ranks, _categories, _comments, _ratings,
-			_tags
+			_foldersAndDocuments, _shortcuts, _previewsAndThumbnails, _ranks
+		};
+	}
+
+	@Override
+	public PortletDataHandlerControl[] getImportMetadataControls() {
+		return new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(
+				_NAMESPACE, "folders-and-documents", true, _metadataControls)
 		};
 	}
 
@@ -582,7 +784,8 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	protected static void exportFileShortcut(
 			PortletDataContext portletDataContext,
 			Element fileEntryTypesElement, Element foldersElement,
-			Element fileShortcutsElement, DLFileShortcut fileShortcut)
+			Element fileShortcutsElement, Element repositoriesElement,
+			Element repositoryEntriesElement, DLFileShortcut fileShortcut)
 		throws Exception {
 
 		if (!portletDataContext.isWithinDateRange(
@@ -593,6 +796,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		exportParentFolder(
 			portletDataContext, fileEntryTypesElement, foldersElement,
+			repositoriesElement, repositoryEntriesElement,
 			fileShortcut.getFolderId());
 
 		String path = getFileShortcutPath(portletDataContext, fileShortcut);
@@ -601,7 +805,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			Element fileShortcutElement = fileShortcutsElement.addElement(
 				"file-shortcut");
 
-			FileEntry fileEntry = FileEntryUtil.fetchByPrimaryKey(
+			FileEntry fileEntry = DLAppLocalServiceUtil.getFileEntry(
 				fileShortcut.getToFileEntryId());
 
 			String fileEntryUuid = fileEntry.getUuid();
@@ -617,15 +821,35 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			PortletDataContext portletDataContext,
 			Element fileEntryTypesElement, Element foldersElement,
 			Element fileEntriesElement, Element fileShortcutsElement,
-			Element fileRanksElement, Folder folder, boolean recurse)
+			Element fileRanksElement, Element repositoriesElement,
+			Element repositoryEntriesElement, Folder folder, boolean recurse)
 		throws Exception {
 
 		if (!portletDataContext.isWithinDateRange(folder.getModifiedDate())) {
 			return;
 		}
 
+		if (folder.isMountPoint()) {
+			Repository repository = RepositoryUtil.findByPrimaryKey(
+				folder.getRepositoryId());
+
+			exportRepository(
+				portletDataContext, repositoriesElement,
+				repositoryEntriesElement, repository);
+
+			return;
+		}
+		else if (!folder.isDefaultRepository()) {
+
+			// No need to export non-Liferay repository items since they would
+			// be exported as part of repository export
+
+			return;
+		}
+
 		exportParentFolder(
 			portletDataContext, fileEntryTypesElement, foldersElement,
+			repositoriesElement, repositoryEntriesElement,
 			folder.getParentFolderId());
 
 		String path = getFolderPath(portletDataContext, folder);
@@ -650,7 +874,8 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 				exportFolder(
 					portletDataContext, fileEntryTypesElement, foldersElement,
 					fileEntriesElement, fileShortcutsElement, fileRanksElement,
-					curFolder, recurse);
+					repositoriesElement, repositoryEntriesElement, curFolder,
+					recurse);
 			}
 		}
 
@@ -660,17 +885,19 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		for (FileEntry fileEntry : fileEntries) {
 			exportFileEntry(
 				portletDataContext, fileEntryTypesElement, foldersElement,
-				fileEntriesElement, fileRanksElement, fileEntry, true);
+				fileEntriesElement, fileRanksElement, repositoriesElement,
+				repositoryEntriesElement, fileEntry, true);
 		}
 
 		if (portletDataContext.getBooleanParameter(_NAMESPACE, "shortcuts")) {
-			List<DLFileShortcut> fileShortcuts = DLFileShortcutUtil.findByG_F(
-				folder.getRepositoryId(), folder.getFolderId());
+			List<DLFileShortcut> fileShortcuts = DLFileShortcutUtil.findByG_F_A(
+				folder.getRepositoryId(), folder.getFolderId(), true);
 
 			for (DLFileShortcut fileShortcut : fileShortcuts) {
 				exportFileShortcut(
 					portletDataContext, fileEntryTypesElement, foldersElement,
-					fileShortcutsElement, fileShortcut);
+					fileShortcutsElement, repositoriesElement,
+					repositoryEntriesElement, fileShortcut);
 			}
 		}
 	}
@@ -787,6 +1014,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	protected static void exportParentFolder(
 			PortletDataContext portletDataContext,
 			Element fileEntryTypesElement, Element foldersElement,
+			Element repositoriesElement, Element repositoryEntriesElement,
 			long folderId)
 		throws Exception {
 
@@ -794,10 +1022,27 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			return;
 		}
 
-		Folder folder = FolderUtil.findByPrimaryKey(folderId);
+		Folder folder = DLAppLocalServiceUtil.getFolder(folderId);
+
+		if (folder.isMountPoint()) {
+			Repository repository = RepositoryUtil.findByPrimaryKey(
+				folder.getRepositoryId());
+
+			exportRepository(
+				portletDataContext, repositoriesElement,
+				repositoryEntriesElement, repository);
+
+			return;
+		}
+		else if (!folder.isDefaultRepository()) {
+			//no need to export non-Liferay Repository items since they would
+			//be exported as part of repository export
+			return;
+		}
 
 		exportParentFolder(
 			portletDataContext, fileEntryTypesElement, foldersElement,
+			repositoriesElement, repositoryEntriesElement,
 			folder.getParentFolderId());
 
 		String path = getFolderPath(portletDataContext, folder);
@@ -816,7 +1061,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 	protected static void exportRepository(
 			PortletDataContext portletDataContext, Element repositoriesElement,
-			Repository repository)
+			Element repositoryEntriesElement, Repository repository)
 		throws Exception {
 
 		if (!portletDataContext.isWithinDateRange(
@@ -834,11 +1079,38 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		Element repositoryElement = repositoriesElement.addElement(
 			"repository");
 
-		repositoryElement.addAttribute(
-			"repositoryClassName", repository.getClassName());
+		repositoryElement.addAttribute("class-name", repository.getClassName());
 
 		portletDataContext.addClassedModel(
 			repositoryElement, path, repository, _NAMESPACE);
+
+		List<RepositoryEntry> repositoryEntries =
+			RepositoryEntryUtil.findByRepositoryId(
+				repository.getRepositoryId());
+
+		for (RepositoryEntry repositoryEntry : repositoryEntries) {
+			exportRepositoryEntry(
+				portletDataContext, repositoryEntriesElement, repositoryEntry);
+		}
+	}
+
+	protected static void exportRepositoryEntry(
+			PortletDataContext portletDataContext,
+			Element repositoryEntriesElement, RepositoryEntry repositoryEntry)
+		throws Exception {
+
+		String path = getRepositoryEntryPath(
+			portletDataContext, repositoryEntry);
+
+		if (!portletDataContext.isPathNotProcessed(path)) {
+			return;
+		}
+
+		Element repositoryEntryElement = repositoryEntriesElement.addElement(
+			"repository-entry");
+
+		portletDataContext.addClassedModel(
+			repositoryEntryElement, path, repositoryEntry, _NAMESPACE);
 	}
 
 	protected static String getFileEntryBinPath(
@@ -875,13 +1147,13 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	}
 
 	/**
-	 * @see {@link PortletImporter#getAssetCategoryName(String, long, String,
-	 *      int)}
+	 * @see {@link PortletImporter#getAssetCategoryName(String, long, long,
+	 *	  String, int)}
 	 * @see {@link PortletImporter#getAssetVocabularyName(String, long, String,
-	 *      int)}
+	 *	  int)}
 	 */
 	protected static String getFileEntryTypeName(
-			String uuid, long companyId, long groupId, String name, int count)
+			String uuid, long groupId, String name, int count)
 		throws Exception {
 
 		DLFileEntryType dlFileEntryType = DLFileEntryTypeUtil.fetchByG_N(
@@ -899,7 +1171,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		name = StringUtil.appendParentheticalSuffix(name, count);
 
-		return getFileEntryTypeName(uuid, companyId, groupId, name, ++count);
+		return getFileEntryTypeName(uuid, groupId, name, ++count);
 	}
 
 	protected static String getFileEntryTypePath(
@@ -946,10 +1218,10 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	}
 
 	/**
-	 * @see {@link PortletImporter#getAssetCategoryName(String, long, String,
-	 *      int)}
+	 * @see {@link PortletImporter#getAssetCategoryName(String, long, long,
+	 *	  String, int)}
 	 * @see {@link PortletImporter#getAssetVocabularyName(String, long, String,
-	 *      int)}
+	 *	  int)}
 	 */
 	protected static String getFolderName(
 			String uuid, long groupId, long parentFolderId, String name,
@@ -1000,16 +1272,16 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		return sb.toString();
 	}
 
-	protected static String getImportRepositoryPath(
-		PortletDataContext portletDataContext, long repositoryId) {
+	protected static String getRepositoryEntryPath(
+		PortletDataContext portletDataContext,
+		RepositoryEntry repositoryEntry) {
 
 		StringBundler sb = new StringBundler(4);
 
 		sb.append(
-			portletDataContext.getSourcePortletPath(
-				PortletKeys.DOCUMENT_LIBRARY));
-		sb.append("/repositories/");
-		sb.append(repositoryId);
+			portletDataContext.getPortletPath(PortletKeys.DOCUMENT_LIBRARY));
+		sb.append("/repository-entries/");
+		sb.append(repositoryEntry.getRepositoryEntryId());
 		sb.append(".xml");
 
 		return sb.toString();
@@ -1046,8 +1318,8 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			dlFileEntryType.getUserUuid());
 
 		String name = getFileEntryTypeName(
-			dlFileEntryType.getUuid(), portletDataContext.getCompanyId(),
-			portletDataContext.getScopeGroupId(), dlFileEntryType.getName(), 2);
+			dlFileEntryType.getUuid(), portletDataContext.getScopeGroupId(),
+			dlFileEntryType.getName(), 2);
 
 		List<Element> structureElements = fileEntryTypeElement.elements(
 			"structure");
@@ -1108,6 +1380,30 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		portletDataContext.importClassedModel(
 			dlFileEntryType, importedDLFileEntryType, _NAMESPACE);
+
+		String importedDLFileEntryDDMStructureKey = DLUtil.getDDMStructureKey(
+			importedDLFileEntryType);
+
+		List<DDMStructure> ddmStructures =
+			importedDLFileEntryType.getDDMStructures();
+
+		for (DDMStructure ddmStructure : ddmStructures) {
+			String ddmStructureKey = ddmStructure.getStructureKey();
+
+			if (!DLUtil.isAutoGeneratedDLFileEntryTypeDDMStructureKey(
+					ddmStructureKey)) {
+
+				continue;
+			}
+
+			if (ddmStructureKey.equals(importedDLFileEntryDDMStructureKey)) {
+				continue;
+			}
+
+			ddmStructure.setStructureKey(importedDLFileEntryDDMStructureKey);
+
+			DDMStructureLocalServiceUtil.updateDDMStructure(ddmStructure);
+		}
 	}
 
 	protected static void importFileRank(
@@ -1168,12 +1464,12 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		long userId = portletDataContext.getUserId(fileShortcut.getUserUuid());
 
-		Map<Long, Long> folderPKs =
+		Map<Long, Long> folderIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				DLFolder.class);
 
 		long folderId = MapUtil.getLong(
-			folderPKs, fileShortcut.getFolderId(), fileShortcut.getFolderId());
+			folderIds, fileShortcut.getFolderId(), fileShortcut.getFolderId());
 
 		long groupId = portletDataContext.getScopeGroupId();
 
@@ -1240,12 +1536,12 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		long userId = portletDataContext.getUserId(folder.getUserUuid());
 
-		Map<Long, Long> folderPKs =
+		Map<Long, Long> folderIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				DLFolder.class);
 
 		long parentFolderId = MapUtil.getLong(
-			folderPKs, folder.getParentFolderId(), folder.getParentFolderId());
+			folderIds, folder.getParentFolderId(), folder.getParentFolderId());
 
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			folderPath, folder, _NAMESPACE);
@@ -1262,7 +1558,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			importFolder(portletDataContext, path, folderElement, parentFolder);
 
 			parentFolderId = MapUtil.getLong(
-				folderPKs, folder.getParentFolderId(),
+				folderIds, folder.getParentFolderId(),
 				folder.getParentFolderId());
 		}
 
@@ -1392,72 +1688,6 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		}
 	}
 
-	protected static void importRepository(
-			PortletDataContext portletDataContext, Element repositoryElement)
-		throws Exception {
-
-		String path = repositoryElement.attributeValue("path");
-
-		if (!portletDataContext.isPathNotProcessed(path)) {
-			return;
-		}
-
-		Repository repository =
-			(Repository)portletDataContext.getZipEntryAsObject(path);
-
-		long userId = portletDataContext.getUserId(repository.getUserUuid());
-		long classNameId = PortalUtil.getClassNameId(
-			repositoryElement.attributeValue("repositoryClassName"));
-
-		String repositoryPath = getImportRepositoryPath(
-			portletDataContext, repository.getRepositoryId());
-
-		ServiceContext serviceContext = portletDataContext.createServiceContext(
-			repositoryPath, repository, _NAMESPACE);
-
-		try {
-			RepositoryLocalServiceUtil.addRepository(
-				userId, portletDataContext.getScopeGroupId(), classNameId,
-				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-				repository.getName(), repository.getDescription(),
-				repository.getPortletId(),
-				repository.getTypeSettingsProperties(), serviceContext);
-		}
-		catch (Exception e) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Unable to connect to repository {name=" +
-						repository.getName() + ",typeSettings=" +
-							repository.getTypeSettingsProperties() + "}",
-					e);
-			}
-		}
-	}
-
-	protected static boolean isDuplicateFileEntry(
-		String folderUuid, FileEntry fileEntry1, FileEntry fileEntry2) {
-
-		try {
-			Folder folder2 = fileEntry2.getFolder();
-
-			if (folderUuid.equals(folder2.getUuid()) &&
-				(fileEntry1.getSize() == fileEntry2.getSize()) &&
-				(DLUtil.compareVersions(
-					fileEntry1.getVersion(), fileEntry2.getVersion()) == 0) &&
-				fileEntry1.getVersionUserUuid().equals(
-					fileEntry2.getVersionUserUuid())) {
-
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
-		catch (Exception e) {
-			return false;
-		}
-	}
-
 	protected static boolean isFileEntryTypeExportable(
 			long companyId, DLFileEntryType dlFileEntryType)
 		throws PortalException, SystemException {
@@ -1516,13 +1746,15 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 				"root-folder-id", String.valueOf(rootFolderId));
 		}
 
-		Element repositoryElement = rootElement.addElement("repositories");
 		Element fileEntryTypesElement = rootElement.addElement(
 			"file-entry-types");
 		Element foldersElement = rootElement.addElement("folders");
 		Element fileEntriesElement = rootElement.addElement("file-entries");
 		Element fileShortcutsElement = rootElement.addElement("file-shortcuts");
 		Element fileRanksElement = rootElement.addElement("file-ranks");
+		Element repositoriesElement = rootElement.addElement("repositories");
+		Element repositoryEntriesElement = rootElement.addElement(
+			"repository-entries");
 
 		List<DLFileEntryType> dlFileEntryTypes =
 			DLFileEntryTypeServiceUtil.getFileEntryTypes(
@@ -1543,23 +1775,10 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			portletDataContext.getScopeGroupId());
 
 		for (Folder folder : folders) {
-			if (!folder.isMountPoint()) {
-				exportFolder(
-					portletDataContext, fileEntryTypesElement, foldersElement,
-					fileEntriesElement, fileShortcutsElement, fileRanksElement,
-					folder, false);
-			}
-			else {
-				if (portletDataContext.getBooleanParameter(
-						_NAMESPACE, "repositories")) {
-
-					Repository repository = RepositoryUtil.findByPrimaryKey(
-						folder.getRepositoryId());
-
-					exportRepository(
-						portletDataContext, repositoryElement, repository);
-				}
-			}
+			exportFolder(
+				portletDataContext, fileEntryTypesElement, foldersElement,
+				fileEntriesElement, fileShortcutsElement, fileRanksElement,
+				repositoriesElement, repositoryEntriesElement, folder, false);
 		}
 
 		List<FileEntry> fileEntries = FileEntryUtil.findByR_F(
@@ -1569,18 +1788,20 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		for (FileEntry fileEntry : fileEntries) {
 			exportFileEntry(
 				portletDataContext, fileEntryTypesElement, foldersElement,
-				fileEntriesElement, fileRanksElement, fileEntry, true);
+				fileEntriesElement, fileRanksElement, repositoriesElement,
+				repositoryEntriesElement, fileEntry, true);
 		}
 
 		if (portletDataContext.getBooleanParameter(_NAMESPACE, "shortcuts")) {
-			List<DLFileShortcut> fileShortcuts = DLFileShortcutUtil.findByG_F(
+			List<DLFileShortcut> fileShortcuts = DLFileShortcutUtil.findByG_F_A(
 				portletDataContext.getScopeGroupId(),
-				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, true);
 
 			for (DLFileShortcut fileShortcut : fileShortcuts) {
 				exportFileShortcut(
 					portletDataContext, fileEntryTypesElement, foldersElement,
-					fileShortcutsElement, fileShortcut);
+					fileShortcutsElement, repositoriesElement,
+					repositoryEntriesElement, fileShortcut);
 			}
 		}
 
@@ -1602,19 +1823,25 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		Element rootElement = document.getRootElement();
 
-		if (portletDataContext.getBooleanParameter(
-				_NAMESPACE, "repositories")) {
+		Element repositoriesElement = rootElement.element("repositories");
 
-			Element repositoriesElement = rootElement.element("repositories");
+		if (repositoriesElement != null) {
+			List<Element> repositoryElements = repositoriesElement.elements(
+				"repository");
 
-			if (repositoriesElement != null) {
-				List<Element> repositoryElements = repositoriesElement.elements(
-					"repository");
-
-				for (Element repositoryElement : repositoryElements) {
-					importRepository(portletDataContext, repositoryElement);
-				}
+			for (Element repositoryElement : repositoryElements) {
+				importRepository(portletDataContext, repositoryElement);
 			}
+		}
+
+		Element repositoryEntriesElement = rootElement.element(
+			"repository-entries");
+
+		List<Element> repositoryEntryElements =
+			repositoryEntriesElement.elements("repository-entry");
+
+		for (Element repositoryEntryElement : repositoryEntryElements) {
+			importRepositoryEntry(portletDataContext, repositoryEntryElement);
 		}
 
 		Element fileEntryTypesElement = rootElement.element("file-entry-types");
@@ -1667,12 +1894,12 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			rootElement.attributeValue("root-folder-id"));
 
 		if (rootFolderId > 0) {
-			Map<Long, Long> folderPKs =
+			Map<Long, Long> folderIds =
 				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 					DLFolder.class);
 
 			rootFolderId = MapUtil.getLong(
-				folderPKs, rootFolderId, rootFolderId);
+				folderIds, rootFolderId, rootFolderId);
 
 			portletPreferences.setValue(
 				"rootFolderId", String.valueOf(rootFolderId));
@@ -1688,15 +1915,17 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	private static Log _log = LogFactoryUtil.getLog(
 		DLPortletDataHandlerImpl.class);
 
-	private static PortletDataHandlerBoolean _categories =
-		new PortletDataHandlerBoolean(_NAMESPACE, "categories");
-
-	private static PortletDataHandlerBoolean _comments =
-		new PortletDataHandlerBoolean(_NAMESPACE, "comments");
-
 	private static PortletDataHandlerBoolean _foldersAndDocuments =
 		new PortletDataHandlerBoolean(
 			_NAMESPACE, "folders-and-documents", true, true);
+
+	private static PortletDataHandlerControl[] _metadataControls =
+		new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(_NAMESPACE, "categories"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "comments"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "ratings"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "tags")
+		};
 
 	private static PortletDataHandlerBoolean _previewsAndThumbnails =
 		new PortletDataHandlerBoolean(_NAMESPACE, "previews-and-thumbnails");
@@ -1704,16 +1933,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 	private static PortletDataHandlerBoolean _ranks =
 		new PortletDataHandlerBoolean(_NAMESPACE, "ranks");
 
-	private static PortletDataHandlerBoolean _ratings =
-		new PortletDataHandlerBoolean(_NAMESPACE, "ratings");
-
-	private static PortletDataHandlerBoolean _repositories =
-		new PortletDataHandlerBoolean(_NAMESPACE, "repositories", false, false);
-
 	private static PortletDataHandlerBoolean _shortcuts=
 		new PortletDataHandlerBoolean(_NAMESPACE, "shortcuts");
-
-	private static PortletDataHandlerBoolean _tags =
-		new PortletDataHandlerBoolean(_NAMESPACE, "tags");
 
 }

@@ -14,6 +14,7 @@
 
 package com.liferay.portlet;
 
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.model.Portlet;
 
 import javax.portlet.PortletException;
@@ -40,11 +41,18 @@ public class PortletInstanceFactoryUtil {
 		return getPortletInstanceFactory().create(portlet, servletContext);
 	}
 
+	public static void delete(Portlet portlet) {
+		getPortletInstanceFactory().delete(portlet);
+	}
+
 	public static void destroy(Portlet portlet) {
 		getPortletInstanceFactory().destroy(portlet);
 	}
 
 	public static PortletInstanceFactory getPortletInstanceFactory() {
+		PortalRuntimePermission.checkGetBeanProperty(
+			PortletInstanceFactoryUtil.class);
+
 		return _portletInstanceFactory;
 	}
 
@@ -56,6 +64,8 @@ public class PortletInstanceFactoryUtil {
 
 	public void setPortletInstanceFactory(
 		PortletInstanceFactory portletInstanceFactory) {
+
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_portletInstanceFactory = portletInstanceFactory;
 	}

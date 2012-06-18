@@ -21,17 +21,16 @@ import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.service.BaseServiceImpl;
 import com.liferay.portal.service.LockLocalService;
 import com.liferay.portal.service.ResourceLocalService;
-import com.liferay.portal.service.ResourceService;
+import com.liferay.portal.service.SubscriptionLocalService;
 import com.liferay.portal.service.UserLocalService;
 import com.liferay.portal.service.UserService;
 import com.liferay.portal.service.WorkflowInstanceLinkLocalService;
-import com.liferay.portal.service.base.PrincipalBean;
 import com.liferay.portal.service.persistence.LockFinder;
 import com.liferay.portal.service.persistence.LockPersistence;
-import com.liferay.portal.service.persistence.ResourceFinder;
-import com.liferay.portal.service.persistence.ResourcePersistence;
+import com.liferay.portal.service.persistence.SubscriptionPersistence;
 import com.liferay.portal.service.persistence.UserFinder;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.WorkflowInstanceLinkPersistence;
@@ -85,7 +84,7 @@ import javax.sql.DataSource;
  * @see com.liferay.portlet.messageboards.service.MBThreadServiceUtil
  * @generated
  */
-public abstract class MBThreadServiceBaseImpl extends PrincipalBean
+public abstract class MBThreadServiceBaseImpl extends BaseServiceImpl
 	implements MBThreadService, IdentifiableBean {
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -612,57 +611,41 @@ public abstract class MBThreadServiceBaseImpl extends PrincipalBean
 	}
 
 	/**
-	 * Returns the resource remote service.
+	 * Returns the subscription local service.
 	 *
-	 * @return the resource remote service
+	 * @return the subscription local service
 	 */
-	public ResourceService getResourceService() {
-		return resourceService;
+	public SubscriptionLocalService getSubscriptionLocalService() {
+		return subscriptionLocalService;
 	}
 
 	/**
-	 * Sets the resource remote service.
+	 * Sets the subscription local service.
 	 *
-	 * @param resourceService the resource remote service
+	 * @param subscriptionLocalService the subscription local service
 	 */
-	public void setResourceService(ResourceService resourceService) {
-		this.resourceService = resourceService;
+	public void setSubscriptionLocalService(
+		SubscriptionLocalService subscriptionLocalService) {
+		this.subscriptionLocalService = subscriptionLocalService;
 	}
 
 	/**
-	 * Returns the resource persistence.
+	 * Returns the subscription persistence.
 	 *
-	 * @return the resource persistence
+	 * @return the subscription persistence
 	 */
-	public ResourcePersistence getResourcePersistence() {
-		return resourcePersistence;
+	public SubscriptionPersistence getSubscriptionPersistence() {
+		return subscriptionPersistence;
 	}
 
 	/**
-	 * Sets the resource persistence.
+	 * Sets the subscription persistence.
 	 *
-	 * @param resourcePersistence the resource persistence
+	 * @param subscriptionPersistence the subscription persistence
 	 */
-	public void setResourcePersistence(ResourcePersistence resourcePersistence) {
-		this.resourcePersistence = resourcePersistence;
-	}
-
-	/**
-	 * Returns the resource finder.
-	 *
-	 * @return the resource finder
-	 */
-	public ResourceFinder getResourceFinder() {
-		return resourceFinder;
-	}
-
-	/**
-	 * Sets the resource finder.
-	 *
-	 * @param resourceFinder the resource finder
-	 */
-	public void setResourceFinder(ResourceFinder resourceFinder) {
-		this.resourceFinder = resourceFinder;
+	public void setSubscriptionPersistence(
+		SubscriptionPersistence subscriptionPersistence) {
+		this.subscriptionPersistence = subscriptionPersistence;
 	}
 
 	/**
@@ -1069,12 +1052,10 @@ public abstract class MBThreadServiceBaseImpl extends PrincipalBean
 	protected LockFinder lockFinder;
 	@BeanReference(type = ResourceLocalService.class)
 	protected ResourceLocalService resourceLocalService;
-	@BeanReference(type = ResourceService.class)
-	protected ResourceService resourceService;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
-	@BeanReference(type = ResourceFinder.class)
-	protected ResourceFinder resourceFinder;
+	@BeanReference(type = SubscriptionLocalService.class)
+	protected SubscriptionLocalService subscriptionLocalService;
+	@BeanReference(type = SubscriptionPersistence.class)
+	protected SubscriptionPersistence subscriptionPersistence;
 	@BeanReference(type = UserLocalService.class)
 	protected UserLocalService userLocalService;
 	@BeanReference(type = UserService.class)

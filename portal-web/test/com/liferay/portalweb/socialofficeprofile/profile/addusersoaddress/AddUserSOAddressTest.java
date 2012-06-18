@@ -22,7 +22,7 @@ import com.liferay.portalweb.portal.util.RuntimeVariables;
  */
 public class AddUserSOAddressTest extends BaseTestCase {
 	public void testAddUserSOAddress() throws Exception {
-		selenium.open("/user/joebloggs/home/");
+		selenium.open("/web/guest/home/");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -31,7 +31,7 @@ public class AddUserSOAddressTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isVisible("link=Control Panel")) {
+				if (selenium.isElementPresent("link=Control Panel")) {
 					break;
 				}
 			}
@@ -49,20 +49,23 @@ public class AddUserSOAddressTest extends BaseTestCase {
 			RuntimeVariables.replace("Users and Organizations"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
-		selenium.type("//input[@id='_125_keywords']",
-			RuntimeVariables.replace("socialofficefriendfn"));
+		selenium.clickAt("link=Search All Users",
+			RuntimeVariables.replace("Search All Users"));
+		selenium.waitForPageToLoad("30000");
+		loadRequiredJavaScriptModules();
+		selenium.type("//input[@id='_125_toggle_id_users_admin_user_searchkeywords']",
+			RuntimeVariables.replace("socialoffice01"));
 		selenium.clickAt("//input[@value='Search']",
 			RuntimeVariables.replace("Search"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
-		assertEquals(RuntimeVariables.replace("socialofficefriendfn"),
-			selenium.getText("//td[2]/a"));
-		selenium.clickAt("//td[2]/a",
-			RuntimeVariables.replace("socialofficefriendfn"));
+		assertEquals(RuntimeVariables.replace("Social01"),
+			selenium.getText("//a[contains(.,'Social01')]"));
+		selenium.clickAt("//a[contains(.,'Social01')]",
+			RuntimeVariables.replace("Social01"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
-		assertEquals(RuntimeVariables.replace(
-				"socialofficefriendfn socialofficefriendmn socialofficefriendln"),
+		assertEquals(RuntimeVariables.replace("Social01 Office01 User01"),
 			selenium.getText("//div[2]/h1/span"));
 
 		for (int second = 0;; second++) {
@@ -85,9 +88,27 @@ public class AddUserSOAddressTest extends BaseTestCase {
 				"Addresses"));
 		selenium.clickAt("//a[@id='_125_addressesLink']",
 			RuntimeVariables.replace("Addresses"));
-		selenium.type("//input[@id='_125_addressStreet1_0']",
+
+		for (int second = 0;; second++) {
+			if (second >= 90) {
+				fail("timeout");
+			}
+
+			try {
+				if (selenium.isVisible(
+							"//input[contains(@id,'addressStreet1')]")) {
+					break;
+				}
+			}
+			catch (Exception e) {
+			}
+
+			Thread.sleep(1000);
+		}
+
+		selenium.type("//input[contains(@id,'addressStreet1')]",
 			RuntimeVariables.replace("123 Liferay Ln."));
-		selenium.select("//select[@id='_125_addressCountryId0']",
+		selenium.select("//select[contains(@id,'addressCountry')]",
 			RuntimeVariables.replace("label=United States"));
 
 		for (int second = 0;; second++) {
@@ -97,7 +118,7 @@ public class AddUserSOAddressTest extends BaseTestCase {
 
 			try {
 				if (selenium.isPartialText(
-							"//select[@id='_125_addressRegionId0']",
+							"//select[contains(@id,'addressRegion')]",
 							"California")) {
 					break;
 				}
@@ -108,17 +129,17 @@ public class AddUserSOAddressTest extends BaseTestCase {
 			Thread.sleep(1000);
 		}
 
-		selenium.select("//select[@id='_125_addressRegionId0']",
+		selenium.select("//select[contains(@id,'addressRegion')]",
 			RuntimeVariables.replace("label=California"));
-		selenium.type("//input[@id='_125_addressZip0']",
+		selenium.type("//input[contains(@id,'addressZip')]",
 			RuntimeVariables.replace("91234"));
-		selenium.type("//input[@id='_125_addressCity0']",
+		selenium.type("//input[contains(@id,'addressCity')]",
 			RuntimeVariables.replace("Ray of Light"));
-		selenium.select("//select[@id='_125_addressTypeId0']",
+		selenium.select("//select[contains(@id,'addressType')]",
 			RuntimeVariables.replace("label=Personal"));
-		selenium.clickAt("//input[@id='_125_addressMailing0Checkbox']",
+		selenium.clickAt("//input[contains(@id,'addressMailing0Checkbox')]",
 			RuntimeVariables.replace("Mailing Checkbox"));
-		selenium.clickAt("//input[@id='_125_addressPrimary0']",
+		selenium.clickAt("//input[contains(@id,'addressPrimary')]",
 			RuntimeVariables.replace("Primary Button"));
 		selenium.clickAt("//input[@value='Save']",
 			RuntimeVariables.replace("Save"));
@@ -145,19 +166,20 @@ public class AddUserSOAddressTest extends BaseTestCase {
 				"Your request completed successfully."),
 			selenium.getText("//div[@class='portlet-msg-success']"));
 		assertEquals("123 Liferay Ln.",
-			selenium.getValue("//input[@id='_125_addressStreet1_0']"));
+			selenium.getValue("//input[contains(@id,'addressStreet1')]"));
 		assertEquals("Personal",
-			selenium.getSelectedLabel("//select[@id='_125_addressTypeId0']"));
+			selenium.getSelectedLabel("//select[contains(@id,'addressType')]"));
 		assertEquals("91234",
-			selenium.getValue("//input[@id='_125_addressZip0']"));
+			selenium.getValue("//input[contains(@id,'addressZip')]"));
 		assertEquals("Ray of Light",
-			selenium.getValue("//input[@id='_125_addressCity0']"));
+			selenium.getValue("//input[contains(@id,'addressCity')]"));
 		assertEquals("United States",
-			selenium.getSelectedLabel("//select[@id='_125_addressCountryId0']"));
+			selenium.getSelectedLabel(
+				"//select[contains(@id,'addressCountry')]"));
 		assertEquals("California",
-			selenium.getSelectedLabel("//select[@id='_125_addressRegionId0']"));
-		assertTrue(selenium.isChecked("//input[@id='_125_addressPrimary0']"));
+			selenium.getSelectedLabel("//select[contains(@id,'addressRegion')]"));
+		assertTrue(selenium.isChecked("//input[contains(@id,'addressPrimary')]"));
 		assertTrue(selenium.isChecked(
-				"//input[@id='_125_addressMailing0Checkbox']"));
+				"//input[contains(@id,'addressMailing0Checkbox')]"));
 	}
 }

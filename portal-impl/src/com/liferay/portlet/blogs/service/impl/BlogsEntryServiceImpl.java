@@ -14,12 +14,14 @@
 
 package com.liferay.portlet.blogs.service.impl;
 
+import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
@@ -48,7 +50,6 @@ import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -93,22 +94,30 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 		List<BlogsEntry> entries = new ArrayList<BlogsEntry>();
 
-		int lastIntervalStart = 0;
 		boolean listNotExhausted = true;
 
+		QueryDefinition queryDefinition = new QueryDefinition(
+			status, false, 0, 0, new EntryDisplayDateComparator());
+
+		if (status == WorkflowConstants.STATUS_ANY) {
+			queryDefinition.setStatus(WorkflowConstants.STATUS_IN_TRASH, true);
+		}
+
 		while ((entries.size() < max) && listNotExhausted) {
+			queryDefinition.setEnd(queryDefinition.getStart() + max);
+
 			List<BlogsEntry> entryList =
 				blogsEntryLocalService.getCompanyEntries(
-					companyId, displayDate, status, lastIntervalStart,
-					lastIntervalStart + max, new EntryDisplayDateComparator());
+					companyId, displayDate, queryDefinition);
 
-			Iterator<BlogsEntry> itr = entryList.iterator();
+			queryDefinition.setStart(queryDefinition.getStart() + max);
 
-			lastIntervalStart += max;
 			listNotExhausted = (entryList.size() == max);
 
-			while (itr.hasNext() && (entries.size() < max)) {
-				BlogsEntry entry = itr.next();
+			for (BlogsEntry entry : entryList) {
+				if (entries.size() >= max) {
+					break;
+				}
 
 				if (BlogsEntryPermission.contains(
 						getPermissionChecker(), entry, ActionKeys.VIEW)) {
@@ -130,12 +139,11 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 		Company company = companyPersistence.findByPrimaryKey(companyId);
 
 		String name = company.getName();
-		String description = name;
 		List<BlogsEntry> blogsEntries = getCompanyEntries(
 			companyId, displayDate, status, max);
 
 		return exportToRSS(
-			name, description, type, version, displayStyle, feedURL, entryURL,
+			name, name, type, version, displayStyle, feedURL, entryURL,
 			blogsEntries, themeDisplay);
 	}
 
@@ -163,14 +171,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 			long groupId, Date displayDate, int status, int max)
 		throws SystemException {
 
-		if (status == WorkflowConstants.STATUS_ANY) {
-			return blogsEntryPersistence.filterFindByG_LtD(
-				groupId, displayDate, 0, max);
-		}
-		else {
-			return blogsEntryPersistence.filterFindByG_LtD_S(
-				groupId, displayDate, status, 0, max);
-		}
+		return getGroupEntries(groupId, displayDate, status, 0, max);
 	}
 
 	public List<BlogsEntry> getGroupEntries(
@@ -178,8 +179,9 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 		throws SystemException {
 
 		if (status == WorkflowConstants.STATUS_ANY) {
-			return blogsEntryPersistence.filterFindByG_LtD(
-				groupId, displayDate, start, end);
+			return blogsEntryPersistence.filterFindByG_LtD_NeS(
+				groupId, displayDate, WorkflowConstants.STATUS_IN_TRASH, start,
+				end);
 		}
 		else {
 			return blogsEntryPersistence.filterFindByG_LtD_S(
@@ -190,13 +192,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 	public List<BlogsEntry> getGroupEntries(long groupId, int status, int max)
 		throws SystemException {
 
-		if (status == WorkflowConstants.STATUS_ANY) {
-			return blogsEntryPersistence.filterFindByGroupId(groupId, 0, max);
-		}
-		else {
-			return blogsEntryPersistence.filterFindByG_S(
-				groupId, status, 0, max);
-		}
+		return getGroupEntries(groupId, status, 0, max);
 	}
 
 	public List<BlogsEntry> getGroupEntries(
@@ -204,8 +200,8 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 		throws SystemException {
 
 		if (status == WorkflowConstants.STATUS_ANY) {
-			return blogsEntryPersistence.filterFindByGroupId(
-				groupId, start, end);
+			return blogsEntryPersistence.filterFindByG_NeS(
+				groupId, WorkflowConstants.STATUS_IN_TRASH, start, end);
 		}
 		else {
 			return blogsEntryPersistence.filterFindByG_S(
@@ -217,8 +213,8 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 		throws SystemException {
 
 		if (status == WorkflowConstants.STATUS_ANY) {
-			return blogsEntryPersistence.filterCountByG_LtD(
-				groupId, displayDate);
+			return blogsEntryPersistence.filterCountByG_LtD_NeS(
+				groupId, displayDate, WorkflowConstants.STATUS_IN_TRASH);
 		}
 		else {
 			return blogsEntryPersistence.filterCountByG_LtD_S(
@@ -230,7 +226,8 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 		throws SystemException {
 
 		if (status == WorkflowConstants.STATUS_ANY) {
-			return blogsEntryPersistence.filterCountByGroupId(groupId);
+			return blogsEntryPersistence.filterCountByG_NeS(
+				groupId, WorkflowConstants.STATUS_IN_TRASH);
 		}
 		else {
 			return blogsEntryPersistence.filterCountByG_S(groupId, status);
@@ -246,12 +243,11 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 		Group group = groupPersistence.findByPrimaryKey(groupId);
 
 		String name = HtmlUtil.escape(group.getDescriptiveName());
-		String description = name;
 		List<BlogsEntry> blogsEntries = getGroupEntries(
 			groupId, displayDate, status, max);
 
 		return exportToRSS(
-			name, description, type, version, displayStyle, feedURL, entryURL,
+			name, name, type, version, displayStyle, feedURL, entryURL,
 			blogsEntries, themeDisplay);
 	}
 
@@ -261,22 +257,30 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 		List<BlogsEntry> entries = new ArrayList<BlogsEntry>();
 
-		int lastIntervalStart = 0;
 		boolean listNotExhausted = true;
 
+		QueryDefinition queryDefinition = new QueryDefinition(
+			status, false, 0, 0, new EntryDisplayDateComparator());
+
+		if (status == WorkflowConstants.STATUS_ANY) {
+			queryDefinition.setStatus(WorkflowConstants.STATUS_IN_TRASH, true);
+		}
+
 		while ((entries.size() < max) && listNotExhausted) {
+			queryDefinition.setEnd(queryDefinition.getStart() + max);
+
 			List<BlogsEntry> entryList =
 				blogsEntryLocalService.getGroupsEntries(
-					companyId, groupId, displayDate, status, lastIntervalStart,
-					lastIntervalStart + max);
+					companyId, groupId, displayDate, queryDefinition);
 
-			Iterator<BlogsEntry> itr = entryList.iterator();
+			queryDefinition.setStart(queryDefinition.getStart() + max);
 
-			lastIntervalStart += max;
 			listNotExhausted = (entryList.size() == max);
 
-			while (itr.hasNext() && (entries.size() < max)) {
-				BlogsEntry entry = itr.next();
+			for (BlogsEntry entry : entryList) {
+				if (entries.size() >= max) {
+					break;
+				}
 
 				if (BlogsEntryPermission.contains(
 						getPermissionChecker(), entry, ActionKeys.VIEW)) {
@@ -295,21 +299,29 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 
 		List<BlogsEntry> entries = new ArrayList<BlogsEntry>();
 
-		int lastIntervalStart = 0;
 		boolean listNotExhausted = true;
 
+		QueryDefinition queryDefinition = new QueryDefinition(
+			status, false, 0, 0, new EntryDisplayDateComparator());
+
+		if (status == WorkflowConstants.STATUS_ANY) {
+			queryDefinition.setStatus(WorkflowConstants.STATUS_IN_TRASH, true);
+		}
+
 		while ((entries.size() < max) && listNotExhausted) {
+			queryDefinition.setEnd(queryDefinition.getStart() + max);
+
 			List<BlogsEntry> entryList = blogsEntryFinder.findByOrganizationId(
-				organizationId, displayDate, status, lastIntervalStart,
-				lastIntervalStart + max, new EntryDisplayDateComparator());
+				organizationId, displayDate, queryDefinition);
 
-			Iterator<BlogsEntry> itr = entryList.iterator();
+			queryDefinition.setStart(queryDefinition.getStart() + max);
 
-			lastIntervalStart += max;
 			listNotExhausted = (entryList.size() == max);
 
-			while (itr.hasNext() && (entries.size() < max)) {
-				BlogsEntry entry = itr.next();
+			for (BlogsEntry entry : entryList) {
+				if (entries.size() >= max) {
+					break;
+				}
 
 				if (BlogsEntryPermission.contains(
 						getPermissionChecker(), entry, ActionKeys.VIEW)) {
@@ -332,13 +344,30 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 			organizationId);
 
 		String name = organization.getName();
-		String description = name;
 		List<BlogsEntry> blogsEntries = getOrganizationEntries(
 			organizationId, displayDate, status, max);
 
 		return exportToRSS(
-			name, description, type, version, displayStyle, feedURL, entryURL,
+			name, name, type, version, displayStyle, feedURL, entryURL,
 			blogsEntries, themeDisplay);
+	}
+
+	public void moveEntryToTrash(long entryId)
+		throws PortalException, SystemException {
+
+		BlogsEntryPermission.check(
+			getPermissionChecker(), entryId, ActionKeys.DELETE);
+
+		blogsEntryLocalService.moveEntryToTrash(getUserId(), entryId);
+	}
+
+	public void restoreEntryFromTrash(long entryId)
+		throws PortalException, SystemException {
+
+		BlogsEntryPermission.check(
+			getPermissionChecker(), entryId, ActionKeys.UPDATE);
+
+		blogsEntryLocalService.restoreEntryFromTrash(getUserId(), entryId);
 	}
 
 	public void subscribe(long groupId)
@@ -420,8 +449,14 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 			String value = null;
 
 			if (displayStyle.equals(RSSUtil.DISPLAY_STYLE_ABSTRACT)) {
+				String summary = entry.getDescription();
+
+				if (Validator.isNull(summary)) {
+					summary = entry.getContent();
+				}
+
 				value = StringUtil.shorten(
-					HtmlUtil.extractText(entry.getDescription()),
+					HtmlUtil.extractText(summary),
 					PropsValues.BLOGS_RSS_ABSTRACT_LENGTH, StringPool.BLANK);
 			}
 			else if (displayStyle.equals(RSSUtil.DISPLAY_STYLE_TITLE)) {
@@ -431,8 +466,7 @@ public class BlogsEntryServiceImpl extends BlogsEntryServiceBaseImpl {
 				value = StringUtil.replace(
 					entry.getContent(),
 					new String[] {
-						"href=\"/",
-						"src=\"/"
+						"href=\"/", "src=\"/"
 					},
 					new String[] {
 						"href=\"" + themeDisplay.getURLPortal() + "/",

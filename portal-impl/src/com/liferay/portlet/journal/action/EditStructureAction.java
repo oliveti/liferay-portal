@@ -94,12 +94,17 @@ public class EditStructureAction extends PortletAction {
 
 				sendRedirect(actionRequest, actionResponse, redirect);
 			}
+			else {
+				String xsd = ParamUtil.getString(actionRequest, "xsd");
+
+				JournalUtil.processXMLAttributes(xsd);
+			}
 		}
 		catch (Exception e) {
 			if (e instanceof NoSuchStructureException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.journal.error");
 			}
@@ -111,7 +116,7 @@ public class EditStructureAction extends PortletAction {
 					 e instanceof StructureNameException ||
 					 e instanceof StructureXsdException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName(), e);
+				SessionErrors.add(actionRequest, e.getClass(), e);
 
 				if (e instanceof RequiredStructureException) {
 					String redirect = PortalUtil.escapeRedirect(
@@ -151,7 +156,7 @@ public class EditStructureAction extends PortletAction {
 			if (//e instanceof NoSuchStructureException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass().getName());
+				SessionErrors.add(renderRequest, e.getClass());
 
 				return mapping.findForward("portlet.journal.error");
 			}

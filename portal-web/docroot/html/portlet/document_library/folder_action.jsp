@@ -98,13 +98,13 @@ else {
 
 boolean showWhenSingleIcon = false;
 
-if (row == null || portletId.equals(PortletKeys.DOCUMENT_LIBRARY)) {
+if ((row == null) || portletId.equals(PortletKeys.DOCUMENT_LIBRARY)) {
 	showWhenSingleIcon = true;
 }
 
 boolean view = false;
 
-if (row == null && (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY))) {
+if ((row == null) && (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY))) {
 	view = true;
 }
 %>
@@ -186,12 +186,12 @@ if (row == null && (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || 
 
 						<portlet:actionURL var="deleteURL">
 							<portlet:param name="struts_action" value="/document_library/edit_folder" />
-							<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.DELETE %>" />
+							<portlet:param name="<%= Constants.CMD %>" value="<%= (folder.getModel() instanceof DLFolder) ? Constants.MOVE_TO_TRASH : Constants.DELETE %>" />
 							<portlet:param name="redirect" value="<%= (view || folderSelected) ? redirectURL : redirect %>" />
 							<portlet:param name="folderId" value="<%= String.valueOf(folderId) %>" />
 						</portlet:actionURL>
 
-						<liferay-ui:icon-delete url="<%= deleteURL %>" />
+						<liferay-ui:icon-delete trash="<%= folder.getModel() instanceof DLFolder %>" url="<%= deleteURL %>" />
 					</c:if>
 
 					<c:if test="<%= hasDeletePermission && folder.isMountPoint() %>">
@@ -331,7 +331,7 @@ if (row == null && (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || 
 				</liferay-portlet:renderURL>
 
 				<%
-				taglibEditURL = "javascript:Liferay.Util.openWindow({dialog: {width: 420}, id: '" + renderResponse.getNamespace() + "selectFileEntryType', title: '" + UnicodeLanguageUtil.get(pageContext, portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY) ? "select-media-type" : "select-document-type") + "', uri:'" + editFileEntryURL.toString() + "'});";
+				taglibEditURL = "javascript:Liferay.Util.openWindow({dialog: {centered: true, modal: true, width: 420}, id: '" + renderResponse.getNamespace() + "selectFileEntryType', title: '" + UnicodeLanguageUtil.get(pageContext, portletName.equals(PortletKeys.MEDIA_GALLERY_DISPLAY) ? "select-media-type" : "select-document-type") + "', uri:'" + editFileEntryURL.toString() + "'});";
 				%>
 
 				<liferay-ui:icon
@@ -420,7 +420,7 @@ if (row == null && (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || 
 	</div>
 </div>
 
-<portlet:renderURL windowState="<%= LiferayWindowState.POP_UP.toString() %>" var="viewSlideShowURL">
+<portlet:renderURL var="viewSlideShowURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
 	<portlet:param name="struts_action" value="/image_gallery_display/view_slide_show" />
 	<portlet:param name="folderId" value="<%= String.valueOf(folderId) %>" />
 </portlet:renderURL>
@@ -455,8 +455,8 @@ if (row == null && (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) || 
 
 				new A.Dialog(
 					{
+						align: Liferay.Util.Window.ALIGN_CENTER,
 						bodyContent: A.one('#<%= randomNamespace %>webDav').html(),
-						centered: true,
 						destroyOnClose: true,
 						modal: true,
 						title: '<%= UnicodeLanguageUtil.get(pageContext, "access-from-desktop") %>',

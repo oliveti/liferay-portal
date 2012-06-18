@@ -24,6 +24,9 @@ public class EditRecordTest extends BaseTestCase {
 	public void testEditRecord() throws Exception {
 		selenium.open("/web/guest/home/");
 		loadRequiredJavaScriptModules();
+		assertEquals(RuntimeVariables.replace("Go to"),
+			selenium.getText("//li[@id='_145_mySites']/a/span"));
+		selenium.mouseOver("//li[@id='_145_mySites']/a/span");
 
 		for (int second = 0;; second++) {
 			if (second >= 90) {
@@ -31,7 +34,7 @@ public class EditRecordTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isElementPresent("link=Control Panel")) {
+				if (selenium.isVisible("link=Control Panel")) {
 					break;
 				}
 			}
@@ -73,7 +76,7 @@ public class EditRecordTest extends BaseTestCase {
 
 			try {
 				if (selenium.isVisible(
-							"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a")) {
+							"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Edit')]/a")) {
 					break;
 				}
 			}
@@ -85,9 +88,9 @@ public class EditRecordTest extends BaseTestCase {
 
 		assertEquals(RuntimeVariables.replace("Edit"),
 			selenium.getText(
-				"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a"));
+				"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Edit')]/a"));
 		selenium.click(RuntimeVariables.replace(
-				"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a"));
+				"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Edit')]/a"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
 		assertEquals(RuntimeVariables.replace("Boolean"),
@@ -155,7 +158,7 @@ public class EditRecordTest extends BaseTestCase {
 			}
 
 			try {
-				if (RuntimeVariables.replace("document.txt")
+				if (RuntimeVariables.replace("Document_1.txt")
 										.equals(selenium.getValue(
 								"//div[4]/div/span/span/span/input"))) {
 					break;
@@ -167,14 +170,13 @@ public class EditRecordTest extends BaseTestCase {
 			Thread.sleep(1000);
 		}
 
-		assertEquals("document.txt",
+		assertEquals("Document_1.txt",
 			selenium.getValue("//div[4]/div/span/span/span/input"));
 		assertTrue(selenium.isPartialText(
 				"//div[@class='aui-fieldset-content ']/div[5]/span/span/label",
 				"File Upload"));
-		selenium.type("//div[@class='aui-fieldset-content ']/div[5]/span/span/span/input",
-			RuntimeVariables.replace(
-				"L:\\portal\\build\\portal-web\\test\\com\\liferay\\portalweb\\portal\\controlpanel\\dynamicdatalists\\dependencies\\document.txt"));
+		selenium.uploadCommonFile("//div[@class='aui-fieldset-content ']/div[5]/span/span/span/input",
+			RuntimeVariables.replace("Document_2.txt"));
 		assertEquals(RuntimeVariables.replace("Integer"),
 			selenium.getText(
 				"//div[@class='aui-fieldset-content ']/div[6]/span/span/label"));

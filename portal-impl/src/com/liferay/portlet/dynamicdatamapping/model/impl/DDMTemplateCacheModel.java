@@ -35,7 +35,7 @@ public class DDMTemplateCacheModel implements CacheModel<DDMTemplate>,
 	Serializable {
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(31);
+		StringBundler sb = new StringBundler(35);
 
 		sb.append("{uuid=");
 		sb.append(uuid);
@@ -53,8 +53,12 @@ public class DDMTemplateCacheModel implements CacheModel<DDMTemplate>,
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
-		sb.append(", structureId=");
-		sb.append(structureId);
+		sb.append(", classNameId=");
+		sb.append(classNameId);
+		sb.append(", classPK=");
+		sb.append(classPK);
+		sb.append(", templateKey=");
+		sb.append(templateKey);
 		sb.append(", name=");
 		sb.append(name);
 		sb.append(", description=");
@@ -108,7 +112,15 @@ public class DDMTemplateCacheModel implements CacheModel<DDMTemplate>,
 			ddmTemplateImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
-		ddmTemplateImpl.setStructureId(structureId);
+		ddmTemplateImpl.setClassNameId(classNameId);
+		ddmTemplateImpl.setClassPK(classPK);
+
+		if (templateKey == null) {
+			ddmTemplateImpl.setTemplateKey(StringPool.BLANK);
+		}
+		else {
+			ddmTemplateImpl.setTemplateKey(templateKey);
+		}
 
 		if (name == null) {
 			ddmTemplateImpl.setName(StringPool.BLANK);
@@ -165,7 +177,9 @@ public class DDMTemplateCacheModel implements CacheModel<DDMTemplate>,
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
-	public long structureId;
+	public long classNameId;
+	public long classPK;
+	public String templateKey;
 	public String name;
 	public String description;
 	public String type;

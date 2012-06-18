@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.language;
 
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+
 import java.util.Locale;
 
 import javax.portlet.PortletConfig;
@@ -182,6 +184,8 @@ public class LanguageUtil {
 	}
 
 	public static Language getLanguage() {
+		PortalRuntimePermission.checkGetBeanProperty(LanguageUtil.class);
+
 		return _language;
 	}
 
@@ -199,6 +203,21 @@ public class LanguageUtil {
 
 	public static Locale getLocale(String languageCode) {
 		return getLanguage().getLocale(languageCode);
+	}
+
+	public static String getTimeDescription(Locale locale, long milliseconds) {
+		return getLanguage().getTimeDescription(locale, milliseconds);
+	}
+
+	public static String getTimeDescription(
+		Locale locale, long milliseconds, boolean approximate) {
+
+		return getLanguage().getTimeDescription(
+			locale, milliseconds, approximate);
+	}
+
+	public static String getTimeDescription(Locale locale, Long milliseconds) {
+		return getLanguage().getTimeDescription(locale, milliseconds);
 	}
 
 	public static String getTimeDescription(
@@ -248,6 +267,8 @@ public class LanguageUtil {
 	}
 
 	public void setLanguage(Language language) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_language = language;
 	}
 

@@ -17,8 +17,6 @@
 <%@ include file="/html/portlet/wiki/init.jsp" %>
 
 <%
-themeDisplay.setIncludeServiceJs(true);
-
 String redirect = ParamUtil.getString(request, "redirect");
 
 WikiNode node = (WikiNode)request.getAttribute(WebKeys.WIKI_NODE);
@@ -41,6 +39,9 @@ WikiPage wikiPage = (WikiPage)request.getAttribute(WebKeys.WIKI_PAGE);
 	<aui:input name="nodeId" type="hidden" value="<%= String.valueOf(node.getNodeId()) %>" />
 	<aui:input name="title" type="hidden" value="<%= wikiPage.getTitle() %>" />
 	<aui:input name="numOfFiles" type="hidden" value="3" />
+
+	<liferay-ui:error exception="<%= DuplicateFileException.class %>" message="a-file-with-that-name-already-exists" />
+	<liferay-ui:error exception="<%= FileNameException.class %>" message="please-enter-a-file-with-a-valid-file-name" />
 
 	<liferay-ui:error exception="<%= FileSizeException.class %>">
 
@@ -74,7 +75,7 @@ WikiPage wikiPage = (WikiPage)request.getAttribute(WebKeys.WIKI_PAGE);
 			<aui:button type="submit" />
 
 			<%
-			String taglibOnClick = "parent.location = '" + HtmlUtil.escapeURL(redirect) + "';";
+			String taglibOnClick = "parent.location = '" + HtmlUtil.escape(redirect) + "';";
 			%>
 
 			<aui:button onClick="<%= taglibOnClick %>" type="cancel" />
@@ -134,7 +135,7 @@ Ticket ticket = TicketLocalServiceUtil.addTicket(user.getCompanyId(), User.class
 			metadataExplanationContainer: '#<portlet:namespace />metadataExplanationContainer',
 			namespace: '<portlet:namespace />',
 			tempFileURL: {
-				method: Liferay.Service.Wiki.WikiPage.getTempPageAttachmentNames,
+				method: Liferay.Service.bind('/wikipage/get-temp-page-attachment-names'),
 				params: {
 					nodeId: <%= node.getNodeId() %>,
 					tempFolderName: 'com.liferay.portlet.wiki.action.EditPageAttachmentAction'

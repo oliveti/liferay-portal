@@ -14,6 +14,8 @@
 
 package com.liferay.taglib.ui;
 
+import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.taglib.util.IncludeTag;
@@ -64,6 +66,10 @@ public class IconTag extends IncludeTag {
 		_lang = lang;
 	}
 
+	public void setLocalizeMessage(boolean localizeMessage) {
+		_localizeMessage = localizeMessage;
+	}
+
 	public void setMessage(String message) {
 		_message = message;
 	}
@@ -106,6 +112,7 @@ public class IconTag extends IncludeTag {
 		_imageHover = null;
 		_label = false;
 		_lang = null;
+		_localizeMessage = true;
 		_message = null;
 		_method = null;
 		_onClick = null;
@@ -139,7 +146,22 @@ public class IconTag extends IncludeTag {
 		String id = _id;
 
 		if (Validator.isNull(id)) {
-			id = PortalUtil.generateRandomKey(request, IconTag.class.getName());
+			id = (String)request.getAttribute("liferay-ui:icon-menu:id");
+
+			String message = _message;
+
+			if (Validator.isNull(message)) {
+				message = _image;
+			}
+
+			if (Validator.isNotNull(id) && Validator.isNotNull(message)) {
+				id = id.concat(StringPool.UNDERLINE).concat(
+					FriendlyURLNormalizerUtil.normalize(message));
+			}
+			else {
+				id = PortalUtil.generateRandomKey(
+					request, IconTag.class.getName());
+			}
 		}
 
 		request.setAttribute("liferay-ui:icon:alt", _alt);
@@ -150,6 +172,9 @@ public class IconTag extends IncludeTag {
 		request.setAttribute("liferay-ui:icon:imageHover", _imageHover);
 		request.setAttribute("liferay-ui:icon:label", String.valueOf(_label));
 		request.setAttribute("liferay-ui:icon:lang", _lang);
+		request.setAttribute(
+			"liferay-ui:icon:localizeMessage",
+			String.valueOf(_localizeMessage));
 		request.setAttribute("liferay-ui:icon:message", _message);
 		request.setAttribute("liferay-ui:icon:method", _method);
 		request.setAttribute("liferay-ui:icon:onClick", _onClick);
@@ -173,6 +198,7 @@ public class IconTag extends IncludeTag {
 	private String _imageHover;
 	private boolean _label;
 	private String _lang;
+	private boolean _localizeMessage = true;
 	private String _message;
 	private String _method;
 	private String _onClick;

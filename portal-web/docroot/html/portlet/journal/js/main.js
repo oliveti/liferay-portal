@@ -2,6 +2,7 @@ AUI.add(
 	'liferay-portlet-journal',
 	function(A) {
 		var D = A.DataType;
+		var JSON = A.JSON;
 		var Lang = A.Lang;
 
 		var generateInstanceId = function() {
@@ -24,7 +25,7 @@ AUI.add(
 
 		var TPL_EDITOR_ELEMENT = '<div id="{name}" name="{name}"></div>';
 
-		var TPL_FIELD_CONTAINER = '<div><li class="structure-field">' +
+		var TPL_FIELD_CONTAINER = '<div><li class="structure-field {cssClass}">' +
 				'<span class="journal-article-close"></span>' +
 				'<span class="folder">' +
 					'<div class="field-container">' +
@@ -364,34 +365,31 @@ AUI.add(
 
 				var defaultLocale = instance.getDefaultLocale();
 
-				var serviceParameterTypes = [
-					'long',
-					'java.lang.String',
-					'boolean',
-					'java.lang.String',
-					'java.util.Map<java.util.Locale, java.lang.String>',
-					'java.util.Map<java.util.Locale, java.lang.String>',
-					'java.lang.String',
-					'com.liferay.portal.service.ServiceContext'
-				];
+				var nameMap = {};
 
-				Liferay.Service.Journal.JournalStructure.addStructure(
+				nameMap[defaultLocale] = name;
+
+				var descriptionMap = {};
+
+				descriptionMap[defaultLocale] = (Lang.isString(description) && description) ? description : null;
+
+				Liferay.Service(
+					'/journalstructure/add-structure',
 					{
 						groupId: groupId,
 						structureId: structureId,
 						autoStructureId: autoStructureId,
 						parentStructureId: parentStructureId,
-						nameMap: '{' + defaultLocale + ':' + name + '}',
-						descriptionMap: '{' + defaultLocale + ':' + (description == '' ? null : description ) + '}',
+						nameMap: JSON.stringify(nameMap),
+						descriptionMap: JSON.stringify(descriptionMap),
 						xsd: xsd,
-						serviceContext: A.JSON.stringify(
+						serviceContext: JSON.stringify(
 							{
 								addGroupPermissions: addGroupPermissions,
 								addGuestPermissions: addGuestPermissions,
 								scopeGroupId: groupId
 							}
-						),
-						serviceParameterTypes: A.JSON.stringify(serviceParameterTypes)
+						)
 					},
 					function(message) {
 						if (Lang.isFunction(callback)) {
@@ -938,6 +936,7 @@ AUI.add(
 
 					instance._saveDialog = new A.Dialog(
 						{
+							align: Liferay.Util.Window.ALIGN_CENTER,
 							bodyContent: htmlTemplate,
 							buttons: [
 								{
@@ -951,7 +950,6 @@ AUI.add(
 									label: Liferay.Language.get('cancel')
 								}
 							],
-							centered: true,
 							modal: true,
 							title: title,
 							width: 550
@@ -1242,13 +1240,16 @@ AUI.add(
 				return value;
 			},
 
-			openPopupWindow: function(url, title) {
+			openPopupWindow: function(url, title, id) {
+				var instance = this;
+
 				Liferay.Util.openWindow(
 					{
 						dialog: {
 							align: Liferay.Util.Window.ALIGN_CENTER,
 							width: 680
 						},
+						id: instance.portletNamespace + id,
 						title: title,
 						uri: url
 					}
@@ -1646,30 +1647,28 @@ AUI.add(
 
 				var defaultLocale = instance.getDefaultLocale();
 
-				var serviceParameterTypes = [
-					'long',
-					'java.lang.String',
-					'java.lang.String',
-					'java.util.Map<java.util.Locale, java.lang.String>',
-					'java.util.Map<java.util.Locale, java.lang.String>',
-					'java.lang.String',
-					'com.liferay.portal.service.ServiceContext'
-				];
+				var nameMap = {};
 
-				Liferay.Service.Journal.JournalStructure.updateStructure(
+				nameMap[defaultLocale] = name;
+
+				var descriptionMap = {};
+
+				descriptionMap[defaultLocale] = (Lang.isString(description) && description) ? description : null;
+
+				Liferay.Service(
+					'/journalstructure/update-structure',
 					{
 						groupId: groupId,
 						structureId: structureId,
 						parentStructureId: parentStructureId || '',
-						nameMap: '{' + defaultLocale + ':' + name + '}',
-						descriptionMap: '{' + defaultLocale + ':' + (description == '' ? null : description ) + '}',
+						nameMap: JSON.stringify(nameMap),
+						descriptionMap: JSON.stringify(descriptionMap),
 						xsd: xsd,
-						serviceContext: A.JSON.stringify(
+						serviceContext: JSON.stringify(
 							{
 								scopeGroupId: groupId
 							}
-						),
-						serviceParameterTypes: A.JSON.stringify(serviceParameterTypes)
+						)
 					},
 					function(message) {
 						if (Lang.isFunction(callback)) {
@@ -1779,8 +1778,8 @@ AUI.add(
 							'dynamic-element',
 							{
 								'instance-id': instanceId,
-								name: encodeURI(fieldInstance.get('variableName')),
-								type: type,
+								name: encodeURIComponent(fieldInstance.get('variableName')),
+								type: encodeURIComponent(type),
 								'index-type': indexType
 							}
 						);
@@ -1789,8 +1788,8 @@ AUI.add(
 						typeElement = instance._createDynamicNode(
 							'dynamic-element',
 							{
-								name: encodeURI(fieldInstance.get('variableName')),
-								type: type,
+								name: encodeURIComponent(fieldInstance.get('variableName')),
+								type: encodeURIComponent(type),
 								'index-type': indexType,
 								repeatable: fieldInstance.get('repeatable')
 							}
@@ -1942,15 +1941,15 @@ AUI.add(
 					A.each(
 						optionsList,
 						function(item, index, collection) {
-							var optionKey = instance._formatOptionsKey(item.text());
+							var optionKey = item.text();
 							var optionValue = item.val();
 
 							if (!generateArticleContent) {
 								var typeElementOption = instance._createDynamicNode(
 									'dynamic-element',
 									{
-										name: optionKey,
-										type: optionValue,
+										name: encodeURIComponent(optionKey),
+										type: encodeURIComponent(optionValue),
 										'repeatable': fieldInstance.get('repeatable')
 									}
 								);
@@ -1988,7 +1987,7 @@ AUI.add(
 					var iconParent = icon.get('parentNode');
 					var select = iconParent.get('parentNode').one('select');
 					var keyInput = iconParent.one('input.journal-list-key');
-					var key = instance._formatOptionsKey(keyInput.val());
+					var key = keyInput.val();
 					var valueInput = iconParent.one('input.journal-list-value');
 					var value = valueInput.val();
 
@@ -2163,7 +2162,7 @@ AUI.add(
 							input.val(url);
 						};
 
-						instance.openPopupWindow(selectUrl, Liferay.Language.get('javax.portlet.title.20'));
+						instance.openPopupWindow(selectUrl, Liferay.Language.get('javax.portlet.title.20'), 'selectDocumentLibrary');
 					},
 					'.journal-documentlibrary-button .aui-button-input'
 				);
@@ -2363,7 +2362,7 @@ AUI.add(
 
 							var url = event.currentTarget.attr('href');
 
-							instance.openPopupWindow(url, 'ChangeStructure');
+							instance.openPopupWindow(url, 'ChangeStructure', 'changeStruture');
 						}
 					);
 				}
@@ -2519,10 +2518,6 @@ AUI.add(
 				fieldInstance.get('fieldLabel');
 
 				return fieldInstance;
-			},
-
-			_formatOptionsKey: function(s) {
-				return s.replace(/\W+/g, ' ').replace(/^\W+|\W+$/g, '').replace(/ /g, '_');
 			},
 
 			_getNamespacedId: function(id, namespace, prefix) {
@@ -3231,6 +3226,7 @@ AUI.add(
 								TPL_FIELD_CONTAINER,
 								{
 									articleButtonsRowCSSClass: articleButtonsRowCSSClass,
+									cssClass: 'journal-structure-' + fieldType.replace(/_/g, '-'),
 									editButtonTemplateHTML: editButtonTemplateHTML,
 									fieldLabel: fieldLabel,
 									localizedLabelLanguage: localizedLabelLanguage,
@@ -3539,7 +3535,7 @@ AUI.add(
 		registerFieldModel('List', 'list', 'ListField', true);
 		registerFieldModel('MultiList', 'multi-list', 'MultiListField', true);
 		registerFieldModel('LinkToPage', 'link_to_layout', 'LinkToPageField', true);
-		registerFieldModel('SelectionBreak', 'selection_break', 'SelectionBreakField', false);
+		registerFieldModel('SelectionBreak', 'selection_break', 'SelectionBreakField', true);
 
 		Liferay.Portlet.Journal = Journal;
 	},

@@ -81,7 +81,7 @@ public class MinifierFilter extends BasePortalFilter {
 				_CSS_IMPORT_END, importX + _CSS_IMPORT_BEGIN.length());
 
 			if ((importX == -1) || (importY == -1)) {
-				sb.append(content.substring(pos, content.length()));
+				sb.append(content.substring(pos));
 
 				break;
 			}
@@ -139,8 +139,7 @@ public class MinifierFilter extends BasePortalFilter {
 				importContent = StringUtil.replace(
 					importContent,
 					new String[] {
-						"url('" + relativePath,
-						"url(\"" + relativePath,
+						"url('" + relativePath, "url(\"" + relativePath,
 						"url(" + relativePath
 					},
 					new String[] {
@@ -326,7 +325,7 @@ public class MinifierFilter extends BasePortalFilter {
 			cacheCommonFileName + "_E_CONTENT_TYPE");
 		File cacheDataFile = new File(cacheCommonFileName + "_E_DATA");
 
-		if ((cacheDataFile.exists()) &&
+		if (cacheDataFile.exists() &&
 			(cacheDataFile.lastModified() >= file.lastModified())) {
 
 			if (cacheContentTypeFile.exists()) {
@@ -478,8 +477,7 @@ public class MinifierFilter extends BasePortalFilter {
 
 	protected String sterilizeQueryString(String queryString) {
 		return StringUtil.replace(
-			queryString,
-			new String[] {StringPool.SLASH, StringPool.BACK_SLASH},
+			queryString, new String[] {StringPool.SLASH, StringPool.BACK_SLASH},
 			new String[] {StringPool.UNDERLINE, StringPool.UNDERLINE});
 	}
 

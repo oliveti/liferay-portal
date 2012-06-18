@@ -81,21 +81,32 @@ public class WikiActivityInterpreter extends BaseSocialActivityInterpreter {
 		if ((activityType == WikiActivityKeys.ADD_COMMENT) ||
 			(activityType == SocialActivityConstants.TYPE_ADD_COMMENT)) {
 
-			titlePattern = "activity-wiki-add-comment";
+			if (Validator.isNull(groupName)) {
+				titlePattern = "activity-wiki-add-comment";
+			}
+			else {
+				titlePattern = "activity-wiki-add-comment-in";
+			}
 		}
 		else if (activityType == WikiActivityKeys.ADD_PAGE) {
-			titlePattern = "activity-wiki-add-page";
+			if (Validator.isNull(groupName)) {
+				titlePattern = "activity-wiki-add-page";
+			}
+			else {
+				titlePattern = "activity-wiki-add-page-in";
+			}
 		}
 		else if (activityType == WikiActivityKeys.UPDATE_PAGE) {
-			titlePattern = "activity-wiki-update-page";
-		}
-
-		if (Validator.isNotNull(groupName)) {
-			titlePattern += "-in";
+			if (Validator.isNull(groupName)) {
+				titlePattern = "activity-wiki-update-page";
+			}
+			else {
+				titlePattern = "activity-wiki-update-page-in";
+			}
 		}
 
 		String pageTitle = wrapLink(
-			link, HtmlUtil.escape(cleanContent(pageResource.getTitle())));
+			link, HtmlUtil.escape(pageResource.getTitle()));
 
 		Object[] titleArguments = new Object[] {
 			groupName, creatorUserName, pageTitle

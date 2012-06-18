@@ -59,27 +59,34 @@ public class LayoutSetBranchLocalServiceWrapper
 	* Deletes the layout set branch with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param layoutSetBranchId the primary key of the layout set branch
+	* @return the layout set branch that was removed
 	* @throws PortalException if a layout set branch with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteLayoutSetBranch(long layoutSetBranchId)
+	public com.liferay.portal.model.LayoutSetBranch deleteLayoutSetBranch(
+		long layoutSetBranchId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_layoutSetBranchLocalService.deleteLayoutSetBranch(layoutSetBranchId);
+		return _layoutSetBranchLocalService.deleteLayoutSetBranch(layoutSetBranchId);
 	}
 
 	/**
 	* Deletes the layout set branch from the database. Also notifies the appropriate model listeners.
 	*
 	* @param layoutSetBranch the layout set branch
+	* @return the layout set branch that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteLayoutSetBranch(
+	public com.liferay.portal.model.LayoutSetBranch deleteLayoutSetBranch(
 		com.liferay.portal.model.LayoutSetBranch layoutSetBranch)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_layoutSetBranchLocalService.deleteLayoutSetBranch(layoutSetBranch);
+		return _layoutSetBranchLocalService.deleteLayoutSetBranch(layoutSetBranch);
+	}
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return _layoutSetBranchLocalService.dynamicQuery();
 	}
 
 	/**
@@ -269,12 +276,12 @@ public class LayoutSetBranchLocalServiceWrapper
 			serviceContext);
 	}
 
-	public void deleteLayoutSetBranch(
+	public com.liferay.portal.model.LayoutSetBranch deleteLayoutSetBranch(
 		com.liferay.portal.model.LayoutSetBranch layoutSetBranch,
 		boolean includeMaster)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_layoutSetBranchLocalService.deleteLayoutSetBranch(layoutSetBranch,
+		return _layoutSetBranchLocalService.deleteLayoutSetBranch(layoutSetBranch,
 			includeMaster);
 	}
 
@@ -317,7 +324,8 @@ public class LayoutSetBranchLocalServiceWrapper
 	}
 
 	/**
-	* @deprecated {@link #getUserLayoutSetBranch(long, long, boolean, long, long)}
+	* @deprecated {@link #getUserLayoutSetBranch(long, long, boolean, long,
+	long)}
 	*/
 	public com.liferay.portal.model.LayoutSetBranch getUserLayoutSetBranch(
 		long userId, long groupId, boolean privateLayout, long layoutSetBranchId)

@@ -124,6 +124,7 @@ public class ExportLARCommunityWikiUseCaseTest extends BaseTestCase {
 		Thread.sleep(5000);
 		selenium.clickAt("//input[@value='Export']",
 			RuntimeVariables.replace("Export"));
-		selenium.downloadFile("Wiki_Use_Case.Community.lar");
+		Thread.sleep(5000);
+		selenium.downloadTempFile("Wiki_Use_Case.Community.lar");
 	}
 }

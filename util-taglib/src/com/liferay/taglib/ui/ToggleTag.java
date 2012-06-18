@@ -74,7 +74,7 @@ public class ToggleTag extends IncludeTag {
 		String clickValue = SessionClicks.get(request, id, null);
 
 		if (defaultShowContent) {
-			if ((clickValue != null) && (clickValue.equals("none"))) {
+			if ((clickValue != null) && clickValue.equals("none")) {
 				defaultStateValue = "none";
 				defaultImage = showImage;
 				defaultMessage = showMessage;
@@ -86,7 +86,7 @@ public class ToggleTag extends IncludeTag {
 			}
 		}
 		else {
-			if ((clickValue == null) || (clickValue.equals("none"))) {
+			if ((clickValue == null) || clickValue.equals("none")) {
 				defaultStateValue = "none";
 				defaultImage = showImage;
 				defaultMessage = showMessage;
@@ -124,9 +124,6 @@ public class ToggleTag extends IncludeTag {
 	@Override
 	public int doEndTag() throws JspException {
 		try {
-			ServletContext servletContext = getServletContext();
-			HttpServletRequest request = getServletRequest();
-
 			doTag(
 				getPage(), _id, _showImage, _hideImage, _showMessage,
 				_hideMessage, _defaultShowContent, _stateVar, servletContext,

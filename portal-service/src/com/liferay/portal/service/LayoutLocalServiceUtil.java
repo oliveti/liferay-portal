@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -65,24 +64,31 @@ public class LayoutLocalServiceUtil {
 	* Deletes the layout with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param plid the primary key of the layout
+	* @return the layout that was removed
 	* @throws PortalException if a layout with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteLayout(long plid)
+	public static com.liferay.portal.model.Layout deleteLayout(long plid)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteLayout(plid);
+		return getService().deleteLayout(plid);
 	}
 
 	/**
 	* Deletes the layout from the database. Also notifies the appropriate model listeners.
 	*
 	* @param layout the layout
+	* @return the layout that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteLayout(com.liferay.portal.model.Layout layout)
+	public static com.liferay.portal.model.Layout deleteLayout(
+		com.liferay.portal.model.Layout layout)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteLayout(layout);
+		return getService().deleteLayout(layout);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -872,6 +878,13 @@ public class LayoutLocalServiceUtil {
 			preferencesValue);
 	}
 
+	public static int getLayoutsByLayoutPrototypeUuidCount(
+		java.lang.String layoutPrototypeUuid)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .getLayoutsByLayoutPrototypeUuidCount(layoutPrototypeUuid);
+	}
+
 	public static int getLayoutsCount(com.liferay.portal.model.Group group,
 		boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -956,20 +969,13 @@ public class LayoutLocalServiceUtil {
 	}
 
 	public static boolean hasLayoutSetPrototypeLayout(
-		long layoutSetPrototypeId, java.lang.String layoutUuid)
-		throws com.liferay.portal.kernel.exception.PortalException,
-			com.liferay.portal.kernel.exception.SystemException {
-		return getService()
-				   .hasLayoutSetPrototypeLayout(layoutSetPrototypeId, layoutUuid);
-	}
-
-	public static boolean hasLayoutSetPrototypeLayout(
-		java.lang.String layoutSetPrototypeUuid, java.lang.String layoutUuid)
+		java.lang.String layoutSetPrototypeUuid, java.lang.String layoutUuid,
+		long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return getService()
 				   .hasLayoutSetPrototypeLayout(layoutSetPrototypeUuid,
-			layoutUuid);
+			layoutUuid, companyId);
 	}
 
 	/**
@@ -1369,6 +1375,20 @@ public class LayoutLocalServiceUtil {
 	}
 
 	/**
+	* Updates the priorities of the layouts.
+	*
+	* @param groupId the primary key of the group
+	* @param privateLayout whether the layout is private to the group
+	* @throws PortalException if a matching layout could not be found
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void updatePriorities(long groupId, boolean privateLayout)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		getService().updatePriorities(groupId, privateLayout);
+	}
+
+	/**
 	* Updates the priority of the layout.
 	*
 	* @param layout the layout to be updated
@@ -1460,20 +1480,15 @@ public class LayoutLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(LayoutLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(LayoutLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(LayoutLocalService service) {
-		MethodCache.remove(LayoutLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(LayoutLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(LayoutLocalService.class);
 	}
 
 	private static LayoutLocalService _service;

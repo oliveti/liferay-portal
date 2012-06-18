@@ -15,12 +15,13 @@
 package com.liferay.portal.image;
 
 import com.liferay.portal.kernel.image.ImageBag;
+import com.liferay.portal.kernel.image.ImageMagick;
 import com.liferay.portal.kernel.image.ImageTool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.JavaProps;
+import com.liferay.portal.kernel.util.JavaDetector;
 import com.liferay.portal.util.FileImpl;
 
 import com.sun.media.jai.codec.ImageCodec;
@@ -49,13 +50,70 @@ import javax.media.jai.RenderedImageAdapter;
 
 import net.jmge.gif.Gif89Encoder;
 
+import org.im4java.core.IMOperation;
+
 /**
  * @author Brian Wing Shun Chan
+ * @author Alexander Chow
  */
 public class ImageToolImpl implements ImageTool {
 
-	public static ImageToolImpl getInstance() {
+	public static ImageTool getInstance() {
 		return _instance;
+	}
+
+	public RenderedImage convertCMYKtoRGB(
+		byte[] bytes, String type, boolean fork) {
+
+		ImageMagick imageMagick = getImageMagick();
+
+		if (!imageMagick.isEnabled()) {
+			return null;
+		}
+
+		File inputFile = _fileUtil.createTempFile(type);
+		File outputFile = _fileUtil.createTempFile(type);
+
+		try {
+			_fileUtil.write(inputFile, bytes);
+
+			IMOperation imOperation = new IMOperation();
+
+			imOperation.addRawArgs("-format", "%[colorspace]");
+			imOperation.addImage(inputFile.getPath());
+
+			String[] output = imageMagick.identify(
+				imOperation.getCmdArgs(), fork);
+
+			if ((output.length == 1) && output[0].equalsIgnoreCase("CMYK")) {
+				if (_log.isInfoEnabled()) {
+					_log.info("The image is in the CMYK colorspace");
+				}
+
+				imOperation = new IMOperation();
+
+				imOperation.addRawArgs("-colorspace", "RGB");
+				imOperation.addImage(inputFile.getPath());
+				imOperation.addImage(outputFile.getPath());
+
+				imageMagick.convert(imOperation.getCmdArgs(), fork);
+
+				bytes = _fileUtil.getBytes(outputFile);
+
+				return read(bytes, type);
+			}
+		}
+		catch (Exception e) {
+			if (_log.isErrorEnabled()) {
+				_log.error(e, e);
+			}
+		}
+		finally {
+			_fileUtil.delete(inputFile);
+			_fileUtil.delete(outputFile);
+		}
+
+		return null;
 	}
 
 	public BufferedImage convertImageType(BufferedImage sourceImage, int type) {
@@ -74,7 +132,7 @@ public class ImageToolImpl implements ImageTool {
 	public void encodeGIF(RenderedImage renderedImage, OutputStream os)
 		throws IOException {
 
-		if (JavaProps.isJDK6()) {
+		if (JavaDetector.isJDK6()) {
 			ImageIO.write(renderedImage, TYPE_GIF, os);
 		}
 		else {
@@ -122,8 +180,8 @@ public class ImageToolImpl implements ImageTool {
 
 			os.write(0);
 			os.write(0);
-			os.write(_toMultiByte(bufferedImage.getWidth()));
-			os.write(_toMultiByte(bufferedImage.getHeight()));
+			os.write(toMultiByte(bufferedImage.getWidth()));
+			os.write(toMultiByte(bufferedImage.getHeight()));
 
 			DataBuffer dataBuffer = bufferedImage.getData().getDataBuffer();
 
@@ -152,29 +210,7 @@ public class ImageToolImpl implements ImageTool {
 
 		UnsyncByteArrayOutputStream baos = new UnsyncByteArrayOutputStream();
 
-		if (contentType.indexOf(TYPE_BMP) != -1) {
-			ImageEncoder encoder = ImageCodec.createImageEncoder(
-				TYPE_BMP, baos, null);
-
-			encoder.encode(renderedImage);
-		}
-		else if (contentType.indexOf(TYPE_GIF) != -1) {
-			encodeGIF(renderedImage, baos);
-		}
-		else if ((contentType.indexOf(TYPE_JPEG) != -1) ||
-				 (contentType.indexOf("jpeg") != -1)) {
-
-			ImageIO.write(renderedImage, "jpeg", baos);
-		}
-		else if (contentType.indexOf(TYPE_PNG) != -1) {
-			ImageIO.write(renderedImage, TYPE_PNG, baos);
-		}
-		else if (contentType.indexOf("tif") != -1) {
-			ImageEncoder encoder = ImageCodec.createImageEncoder(
-				TYPE_TIFF, baos, null);
-
-			encoder.encode(renderedImage);
-		}
+		write(renderedImage, contentType, baos);
 
 		return baos.toByteArray();
 	}
@@ -191,17 +227,7 @@ public class ImageToolImpl implements ImageTool {
 			if (codec.isFormatRecognized(bytes)) {
 				type = codec.getFormatName();
 
-				ImageDecoder decoder = ImageCodec.createImageDecoder(
-					type, new UnsyncByteArrayInputStream(bytes), null);
-
-				try {
-					renderedImage = decoder.decodeAsRenderedImage();
-				}
-				catch (IOException ioe) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(type + ": " + ioe.getMessage());
-					}
-				}
+				renderedImage = read(bytes, type);
 
 				break;
 			}
@@ -335,11 +361,74 @@ public class ImageToolImpl implements ImageTool {
 		return scaledBufferedImage;
 	}
 
-	private byte[] _toMultiByte(int intValue) {
+	public void write(
+			RenderedImage renderedImage, String contentType, OutputStream os)
+		throws IOException {
+
+		if (contentType.contains(TYPE_BMP)) {
+			ImageEncoder imageEncoder = ImageCodec.createImageEncoder(
+				TYPE_BMP, os, null);
+
+			imageEncoder.encode(renderedImage);
+		}
+		else if (contentType.contains(TYPE_GIF)) {
+			encodeGIF(renderedImage, os);
+		}
+		else if (contentType.contains(TYPE_JPEG) ||
+				 contentType.contains("jpeg")) {
+
+			ImageIO.write(renderedImage, "jpeg", os);
+		}
+		else if (contentType.contains(TYPE_PNG)) {
+			ImageIO.write(renderedImage, TYPE_PNG, os);
+		}
+		else if (contentType.contains(TYPE_TIFF) ||
+				 contentType.contains("tif")) {
+
+			ImageEncoder imageEncoder = ImageCodec.createImageEncoder(
+				TYPE_TIFF, os, null);
+
+			imageEncoder.encode(renderedImage);
+		}
+	}
+
+	protected ImageMagick getImageMagick() {
+		if (_imageMagick == null) {
+			_imageMagick = ImageMagickImpl.getInstance();
+
+			_imageMagick.reset();
+		}
+
+		return _imageMagick;
+	}
+
+	protected RenderedImage read(byte[] bytes, String type) {
+		RenderedImage renderedImage = null;
+
+		try {
+			if (type.equals(TYPE_JPEG)) {
+				type = "jpeg";
+			}
+
+			ImageDecoder decoder = ImageCodec.createImageDecoder(
+				type, new UnsyncByteArrayInputStream(bytes), null);
+
+			renderedImage = decoder.decodeAsRenderedImage();
+		}
+		catch (IOException ioe) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(type + ": " + ioe.getMessage());
+			}
+		}
+
+		return renderedImage;
+	}
+
+	protected byte[] toMultiByte(int intValue) {
 		int numBits = 32;
 		int mask = 0x80000000;
 
-		while (mask != 0 && (intValue & mask) == 0) {
+		while ((mask != 0) && ((intValue & mask) == 0)) {
 			numBits--;
 			mask >>>= 1;
 		}
@@ -362,8 +451,9 @@ public class ImageToolImpl implements ImageTool {
 
 	private static Log _log = LogFactoryUtil.getLog(ImageToolImpl.class);
 
-	private static ImageToolImpl _instance = new ImageToolImpl();
+	private static ImageTool _instance = new ImageToolImpl();
 
 	private static FileImpl _fileUtil = FileImpl.getInstance();
+	private static ImageMagick _imageMagick;
 
 }

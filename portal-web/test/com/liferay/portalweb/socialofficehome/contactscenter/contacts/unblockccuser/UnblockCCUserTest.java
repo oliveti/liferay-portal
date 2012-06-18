@@ -22,7 +22,7 @@ import com.liferay.portalweb.portal.util.RuntimeVariables;
  */
 public class UnblockCCUserTest extends BaseTestCase {
 	public void testUnblockCCUser() throws Exception {
-		selenium.open("/user/joebloggs/home1/");
+		selenium.open("/user/joebloggs/so/dashboard/");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -82,7 +82,8 @@ public class UnblockCCUserTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isVisible("//div[@class='contacts-profile']")) {
+				if (selenium.isVisible(
+							"//div[contains(@class, 'contacts-profile')]")) {
 					break;
 				}
 			}
@@ -94,10 +95,10 @@ public class UnblockCCUserTest extends BaseTestCase {
 
 		assertEquals(RuntimeVariables.replace("Social01 Office01 User01"),
 			selenium.getText(
-				"//div[@class='contacts-profile']/div/div[2]/div/a"));
+				"//div[contains(@class, 'contacts-profile')]/div/div[2]/div/a"));
 		assertEquals(RuntimeVariables.replace("socialoffice01@liferay.com"),
 			selenium.getText(
-				"//div[@class='contacts-profile']/div/div[2]/div[3]"));
+				"//div[contains(@class, 'contacts-profile')]/div/div[2]/div[3]"));
 		assertFalse(selenium.isElementPresent(
 				"//div[contains(@class, 'contacts-center-home-content')]"));
 		assertEquals(RuntimeVariables.replace("Unblock"),
@@ -113,7 +114,7 @@ public class UnblockCCUserTest extends BaseTestCase {
 
 			try {
 				if (selenium.isVisible(
-							"//button[@id='_1_WAR_contactsportlet_addConnectionButton']/a/span")) {
+							"//button[@id='_1_WAR_contactsportlet_addConnectionButton']")) {
 					break;
 				}
 			}
@@ -123,9 +124,9 @@ public class UnblockCCUserTest extends BaseTestCase {
 			Thread.sleep(1000);
 		}
 
-		assertEquals(RuntimeVariables.replace("Add as Connection"),
+		assertEquals(RuntimeVariables.replace("Add Connection"),
 			selenium.getText(
-				"//button[@id='_1_WAR_contactsportlet_addConnectionButton']/a/span"));
+				"//button[@id='_1_WAR_contactsportlet_addConnectionButton']"));
 		assertEquals(RuntimeVariables.replace("Follow"),
 			selenium.getText(
 				"//button[@id='_1_WAR_contactsportlet_followButton']"));

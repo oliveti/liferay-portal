@@ -280,12 +280,14 @@ public class TicketUtil {
 	* Removes the ticket where key = &#63; from the database.
 	*
 	* @param key the key
+	* @return the ticket that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByKey(java.lang.String key)
+	public static com.liferay.portal.model.Ticket removeByKey(
+		java.lang.String key)
 		throws com.liferay.portal.NoSuchTicketException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getPersistence().removeByKey(key);
+		return getPersistence().removeByKey(key);
 	}
 
 	/**
@@ -331,10 +333,10 @@ public class TicketUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(TicketPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(TicketUtil.class, "_persistence");
 	}
 
 	private static TicketPersistence _persistence;

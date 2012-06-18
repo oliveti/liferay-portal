@@ -486,12 +486,14 @@ public class TeamUtil {
 	*
 	* @param groupId the group ID
 	* @param name the name
+	* @return the team that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByG_N(long groupId, java.lang.String name)
+	public static com.liferay.portal.model.Team removeByG_N(long groupId,
+		java.lang.String name)
 		throws com.liferay.portal.NoSuchTeamException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getPersistence().removeByG_N(groupId, name);
+		return getPersistence().removeByG_N(groupId, name);
 	}
 
 	/**
@@ -1010,10 +1012,10 @@ public class TeamUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(TeamPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(TeamUtil.class, "_persistence");
 	}
 
 	private static TeamPersistence _persistence;

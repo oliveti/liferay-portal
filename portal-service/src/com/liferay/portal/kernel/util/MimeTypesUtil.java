@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+
 import java.io.File;
 import java.io.InputStream;
 
@@ -30,17 +32,19 @@ public class MimeTypesUtil {
 		return getMimeTypes().getContentType(file);
 	}
 
-	public static String getContentType(File file, String title) {
-		return getMimeTypes().getContentType(file, title);
+	public static String getContentType(File file, String fileName) {
+		return getMimeTypes().getContentType(file, fileName);
 	}
 
 	/**
-	 * Determine the content type from an input stream and file name.
+	 * Returns the content type from an input stream and file name.
 	 *
-	 * @param  fileName full name or extension of file (e.g., "Test.doc",
+	 * @param  inputStream the input stream of the content (optionally
+	 *         <code>null</code>)
+	 * @param  fileName the full name or extension of file (e.g., "Test.doc",
 	 *         ".doc")
-	 * @return content type if it is a supported format or an empty string if it
-	 *         is an unsupported format
+	 * @return the content type if it is a supported format or an empty string
+	 *         if it is an unsupported format
 	 */
 	public static String getContentType(
 		InputStream inputStream, String fileName) {
@@ -49,33 +53,37 @@ public class MimeTypesUtil {
 	}
 
 	/**
-	 * Determine the content type from a file name.
+	 * Returns the content type from a file name.
 	 *
-	 * @param  fileName full name or extension of file (e.g., "Test.doc",
-	 *         ".doc")
-	 * @return content type if it is a supported format or an empty string if it
-	 *         is an unsupported format
+	 * @param  fileName the full name or extension of the file (e.g.,
+	 *         "Test.doc", ".doc")
+	 * @return the content type if it is a supported format or an empty string
+	 *         if it is an unsupported format
 	 */
 	public static String getContentType(String fileName) {
 		return getMimeTypes().getContentType(fileName);
 	}
 
 	/**
-	 * Determine the possible file extensions for a given content type.
+	 * Returns the possible file extensions for a given content type.
 	 *
-	 * @param  contentType content type of file (e.g., "image/jpeg")
-	 * @return set of extensions if it is a known content type or an empty set
-	 *         if it is an unknown content type
+	 * @param  contentType the content type of the file (e.g., "image/jpeg")
+	 * @return the set of extensions if it is a known content type or an empty
+	 *         set if it is an unknown content type
 	 */
 	public static Set<String> getExtensions(String contentType) {
 		return getMimeTypes().getExtensions(contentType);
 	}
 
 	public static MimeTypes getMimeTypes() {
+		PortalRuntimePermission.checkGetBeanProperty(MimeTypesUtil.class);
+
 		return _mimeTypes;
 	}
 
 	public void setMimeTypes(MimeTypes mimeTypes) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_mimeTypes = mimeTypes;
 	}
 

@@ -25,6 +25,9 @@ public class AddRecordTest extends BaseTestCase {
 		selenium.selectFrame("relative=top");
 		selenium.open("/web/guest/home/");
 		loadRequiredJavaScriptModules();
+		assertEquals(RuntimeVariables.replace("Go to"),
+			selenium.getText("//li[@id='_145_mySites']/a/span"));
+		selenium.mouseOver("//li[@id='_145_mySites']/a/span");
 
 		for (int second = 0;; second++) {
 			if (second >= 90) {
@@ -32,7 +35,7 @@ public class AddRecordTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isElementPresent("link=Control Panel")) {
+				if (selenium.isVisible("link=Control Panel")) {
 					break;
 				}
 			}
@@ -132,7 +135,7 @@ public class AddRecordTest extends BaseTestCase {
 			}
 
 			try {
-				if (RuntimeVariables.replace("document.txt")
+				if (RuntimeVariables.replace("Document_1.txt")
 										.equals(selenium.getValue(
 								"//div[4]/div/span/span/span/input"))) {
 					break;
@@ -144,14 +147,13 @@ public class AddRecordTest extends BaseTestCase {
 			Thread.sleep(1000);
 		}
 
-		assertEquals("document.txt",
+		assertEquals("Document_1.txt",
 			selenium.getValue("//div[4]/div/span/span/span/input"));
 		assertTrue(selenium.isPartialText(
 				"//div[@class='aui-fieldset-content ']/div[5]/span/span/label",
 				"File Upload"));
-		selenium.type("//div[@class='aui-fieldset-content ']/div[5]/span/span/span/input",
-			RuntimeVariables.replace(
-				"L:\\portal\\build\\portal-web\\test\\com\\liferay\\portalweb\\portal\\controlpanel\\dynamicdatalists\\dependencies\\document2.txt"));
+		selenium.uploadCommonFile("//div[@class='aui-fieldset-content ']/div[5]/span/span/span/input",
+			RuntimeVariables.replace("Document_2.txt"));
 		assertEquals(RuntimeVariables.replace("Integer"),
 			selenium.getText(
 				"//div[@class='aui-fieldset-content ']/div[6]/span/span/label"));
@@ -200,6 +202,7 @@ public class AddRecordTest extends BaseTestCase {
 				"//div[@class='aui-fieldset-content ']/div[10]/span/span/label"));
 		selenium.type("//div[@class='aui-fieldset-content ']/div[10]/span/span/span/textarea",
 			RuntimeVariables.replace("Text\nBox"));
+		Thread.sleep(5000);
 		selenium.clickAt("//input[@value='Publish']",
 			RuntimeVariables.replace("Publish"));
 		selenium.waitForPageToLoad("30000");

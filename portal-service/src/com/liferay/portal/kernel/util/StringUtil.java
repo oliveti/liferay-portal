@@ -313,7 +313,9 @@ public class StringUtil {
 	 * @return the number of times the text appears in the string
 	 */
 	public static int count(String s, String text) {
-		if ((s == null) || (text == null)) {
+		if ((s == null) || (s.length() == 0) || (text == null) ||
+			(text.length() == 0)) {
+
 			return 0;
 		}
 
@@ -361,7 +363,7 @@ public class StringUtil {
 			return false;
 		}
 
-		String temp = s.substring(s.length() - end.length(), s.length());
+		String temp = s.substring(s.length() - end.length());
 
 		if (temp.equalsIgnoreCase(end)) {
 			return true;
@@ -610,8 +612,7 @@ public class StringUtil {
 			}
 		}
 
-		int flags =
-			Pattern.CANON_EQ | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+		int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
 
 		Pattern pattern = Pattern.compile(sb.toString(), flags);
 
@@ -655,7 +656,7 @@ public class StringUtil {
 	 * @param  s the string to convert
 	 * @return the string, converted to lowercase, or <code>null</code> if the
 	 *         string is <code>null</code>
-	 * @see    {@link String#toLowerCase()}
+	 * @see    String#toLowerCase()
 	 */
 	public static String lowerCase(String s) {
 		if (s == null) {
@@ -1806,7 +1807,7 @@ public class StringUtil {
 			int y = s.indexOf(end, x + begin.length());
 
 			if ((x == -1) || (y == -1)) {
-				sb.append(s.substring(pos, s.length()));
+				sb.append(s.substring(pos));
 
 				break;
 			}
@@ -1854,7 +1855,7 @@ public class StringUtil {
 			int y = s.indexOf(end, x + begin.length());
 
 			if ((x == -1) || (y == -1)) {
-				sb.append(s.substring(pos, s.length()));
+				sb.append(s.substring(pos));
 
 				break;
 			}
@@ -1923,8 +1924,8 @@ public class StringUtil {
 	}
 
 	/**
-	 * Returns a string representing the original string shortened to 20
-	 * characters, with suffix "..." appended to it.
+	 * Returns a string representing the original string appended with suffix
+	 * "..." and then shortened to 20 characters.
 	 *
 	 * <p>
 	 * The suffix is only added if the original string exceeds 20 characters. If
@@ -1938,7 +1939,7 @@ public class StringUtil {
 	 *
 	 * <pre>
 	 * <code>
-	 * shorten("12345678901234567890xyz") returns "12345678901234567890..."
+	 * shorten("12345678901234567890xyz") returns "12345678901234567..."
 	 * shorten("1 345678901234567890xyz") returns "1..."
 	 * shorten(" 2345678901234567890xyz") returns "..."
 	 * shorten("12345678901234567890") returns "12345678901234567890"
@@ -1955,8 +1956,8 @@ public class StringUtil {
 	}
 
 	/**
-	 * Returns a string representing the original string shortened to the
-	 * specified length, with suffix "..." appended to it.
+	 * Returns a string representing the original string appended with suffix
+	 * "..." and then shortened to the specified length.
 	 *
 	 * <p>
 	 * The suffix is only added if the original string exceeds the specified
@@ -1971,11 +1972,11 @@ public class StringUtil {
 	 *
 	 * <pre>
 	 * <code>
-	 * shorten("123456", 5) returns "12345..."
-	 * shorten("1 3456", 5) returns "1..."
-	 * shorten(" 23456", 5) returns "..."
-	 * shorten("12345", 5) returns "12345"
-	 * shorten(" 1234", 5) returns " 1234"
+	 * shorten("123456789", 8) returns "12345..."
+	 * shorten("1 3456789", 8) returns "1..."
+	 * shorten(" 23456789", 8) returns "..."
+	 * shorten("12345678", 8) returns "12345678"
+	 * shorten(" 1234567", 8) returns " 1234567"
 	 * </code>
 	 * </pre>
 	 *
@@ -1989,8 +1990,8 @@ public class StringUtil {
 	}
 
 	/**
-	 * Returns a string representing the original string shortened to the
-	 * specified length, with the specified suffix appended to it.
+	 * Returns a string representing the original string appended with the
+	 * specified suffix and then shortened to the specified length.
 	 *
 	 * <p>
 	 * The suffix is only added if the original string exceeds the specified
@@ -2005,11 +2006,11 @@ public class StringUtil {
 	 *
 	 * <pre>
 	 * <code>
-	 * shorten("123456", 5, "... etc.") returns "12345... etc."
-	 * shorten("1 3456", 5, "... etc.") returns "1... etc."
-	 * shorten(" 23456", 5, "... etc.") returns "... etc."
-	 * shorten("12345", 5, "... etc.") returns "12345"
-	 * shorten(" 1234", 5, "... etc.") returns " 1234"
+	 * shorten("12345678901234", 13, "... etc.") returns "12345... etc."
+	 * shorten("1 345678901234", 13, "... etc.") returns "1... etc."
+	 * shorten(" 2345678901234", 13, "... etc.") returns "... etc."
+	 * shorten("1234567890123", 13, "... etc.") returns "1234567890123"
+	 * shorten(" 123456789012", 13, "... etc.") returns " 123456789012"
 	 * </code>
 	 * </pre>
 	 *
@@ -2024,26 +2025,36 @@ public class StringUtil {
 			return null;
 		}
 
-		if (s.length() > length) {
-			for (int j = length; j >= 0; j--) {
-				if (Character.isWhitespace(s.charAt(j))) {
-					length = j;
-
-					break;
-				}
-			}
-
-			String temp = s.substring(0, length);
-
-			s = temp.concat(suffix);
+		if (s.length() <= length) {
+			return s;
 		}
 
-		return s;
+		if (length < suffix.length()) {
+			return s.substring(0, length);
+		}
+
+		int curLength = length;
+
+		for (int j = (curLength - suffix.length()); j >= 0; j--) {
+			if (Character.isWhitespace(s.charAt(j))) {
+				curLength = j;
+
+				break;
+			}
+		}
+
+		if (curLength == length) {
+			curLength = length - suffix.length();
+		}
+
+		String temp = s.substring(0, curLength);
+
+		return temp.concat(suffix);
 	}
 
 	/**
-	 * Returns a string representing the original string shortened to 20
-	 * characters, with the specified suffix appended to it.
+	 * Returns a string representing the original string appended with the
+	 * specified suffix and then shortened to 20 characters.
 	 *
 	 * <p>
 	 * The suffix is only added if the original string exceeds 20 characters. If
@@ -2057,7 +2068,7 @@ public class StringUtil {
 	 *
 	 * <pre>
 	 * <code>
-	 * shorten("12345678901234567890xyz", "... etc.") returns "12345678901234567890... etc."
+	 * shorten("12345678901234567890xyz", "... etc.") returns "123456789012... etc."
 	 * shorten("1 345678901234567890xyz", "... etc.") returns "1... etc."
 	 * shorten(" 2345678901234567890xyz", "... etc.") returns "... etc."
 	 * shorten("12345678901234567890", "... etc.") returns "12345678901234567890"
@@ -2101,6 +2112,7 @@ public class StringUtil {
 	 * Splits the string <code>s</code> around comma characters returning the
 	 * boolean values of the substrings.
 	 *
+	 * @param  s the string to split
 	 * @param  x the default value to use for a substring in case an exception
 	 *         occurs in getting the boolean value for that substring
 	 * @return the array of boolean values resulting from splitting string
@@ -2171,6 +2183,7 @@ public class StringUtil {
 	 * Splits the string <code>s</code> around comma characters returning the
 	 * double-precision decimal values of the substrings.
 	 *
+	 * @param  s the string to split
 	 * @param  x the default value to use for a substring in case an exception
 	 *         occurs in getting the double-precision decimal value for that
 	 *         substring
@@ -2186,6 +2199,7 @@ public class StringUtil {
 	 * Splits the string <code>s</code> around comma characters returning the
 	 * decimal values of the substrings.
 	 *
+	 * @param  s the string to split
 	 * @param  x the default value to use for a substring in case an exception
 	 *         occurs in getting the decimal value for that substring
 	 * @return the array of decimal values resulting from splitting string
@@ -2200,6 +2214,7 @@ public class StringUtil {
 	 * Splits the string <code>s</code> around comma characters returning the
 	 * integer values of the substrings.
 	 *
+	 * @param  s the string to split
 	 * @param  x the default value to use for a substring in case an exception
 	 *         occurs in getting the integer value for that substring
 	 * @return the array of integer values resulting from splitting string
@@ -2214,6 +2229,7 @@ public class StringUtil {
 	 * Splits the string <code>s</code> around comma characters returning the
 	 * long integer values of the substrings.
 	 *
+	 * @param  s the string to split
 	 * @param  x the default value to use for a substring in case an exception
 	 *         occurs in getting the long integer value for that substring
 	 * @return the array of long integer values resulting from splitting string
@@ -2228,6 +2244,7 @@ public class StringUtil {
 	 * Splits the string <code>s</code> around comma characters returning the
 	 * short integer values of the substrings.
 	 *
+	 * @param  s the string to split
 	 * @param  x the default value to use for a substring in case an exception
 	 *         occurs in getting the short integer value for that substring
 	 * @return the array of short integer values resulting from splitting string
@@ -2259,8 +2276,8 @@ public class StringUtil {
 	 *         delimiter
 	 */
 	public static String[] split(String s, String delimiter) {
-		if ((Validator.isNull(s)) || (delimiter == null) ||
-			(delimiter.equals(StringPool.BLANK))) {
+		if (Validator.isNull(s) || (delimiter == null) ||
+			delimiter.equals(StringPool.BLANK)) {
 
 			return _emptyStringArray;
 		}
@@ -2711,7 +2728,7 @@ public class StringUtil {
 			int y = s.indexOf(end, x + begin.length());
 
 			if ((x == -1) || (y == -1)) {
-				sb.append(s.substring(pos, s.length()));
+				sb.append(s.substring(pos));
 
 				break;
 			}
@@ -3053,7 +3070,7 @@ public class StringUtil {
 	 * @param  s the string to convert
 	 * @return the string, converted to upper-case, or <code>null</code> if the
 	 *         string is <code>null</code>
-	 * @see    {@link String#toUpperCase()}
+	 * @see    String#toUpperCase()
 	 */
 	public static String upperCase(String s) {
 		if (s == null) {
@@ -3085,7 +3102,7 @@ public class StringUtil {
 	 *
 	 * @param  obj the object whose string value is to be returned
 	 * @return the string value of the object
-	 * @see    {@link String#valueOf(Object obj)}
+	 * @see    String#valueOf(Object obj)
 	 */
 	public static String valueOf(Object obj) {
 		return String.valueOf(obj);

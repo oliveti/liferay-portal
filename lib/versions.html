@@ -61,7 +61,7 @@
 </tr>
 	
 <tr>
-<td nowrap>development/catalina.jar</td><td nowrap>7.0.25</td><td nowrap><a href="http://tomcat.apache.org">Tomcat</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/catalina.jar</td><td nowrap>7.0.27</td><td nowrap><a href="http://tomcat.apache.org">Tomcat</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -183,7 +183,7 @@
 </tr>
 	
 <tr>
-<td nowrap>development/jasper.jar</td><td nowrap>7.0.25</td><td nowrap><a href="http://tomcat.apache.org">Tomcat</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/jasper.jar</td><td nowrap>7.0.27</td><td nowrap><a href="http://tomcat.apache.org">Tomcat</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -203,6 +203,12 @@
 </tr>
 	
 <tr>
+<td nowrap>development/jarjar.jar</td><td nowrap>1.2</td><td nowrap><a href="http://code.google.com/p/jarjar">Jar Jar Links</a></td><td nowrap><a href="">Apache License 2.0</a>
+<br>
+</td><td></td>
+</tr>
+	
+<tr>
 <td nowrap>development/jaxb-api.jar</td><td nowrap>2.1.9</td><td nowrap><a href="http://jaxb.dev.java.net">Java Architecture for XML Binding</a></td><td nowrap><a href="">CDDL 1.0</a>
 <br>
 </td><td></td>
@@ -215,7 +221,7 @@
 </tr>
 	
 <tr>
-<td nowrap>development/jetty-server.jar</td><td nowrap>7.5.4</td><td nowrap><a href="http://www.eclipse.org/jetty">Jetty</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/jetty-server.jar</td><td nowrap>7.6.3</td><td nowrap><a href="http://www.eclipse.org/jetty">Jetty</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 <a href="">Eclipse Public License 1.0</a>
 <br>
@@ -223,7 +229,7 @@
 </tr>
 	
 <tr>
-<td nowrap>development/jetty-util.jar</td><td nowrap>7.5.4</td><td nowrap><a href="http://www.eclipse.org/jetty">Jetty</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/jetty-util.jar</td><td nowrap>7.6.3</td><td nowrap><a href="http://www.eclipse.org/jetty">Jetty</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 <a href="">Eclipse Public License 1.0</a>
 <br>
@@ -232,18 +238,6 @@
 	
 <tr>
 <td nowrap>development/jhighlight.jar</td><td nowrap>1.0</td><td nowrap><a href="http://jhighlight.dev.java.net">JHighlight</a></td><td nowrap><a href="">CDDL 1.0</a>
-<br>
-</td><td></td>
-</tr>
-	
-<tr>
-<td nowrap>development/jmock.jar</td><td nowrap>2.5.1</td><td nowrap><a href="http://www.jmock.org">jMock</a></td><td nowrap><a href="">BSD Style License</a>
-<br>
-</td><td></td>
-</tr>
-	
-<tr>
-<td nowrap>development/jmock-junit4.jar</td><td nowrap>2.5.1</td><td nowrap><a href="http://www.jmock.org">jMock</a></td><td nowrap><a href="">BSD Style License</a>
 <br>
 </td><td></td>
 </tr>
@@ -301,7 +295,9 @@
 <tr>
 <td nowrap>development/jta.jar</td><td nowrap>1.1</td><td nowrap><a href="http://java.sun.com/products/jta">Java Transaction</a></td><td nowrap><a href="">Sun Binary Code License Agreement</a>
 <br>
-</td><td></td>
+</td><td>
+			See LPS-27200.
+		</td>
 </tr>
 	
 <tr>
@@ -311,7 +307,7 @@
 </tr>
 	
 <tr>
-<td nowrap>development/junit.jar</td><td nowrap>4.5</td><td nowrap><a href="http://www.junit.org/index.htm">JUnit</a></td><td nowrap><a href="">Common Public License 1.0</a>
+<td nowrap>development/junit.jar</td><td nowrap>4.8.2</td><td nowrap><a href="http://www.junit.org/index.htm">JUnit</a></td><td nowrap><a href="">Common Public License 1.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -341,6 +337,12 @@
 </tr>
 	
 <tr>
+<td nowrap>development/mockito.jar</td><td nowrap>1.9.0</td><td nowrap><a href="http://code.google.com/p/mockito">Mockito</a></td><td nowrap><a href="">MIT License</a>
+<br>
+</td><td></td>
+</tr>
+	
+<tr>
 <td nowrap>development/myfaces-api.jar</td><td nowrap>1.1.5</td><td nowrap><a href="http://myfaces.apache.org">MyFaces</a></td><td nowrap><a href="">Apache License 2.0</a>
 <copyright-notice>Copyright (c) 2004-2007 The Apache Software Foundation</copyright-notice>
 <br>
@@ -361,11 +363,14 @@
 			5.0.7 is the fastest of the MySQL drivers under performance tests.
 			Do not upgrade to 5.0.8 or to 5.1.x unless the 5.0.7 driver causes a
 			specific issue.
+
+			See the property "setup.database.jar.download.url" in
+			portal.properties.
 		</td>
 </tr>
 	
 <tr>
-<td nowrap>development/objenesis.jar</td><td nowrap>1.0</td><td nowrap><a href="http://code.google.com/p/objenesis">Objenesis</a></td><td nowrap><a href="">MIT License</a>
+<td nowrap>development/objenesis.jar</td><td nowrap>1.2</td><td nowrap><a href="http://code.google.com/p/objenesis">Objenesis</a></td><td nowrap><a href="">MIT License</a>
 <br>
 </td><td></td>
 </tr>
@@ -390,6 +395,12 @@
 	
 <tr>
 <td nowrap>development/postgresql.jar</td><td nowrap>9.1-901 JDBC 3</td><td nowrap><a href="http://jdbc.postgresql.org">PostgreSQL JDBC Driver</a></td><td nowrap><a href="">BSD Style License</a>
+<br>
+</td><td></td>
+</tr>
+	
+<tr>
+<td nowrap>development/powermock-mockito.jar</td><td nowrap>1.4.11</td><td nowrap><a href="http://code.google.com/p/powermock">Powermock</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -434,17 +445,16 @@
 </tr>
 	
 <tr>
-<td nowrap>development/selenium-java-client-driver.jar</td><td nowrap>1.0.1</td><td nowrap><a href="http://www.openqa.org/selenium-rc">Selenium Remote Control</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/selenium-java.jar</td><td nowrap>2.20.0</td><td nowrap><a href="http://seleniumhq.org">Selenium Client Drivers</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>development/selenium-server.jar</td><td nowrap>1.0.3</td><td nowrap><a href="http://www.openqa.org/selenium-rc">Selenium Remote Control</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/selenium-server.jar</td><td nowrap>2.20.0</td><td nowrap><a href="http://seleniumhq.org">Selenium Server</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td>
-			This includes custom user extensions. See the Ant target
-			"build-selenium-server" in portal-impl/build.xml.
+			See the Ant target "build-selenium-server" in portal-impl/build.xml.
 		</td>
 </tr>
 	
@@ -461,19 +471,25 @@
 </tr>
 	
 <tr>
-<td nowrap>development/spring-instrument.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/sonar-ant-task.jar</td><td nowrap>1.3</td><td nowrap><a href="http://www.sonarsource.org">Sonar Source</a></td><td nowrap><a href="">LGPL 2.1</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>development/spring-instrument-tomcat.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/spring-instrument.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>development/spring-test.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/spring-instrument-tomcat.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<br>
+</td><td></td>
+</tr>
+	
+<tr>
+<td nowrap>development/spring-test.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -485,7 +501,7 @@
 </tr>
 	
 <tr>
-<td nowrap>development/tomcat-coyote.jar</td><td nowrap>7.0.25</td><td nowrap><a href="http://tomcat.apache.org">Tomcat</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>development/tomcat-coyote.jar</td><td nowrap>7.0.27</td><td nowrap><a href="http://tomcat.apache.org">Tomcat</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -808,7 +824,7 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/commons-io.jar</td><td nowrap>1.4.0</td><td nowrap><a href="http://commons.apache.org/io">Commons IO</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/commons-io.jar</td><td nowrap>2.1.0</td><td nowrap><a href="http://commons.apache.org/io">Commons IO</a></td><td nowrap><a href="">Apache License 2.0</a>
 <copyright-notice>Copyright (c) 2001-2007 The Apache Software Foundation</copyright-notice>
 <br>
 </td><td></td>
@@ -842,12 +858,6 @@
 <tr>
 <td nowrap>portal/commons-validator.jar</td><td nowrap>1.3.1</td><td nowrap><a href="http://commons.apache.org/validator">Commons Validator</a></td><td nowrap><a href="">Apache License 2.0</a>
 <copyright-notice>Copyright (c) 2001-2006 The Apache Software Foundation</copyright-notice>
-<br>
-</td><td></td>
-</tr>
-	
-<tr>
-<td nowrap>portal/compass.jar</td><td nowrap>2.2.0</td><td nowrap><a href="http://www.opensymphony.com/compass">Compass</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -933,7 +943,7 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/equinox.jar</td><td nowrap>3.7.0.v20110613</td><td nowrap><a href="http://www.eclipse.org/equinox/">Eclipse OSGi Platform</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/equinox.jar</td><td nowrap>3.7.0.v20110613</td><td nowrap><a href="http://www.eclipse.org/equinox">Eclipse OSGi Platform</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -1003,7 +1013,7 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/hibernate3.jar</td><td nowrap>3.6.4</td><td nowrap><a href="http://www.hibernate.org">Hibernate</a></td><td nowrap><a href="">LGPL 2.1</a>
+<td nowrap>portal/hibernate3.jar</td><td nowrap>3.6.10</td><td nowrap><a href="http://www.hibernate.org">Hibernate</a></td><td nowrap><a href="">LGPL 2.1</a>
 <br>
 </td><td>
 			This includes a public patch from HHH-6286.
@@ -1046,33 +1056,33 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/jackrabbit-api.jar</td><td nowrap>2.1.2</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/jackrabbit-api.jar</td><td nowrap>2.1.6</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/jackrabbit-core.jar</td><td nowrap>2.1.2</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/jackrabbit-core.jar</td><td nowrap>2.1.6</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td>
-			This includes public patches from LPS-13343 and LPS-19623.
+			This includes public patches from LPS-13343, LPS-19623, and LPS-27321.
 		</td>
 </tr>
 	
 <tr>
-<td nowrap>portal/jackrabbit-jcr-commons.jar</td><td nowrap>2.1.2</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/jackrabbit-jcr-commons.jar</td><td nowrap>2.1.6</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/jackrabbit-spi.jar</td><td nowrap>2.1.2</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/jackrabbit-spi.jar</td><td nowrap>2.1.6</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/jackrabbit-spi-commons.jar</td><td nowrap>2.1.2</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/jackrabbit-spi-commons.jar</td><td nowrap>2.1.6</td><td nowrap><a href="http://jackrabbit.apache.org">Jackrabbit</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -1102,7 +1112,7 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/javassist.jar</td><td nowrap>3.11.0</td><td nowrap><a href="http://www.csg.is.titech.ac.jp/~chiba/javassist">Javassist</a></td><td nowrap><a href="">LGPL 2.1</a>
+<td nowrap>portal/javassist.jar</td><td nowrap>3.15.0</td><td nowrap><a href="http://www.csg.is.titech.ac.jp/~chiba/javassist">Javassist</a></td><td nowrap><a href="">LGPL 2.1</a>
 <br>
 </td><td></td>
 </tr>
@@ -1197,7 +1207,7 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/jgroups.jar</td><td nowrap>2.8.1</td><td nowrap><a href="http://www.jgroups.org/javagroupsnew/docs">JGroups</a></td><td nowrap><a href="">LGPL 2.1</a>
+<td nowrap>portal/jgroups.jar</td><td nowrap>3.1.0 B1</td><td nowrap><a href="http://www.jgroups.org/javagroupsnew/docs">JGroups</a></td><td nowrap><a href="">LGPL 2.1</a>
 <br>
 </td><td>
 			See LPS-4474.
@@ -1220,13 +1230,13 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/jodd.jar</td><td nowrap>3.2.8-20111031</td><td nowrap><a href="http://jodd.org">Jodd</a></td><td nowrap><a href="">BSD Style License</a>
+<td nowrap>portal/jodd.jar</td><td nowrap>3.3.4</td><td nowrap><a href="http://jodd.org">Jodd</a></td><td nowrap><a href="">BSD Style License</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/jodd-wot.jar</td><td nowrap>3.2.8-20111031</td><td nowrap><a href="http://jodd.org">Jodd</a></td><td nowrap><a href="">BSD Style License</a>
+<td nowrap>portal/jodd-wot.jar</td><td nowrap>3.3.4</td><td nowrap><a href="http://jodd.org">Jodd</a></td><td nowrap><a href="">BSD Style License</a>
 <br>
 </td><td></td>
 </tr>
@@ -1267,6 +1277,15 @@
 <td nowrap>portal/jspwiki.jar</td><td nowrap>2.8.4</td><td nowrap><a href="http://www.jspwiki.org">JSPWiki</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
+</tr>
+	
+<tr>
+<td nowrap>portal/jsqlparser.jar</td><td nowrap>0.7.0</td><td nowrap><a href="http://sourceforge.net/projects/jsqlparser">JSqlParser</a></td><td nowrap><a href="">LGPL 2.1</a>
+<br>
+</td><td>
+			This was recompiled for compatibility with JDK 5 and repackaged to
+			include net.sf.jsqlparser.test.tablesfinder.TablesNamesFinder.
+		</td>
 </tr>
 	
 <tr>
@@ -1317,14 +1336,6 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/liferay-rhino.jar</td><td nowrap>1.6 R7</td><td nowrap><a href="http://www.mozilla.org/rhino">Rhino</a></td><td nowrap><a href="">MPL 1.1</a>
-<br>
-</td><td>
-			See LPS-3169
-		</td>
-</tr>
-	
-<tr>
 <td nowrap>portal/liferay-yuicompressor.jar</td><td nowrap>2.4.2</td><td nowrap><a href="http://developer.yahoo.com/yui/compressor">YUI Compressor</a></td><td nowrap><a href="">BSD Style License</a>
 <br>
 </td><td>
@@ -1345,25 +1356,25 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/lucene-analyzers.jar</td><td nowrap>3.0.3</td><td nowrap><a href="http://lucene.apache.org">Lucene Analyzers</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/lucene-analyzers.jar</td><td nowrap>3.5.0</td><td nowrap><a href="http://lucene.apache.org">Lucene Analyzers</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/lucene-core.jar</td><td nowrap>3.0.3</td><td nowrap><a href="http://lucene.apache.org">Lucene</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/lucene-core.jar</td><td nowrap>3.5.0</td><td nowrap><a href="http://lucene.apache.org">Lucene</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/lucene-highlighter.jar</td><td nowrap>3.0.3</td><td nowrap><a href="http://lucene.apache.org">Lucene Highlighter</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/lucene-highlighter.jar</td><td nowrap>3.5.0</td><td nowrap><a href="http://lucene.apache.org">Lucene Highlighter</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/lucene-memory.jar</td><td nowrap>3.0.3</td><td nowrap><a href="http://lucene.apache.org">Lucene Memory</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/lucene-memory.jar</td><td nowrap>3.5.0</td><td nowrap><a href="http://lucene.apache.org">Lucene Memory</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -1395,6 +1406,18 @@
 	
 <tr>
 <td nowrap>portal/nekohtml.jar</td><td nowrap>1.9.14</td><td nowrap><a href="http://sourceforge.net/projects/nekohtml">CyberNeko HTML Parser</a></td><td nowrap><a href="">Apache License 2.0</a>
+<br>
+</td><td></td>
+</tr>
+    
+<tr>
+<td nowrap>portal/oauth.jar</td><td nowrap>20100601</td><td nowrap><a href="http://code.google.com/p/oauth">OAuth Core</a></td><td nowrap><a href="">Apache License 2.0</a>
+<br>
+</td><td></td>
+</tr>
+    
+<tr>
+<td nowrap>portal/oauth-provider.jar</td><td nowrap>20100601</td><td nowrap><a href="http://code.google.com/p/oauth">OAuth Core: Provider</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -1480,12 +1503,6 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/primrose.jar</td><td nowrap>3.0.14</td><td nowrap><a href="http://www.primrose.org.uk">Primrose</a></td><td nowrap><a href="">LGPL 2.1</a>
-<br>
-</td><td></td>
-</tr>
-	
-<tr>
 <td nowrap>portal/quartz.jar</td><td nowrap>2.1.0</td><td nowrap><a href="http://www.quartz-scheduler.org">Quartz</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
@@ -1495,6 +1512,14 @@
 <td nowrap>portal/rdffilter.jar</td><td nowrap>1.0</td><td nowrap><a href="http://rdf-filter.sourceforge.net">RDF Filter</a></td><td nowrap><a href="">Public Domain</a>
 <br>
 </td><td></td>
+</tr>
+	
+<tr>
+<td nowrap>portal/rhino.jar</td><td nowrap>1.6 R7</td><td nowrap><a href="http://www.mozilla.org/rhino">Rhino</a></td><td nowrap><a href="">MPL 1.1</a>
+<br>
+</td><td>
+			See LPS-3169 and LPS-25836.
+		</td>
 </tr>
 	
 <tr>
@@ -1568,7 +1593,7 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-aop.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-aop.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td>
 			This includes a public patch from LPS-23012.
@@ -1576,100 +1601,100 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-asm.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-asm.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-aspects.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-aspects.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-beans.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-beans.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td>
 			3.0.3 included a public patch from SPR-7441. That patch is no longer needed
-			since 3.0.6 includes a different fix.
+			since 3.0.7 includes a different fix.
 		</td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-context.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-context.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-context-support.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-context-support.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-core.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-core.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-expression.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-expression.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-jdbc.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-jdbc.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-jms.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-jms.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-orm.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-orm.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-oxm.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-oxm.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-transaction.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-transaction.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-web.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-web.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-web-portlet.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-web-portlet.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-web-servlet.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-web-servlet.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
 	
 <tr>
-<td nowrap>portal/spring-web-struts.jar</td><td nowrap>3.0.6</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/spring-web-struts.jar</td><td nowrap>3.0.7</td><td nowrap><a href="http://www.springframework.org">Spring</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -1735,7 +1760,7 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/tomcat-juli.jar</td><td nowrap>7.0.25</td><td nowrap><a href="http://tomcat.apache.org">Tomcat</a></td><td nowrap><a href="">Apache License 2.0</a>
+<td nowrap>portal/tomcat-juli.jar</td><td nowrap>7.0.27</td><td nowrap><a href="http://tomcat.apache.org">Tomcat</a></td><td nowrap><a href="">Apache License 2.0</a>
 <br>
 </td><td></td>
 </tr>
@@ -1880,12 +1905,9 @@
 </tr>
 	
 <tr>
-<td nowrap>portal/xuggle-xuggler.jar</td><td nowrap>3.4.1012</td><td nowrap><a href="http://www.xuggle.com">Xuggler</a></td><td nowrap><a href="">LGPL 3</a>
+<td nowrap>portal/xuggle-xuggler-noarch.jar</td><td nowrap>5.4</td><td nowrap><a href="http://www.xuggle.com">Xuggler</a></td><td nowrap><a href="">LGPL 3</a>
 <br>
-</td><td>
-			This includes a public patch from
-			http://code.google.com/p/xuggle/issues/detail?id=252.
-		</td>
+</td><td></td>
 </tr>
 
 </table>

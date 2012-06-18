@@ -15,7 +15,6 @@
 package com.liferay.portlet.wiki.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class WikiPageLocalServiceUtil {
 	* Deletes the wiki page with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param pageId the primary key of the wiki page
+	* @return the wiki page that was removed
 	* @throws PortalException if a wiki page with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteWikiPage(long pageId)
+	public static com.liferay.portlet.wiki.model.WikiPage deleteWikiPage(
+		long pageId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteWikiPage(pageId);
+		return getService().deleteWikiPage(pageId);
 	}
 
 	/**
 	* Deletes the wiki page from the database. Also notifies the appropriate model listeners.
 	*
 	* @param wikiPage the wiki page
+	* @return the wiki page that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteWikiPage(
+	public static com.liferay.portlet.wiki.model.WikiPage deleteWikiPage(
 		com.liferay.portlet.wiki.model.WikiPage wikiPage)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteWikiPage(wikiPage);
+		return getService().deleteWikiPage(wikiPage);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -736,20 +742,15 @@ public class WikiPageLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(WikiPageLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(WikiPageLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(WikiPageLocalService service) {
-		MethodCache.remove(WikiPageLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(WikiPageLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(WikiPageLocalService.class);
 	}
 
 	private static WikiPageLocalService _service;

@@ -200,6 +200,8 @@ public interface MBMessageModel extends AttachedModel, BaseModel<MBMessage>,
 	 */
 	public String getClassName();
 
+	public void setClassName(String className);
+
 	/**
 	 * Returns the class name ID of this message-boards message.
 	 *
@@ -524,6 +526,13 @@ public interface MBMessageModel extends AttachedModel, BaseModel<MBMessage>,
 	 * @return <code>true</code> if this message-boards message is expired; <code>false</code> otherwise
 	 */
 	public boolean isExpired();
+
+	/**
+	 * Returns <code>true</code> if this message-boards message is in the Recycle Bin.
+	 *
+	 * @return <code>true</code> if this message-boards message is in the Recycle Bin; <code>false</code> otherwise
+	 */
+	public boolean isInTrash();
 
 	/**
 	 * Returns <code>true</code> if this message-boards message is pending.

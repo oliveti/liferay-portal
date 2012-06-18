@@ -124,7 +124,7 @@ String groupMappingDescription = StringPool.BLANK;
 String groupMappingUser = StringPool.BLANK;
 
 for (int i = 0 ; i < groupMappingArray.length ; i++) {
-	if (userMappingArray[i].indexOf("=") == -1) {
+	if (groupMappingArray[i].indexOf("=") == -1) {
 		continue;
 	}
 
@@ -386,7 +386,7 @@ for (int i = 0 ; i < groupMappingArray.length ; i++) {
 
 				var dialog = new A.Dialog(
 					{
-						centered: true,
+						align: Liferay.Util.Window.ALIGN_CENTER,
 						destroyOnClose: true,
 						modal: true,
 						title: Liferay.Language.get('LDAP'),

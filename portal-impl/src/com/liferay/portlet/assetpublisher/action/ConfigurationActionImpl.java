@@ -91,6 +91,9 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 				else if (cmd.equals("remove-selection")) {
 					removeSelection(actionRequest, preferences);
 				}
+				else if (cmd.equals("select-scope")) {
+					setScopes(actionRequest, preferences);
+				}
 				else if (cmd.equals("selection-style")) {
 					setSelectionStyle(actionRequest, preferences);
 				}
@@ -119,7 +122,7 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 			}
 			catch (Exception e) {
 				if (e instanceof AssetTagException) {
-					SessionErrors.add(actionRequest, e.getClass().getName(), e);
+					SessionErrors.add(actionRequest, e.getClass(), e);
 				}
 				else {
 					throw e;
@@ -267,6 +270,18 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 		}
 
 		preferences.setValues("assetEntryXml", newEntries);
+	}
+
+	protected void setScopes(
+			ActionRequest actionRequest, PortletPreferences preferences)
+		throws Exception {
+
+		String defaultScope = getParameter(actionRequest, "defaultScope");
+		String[] scopeIds = StringUtil.split(
+			getParameter(actionRequest, "scopeIds"));
+
+		preferences.setValue("defaultScope", defaultScope);
+		preferences.setValues("scopeIds", scopeIds);
 	}
 
 	protected void setSelectionStyle(

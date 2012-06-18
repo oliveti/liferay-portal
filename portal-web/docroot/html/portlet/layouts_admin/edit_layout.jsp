@@ -118,7 +118,7 @@ String[][] categorySections = {mainSections};
 		<c:when test="<%= incomplete %>">
 			<liferay-ui:message arguments="<%= new Object[] {selLayout.getName(locale), layoutSetBranchName} %>" key="the-page-x-is-not-enabled-in-x,-but-is-available-in-other-pages-variations" />
 
-			<aui:input name="incompleteLayoutRevisionId" value="<%= layoutRevision.getLayoutRevisionId() %>" type="hidden" />
+			<aui:input name="incompleteLayoutRevisionId" type="hidden" value="<%= layoutRevision.getLayoutRevisionId() %>" />
 
 			<%
 			String taglibEnableOnClick = "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "saveLayout('enable');";
@@ -202,7 +202,6 @@ String[][] categorySections = {mainSections};
 							var buttonRow = A.one('#<portlet:namespace />layoutToolbar');
 
 							var popup = null;
-							var exportPopup = null;
 
 							var layoutToolbarChildren = [];
 
@@ -215,8 +214,8 @@ String[][] categorySections = {mainSections};
 											if (!popup) {
 												popup = new A.Dialog(
 													{
+														align: Liferay.Util.Window.ALIGN_CENTER,
 														bodyContent: content.show(),
-														centered: true,
 														title: '<%= UnicodeLanguageUtil.get(pageContext, "add-child-page") %>',
 														modal: true,
 														width: 500
@@ -242,9 +241,9 @@ String[][] categorySections = {mainSections};
 												{
 													cache: false,
 													dialog: {
-														width: 700
+														width: 900
 													},
-													id: '<portlet:namespace /><%= selPlid %>_permissions',
+													id: '<portlet:namespace /><%= selLayout.getFriendlyURL().substring(1) %>_permissions',
 													title: '<%= UnicodeLanguageUtil.get(pageContext, "permissions") %>',
 													uri: '<%= permissionURL %>'
 												}
@@ -264,44 +263,6 @@ String[][] categorySections = {mainSections};
 										},
 										icon: 'delete',
 										label: '<%= UnicodeLanguageUtil.get(pageContext, "delete") %>'
-									}
-								);
-							</c:if>
-
-							<c:if test="<%= GroupPermissionUtil.contains(permissionChecker, liveGroupId, ActionKeys.EXPORT_IMPORT_LAYOUTS) %>">
-								layoutToolbarChildren.push(
-									{
-										type: 'ToolbarSpacer'
-									},
-									{
-										handler: function(event) {
-											<portlet:renderURL var="exportPagesURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
-												<portlet:param name="struts_action" value="/layouts_admin/export_layouts" />
-												<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.EXPORT %>" />
-												<portlet:param name="groupId" value="<%= String.valueOf(groupId) %>" />
-												<portlet:param name="liveGroupId" value="<%= String.valueOf(liveGroupId) %>" />
-												<portlet:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
-												<portlet:param name="layoutIds" value="<%= String.valueOf(layoutId) %>" />
-												<portlet:param name="rootNodeName" value="<%= selLayout.getName(locale) %>" />
-											</portlet:renderURL>
-
-											Liferay.Util.openWindow(
-												{
-													dialog:
-														{
-															centered: true,
-															constrain: true,
-															modal: true,
-															width: 600
-														},
-													id: '<portlet:namespace />exportLayoutDialog',
-													title: '<%= UnicodeLanguageUtil.get(pageContext, "export") %>',
-													uri: '<%= exportPagesURL.toString() %>'
-												}
-											);
-										},
-										icon: 'export',
-										label: '<%= UnicodeLanguageUtil.get(pageContext, "export") %>'
 									}
 								);
 							</c:if>

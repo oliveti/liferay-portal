@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -65,24 +64,31 @@ public class CompanyLocalServiceUtil {
 	* Deletes the company with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param companyId the primary key of the company
+	* @return the company that was removed
 	* @throws PortalException if a company with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteCompany(long companyId)
+	public static com.liferay.portal.model.Company deleteCompany(long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteCompany(companyId);
+		return getService().deleteCompany(companyId);
 	}
 
 	/**
 	* Deletes the company from the database. Also notifies the appropriate model listeners.
 	*
 	* @param company the company
+	* @return the company that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteCompany(com.liferay.portal.model.Company company)
+	public static com.liferay.portal.model.Company deleteCompany(
+		com.liferay.portal.model.Company company)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteCompany(company);
+		return getService().deleteCompany(company);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -766,20 +772,15 @@ public class CompanyLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(CompanyLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(CompanyLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(CompanyLocalService service) {
-		MethodCache.remove(CompanyLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(CompanyLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(CompanyLocalService.class);
 	}
 
 	private static CompanyLocalService _service;

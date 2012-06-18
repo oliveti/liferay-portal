@@ -15,7 +15,6 @@
 package com.liferay.portlet.journal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class JournalArticleImageLocalServiceUtil {
 	* Deletes the journal article image with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param articleImageId the primary key of the journal article image
+	* @return the journal article image that was removed
 	* @throws PortalException if a journal article image with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteJournalArticleImage(long articleImageId)
+	public static com.liferay.portlet.journal.model.JournalArticleImage deleteJournalArticleImage(
+		long articleImageId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteJournalArticleImage(articleImageId);
+		return getService().deleteJournalArticleImage(articleImageId);
 	}
 
 	/**
 	* Deletes the journal article image from the database. Also notifies the appropriate model listeners.
 	*
 	* @param journalArticleImage the journal article image
+	* @return the journal article image that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteJournalArticleImage(
+	public static com.liferay.portlet.journal.model.JournalArticleImage deleteJournalArticleImage(
 		com.liferay.portlet.journal.model.JournalArticleImage journalArticleImage)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteJournalArticleImage(journalArticleImage);
+		return getService().deleteJournalArticleImage(journalArticleImage);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -338,20 +344,15 @@ public class JournalArticleImageLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(JournalArticleImageLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(JournalArticleImageLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(JournalArticleImageLocalService service) {
-		MethodCache.remove(JournalArticleImageLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(JournalArticleImageLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(JournalArticleImageLocalService.class);
 	}
 
 	private static JournalArticleImageLocalService _service;

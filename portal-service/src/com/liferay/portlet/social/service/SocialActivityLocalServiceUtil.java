@@ -15,7 +15,6 @@
 package com.liferay.portlet.social.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class SocialActivityLocalServiceUtil {
 	* Deletes the social activity with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param activityId the primary key of the social activity
+	* @return the social activity that was removed
 	* @throws PortalException if a social activity with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSocialActivity(long activityId)
+	public static com.liferay.portlet.social.model.SocialActivity deleteSocialActivity(
+		long activityId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSocialActivity(activityId);
+		return getService().deleteSocialActivity(activityId);
 	}
 
 	/**
 	* Deletes the social activity from the database. Also notifies the appropriate model listeners.
 	*
 	* @param socialActivity the social activity
+	* @return the social activity that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSocialActivity(
+	public static com.liferay.portlet.social.model.SocialActivity deleteSocialActivity(
 		com.liferay.portlet.social.model.SocialActivity socialActivity)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSocialActivity(socialActivity);
+		return getService().deleteSocialActivity(socialActivity);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -402,9 +408,10 @@ public class SocialActivityLocalServiceUtil {
 	}
 
 	/**
-	* Removes stored activities for the asset identified by the class name ID
-	* and class primary key.
+	* Removes stored activities for the asset.
 	*
+	* @param assetEntry the asset from which to remove stored activities
+	* @throws PortalException if a portal exception occurred
 	* @throws SystemException if a system exception occurred
 	*/
 	public static void deleteActivities(
@@ -464,7 +471,8 @@ public class SocialActivityLocalServiceUtil {
 	* @throws SystemException if a system exception occurred
 	*/
 	public static void deleteUserActivities(long userId)
-		throws com.liferay.portal.kernel.exception.SystemException {
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
 		getService().deleteUserActivities(userId);
 	}
 
@@ -1088,20 +1096,15 @@ public class SocialActivityLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(SocialActivityLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(SocialActivityLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(SocialActivityLocalService service) {
-		MethodCache.remove(SocialActivityLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(SocialActivityLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(SocialActivityLocalService.class);
 	}
 
 	private static SocialActivityLocalService _service;

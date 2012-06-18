@@ -125,7 +125,7 @@ Format timeFormat = FastDateFormatFactoryUtil.getSimpleDateFormat("h:mma", local
 	<tr>
 
 		<%
-		if (((selCal.getFirstDayOfWeek()) == Calendar.MONDAY)) {
+		if (selCal.getFirstDayOfWeek() == Calendar.MONDAY) {
 			if (dayOfWeek == 1) {
 				dayOfWeek += 6;
 			}
@@ -252,6 +252,7 @@ Format timeFormat = FastDateFormatFactoryUtil.getSimpleDateFormat("h:mma", local
 
 		for (int i = 7; i >= dayOfWeek; i--) {
 		%>
+
 			<td height="100"></td>
 
 		<%

@@ -419,13 +419,14 @@ public class ResourceActionUtil {
 	*
 	* @param name the name
 	* @param actionId the action ID
+	* @return the resource action that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByN_A(java.lang.String name,
-		java.lang.String actionId)
+	public static com.liferay.portal.model.ResourceAction removeByN_A(
+		java.lang.String name, java.lang.String actionId)
 		throws com.liferay.portal.NoSuchResourceActionException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getPersistence().removeByN_A(name, actionId);
+		return getPersistence().removeByN_A(name, actionId);
 	}
 
 	/**
@@ -486,11 +487,10 @@ public class ResourceActionUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(ResourceActionPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(ResourceActionUtil.class,
-			"_persistence");
 	}
 
 	private static ResourceActionPersistence _persistence;

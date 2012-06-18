@@ -17,9 +17,9 @@ package com.liferay.portlet.messageboards.service.impl;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.parsers.bbcode.BBCodeTranslatorUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -59,7 +59,6 @@ import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -109,8 +108,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			inputStreamOVPs = Collections.emptyList();
 		}
 
-		boolean preview = GetterUtil.getBoolean(
-			serviceContext.getAttribute("preview"));
+		boolean preview = ParamUtil.getBoolean(serviceContext, "preview");
 
 		int workFlowAction = serviceContext.getWorkflowAction();
 
@@ -195,12 +193,11 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 
 		List<MBMessage> messages = new ArrayList<MBMessage>();
 
-		Iterator<MBMessage> itr = mbMessageLocalService.getCategoryMessages(
-			groupId, categoryId, status, start, end).iterator();
+		List<MBMessage> categoryMessages =
+			mbMessageLocalService.getCategoryMessages(
+				groupId, categoryId, status, start, end);
 
-		while (itr.hasNext()) {
-			MBMessage message = itr.next();
-
+		for (MBMessage message : categoryMessages) {
 			if (MBMessagePermission.contains(
 					getPermissionChecker(), message, ActionKeys.VIEW)) {
 
@@ -258,13 +255,13 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 					groupId, categoryId, status, lastIntervalStart,
 					lastIntervalStart + max, comparator);
 
-			Iterator<MBMessage> itr = messageList.iterator();
-
 			lastIntervalStart += max;
 			listNotExhausted = (messageList.size() == max);
 
-			while (itr.hasNext() && (messages.size() < max)) {
-				MBMessage message = itr.next();
+			for (MBMessage message : messageList) {
+				if (messages.size() >= max) {
+					break;
+				}
 
 				if (MBMessagePermission.contains(
 						getPermissionChecker(), message, ActionKeys.VIEW)) {
@@ -303,13 +300,13 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 					companyId, status, lastIntervalStart,
 					lastIntervalStart + max, comparator);
 
-			Iterator<MBMessage> itr = messageList.iterator();
-
 			lastIntervalStart += max;
 			listNotExhausted = (messageList.size() == max);
 
-			while (itr.hasNext() && (messages.size() < max)) {
-				MBMessage message = itr.next();
+			for (MBMessage message : messageList) {
+				if (messages.size() >= max) {
+					break;
+				}
 
 				if (MBMessagePermission.contains(
 						getPermissionChecker(), message, ActionKeys.VIEW)) {
@@ -357,13 +354,13 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 					groupId, status, lastIntervalStart, lastIntervalStart + max,
 					comparator);
 
-			Iterator<MBMessage> itr = messageList.iterator();
-
 			lastIntervalStart += max;
 			listNotExhausted = (messageList.size() == max);
 
-			while (itr.hasNext() && (messages.size() < max)) {
-				MBMessage message = itr.next();
+			for (MBMessage message : messageList) {
+				if (messages.size() >= max) {
+					break;
+				}
 
 				if (MBMessagePermission.contains(
 						getPermissionChecker(), message, ActionKeys.VIEW)) {
@@ -407,13 +404,13 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 					groupId, userId, status, lastIntervalStart,
 					lastIntervalStart + max, comparator);
 
-			Iterator<MBMessage> itr = messageList.iterator();
-
 			lastIntervalStart += max;
 			listNotExhausted = (messageList.size() == max);
 
-			while (itr.hasNext() && (messages.size() < max)) {
-				MBMessage message = itr.next();
+			for (MBMessage message : messageList) {
+				if (messages.size() >= max) {
+					break;
+				}
 
 				if (MBMessagePermission.contains(
 						getPermissionChecker(), message, ActionKeys.VIEW)) {
@@ -514,11 +511,14 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 			MessageCreateDateComparator comparator =
 				new MessageCreateDateComparator(false);
 
-			Iterator<MBMessage> itr = mbMessageLocalService.getThreadMessages(
-				threadId, status, comparator).iterator();
+			List<MBMessage> threadMessages =
+				mbMessageLocalService.getThreadMessages(
+					threadId, status, comparator);
 
-			while (itr.hasNext() && (messages.size() < max)) {
-				MBMessage message = itr.next();
+			for (MBMessage message : threadMessages) {
+				if (messages.size() >= max) {
+					break;
+				}
 
 				if (MBMessagePermission.contains(
 						getPermissionChecker(), message, ActionKeys.VIEW)) {
@@ -592,10 +592,12 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 
 		MBMessage message = mbMessageLocalService.getMessage(messageId);
 
-		boolean preview = GetterUtil.getBoolean(
-			serviceContext.getAttribute("preview"));
+		boolean preview = ParamUtil.getBoolean(serviceContext, "preview");
 
-		if (preview) {
+		if (preview &&
+			MBMessagePermission.contains(
+				getPermissionChecker(), message, ActionKeys.UPDATE)) {
+
 			checkReplyToPermission(
 				message.getGroupId(), message.getCategoryId(),
 				message.getParentMessageId());
@@ -680,11 +682,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 
 		syndFeed.setEntries(syndEntries);
 
-		Iterator<MBMessage> itr = messages.iterator();
-
-		while (itr.hasNext()) {
-			MBMessage message = itr.next();
-
+		for (MBMessage message : messages) {
 			String author = HtmlUtil.escape(
 				PortalUtil.getUserName(
 					message.getUserId(), message.getUserName()));
@@ -706,9 +704,7 @@ public class MBMessageServiceImpl extends MBMessageServiceBaseImpl {
 				value = StringUtil.replace(
 					value,
 					new String[] {
-						"@theme_images_path@",
-						"href=\"/",
-						"src=\"/"
+						"@theme_images_path@", "href=\"/", "src=\"/"
 					},
 					new String[] {
 						themeDisplay.getURLPortal() +

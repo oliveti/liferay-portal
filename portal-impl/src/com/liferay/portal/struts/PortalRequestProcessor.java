@@ -71,8 +71,6 @@ import java.io.IOException;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Map;
 import java.util.Set;
 
@@ -122,10 +120,10 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 		_publicPaths.add(_PATH_C);
 		_publicPaths.add(_PATH_PORTAL_API_JSONWS);
-		_publicPaths.add(_PATH_PORTAL_EE_LICENSE);
 		_publicPaths.add(_PATH_PORTAL_FLASH);
 		_publicPaths.add(_PATH_PORTAL_J_LOGIN);
 		_publicPaths.add(_PATH_PORTAL_LAYOUT);
+		_publicPaths.add(_PATH_PORTAL_LICENSE);
 		_publicPaths.add(_PATH_PORTAL_LOGIN);
 		_publicPaths.add(_PATH_PORTAL_RENDER_PORTLET);
 		_publicPaths.add(_PATH_PORTAL_TCK);
@@ -148,7 +146,9 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		Boolean basicAuthEnabled = (Boolean)session.getAttribute(
 			WebKeys.BASIC_AUTH_ENABLED);
 
-		session.removeAttribute(WebKeys.BASIC_AUTH_ENABLED);
+		if (basicAuthEnabled != null) {
+			session.removeAttribute(WebKeys.BASIC_AUTH_ENABLED);
+		}
 
 		String path = super.processPath(request, response);
 
@@ -345,12 +345,9 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		PortletURLImpl portletURL = new PortletURLImpl(
 			request, portletId, plid, PortletRequest.RENDER_PHASE);
 
-		Iterator<Map.Entry<String, String[]>> itr =
-			request.getParameterMap().entrySet().iterator();
+		Map<String, String[]> parameterMap = request.getParameterMap();
 
-		while (itr.hasNext()) {
-			Entry<String, String[]> entry = itr.next();
-
+		for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
 			String key = entry.getKey();
 
 			if (key.startsWith(namespace)) {
@@ -382,9 +379,9 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 		String portalURL = null;
 
-		if ((PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS) &&
-			(!PropsValues.SESSION_ENABLE_PHISHING_PROTECTION) &&
-			(httpsInitial != null) && (!httpsInitial.booleanValue())) {
+		if (PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS &&
+			!PropsValues.SESSION_ENABLE_PHISHING_PROTECTION &&
+			(httpsInitial != null) && !httpsInitial.booleanValue()) {
 
 			portalURL = PortalUtil.getPortalURL(request, false);
 		}
@@ -414,11 +411,7 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 			return sb.toString();
 		}
 
-		LastPath lastPath = (LastPath)request.getAttribute(WebKeys.LAST_PATH);
-
-		if (lastPath == null) {
-			lastPath = (LastPath)session.getAttribute(WebKeys.LAST_PATH);
-		}
+		LastPath lastPath = (LastPath)session.getAttribute(WebKeys.LAST_PATH);
 
 		if (lastPath == null) {
 			return sb.toString();
@@ -451,10 +444,10 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 	protected boolean isPortletPath(String path) {
 		if ((path != null) &&
-			(!path.equals(_PATH_C)) &&
-			(!path.startsWith(_PATH_COMMON)) &&
+			!path.equals(_PATH_C) &&
+			!path.startsWith(_PATH_COMMON) &&
 			(path.indexOf(_PATH_J_SECURITY_CHECK) == -1) &&
-			(!path.startsWith(_PATH_PORTAL))) {
+			!path.startsWith(_PATH_PORTAL)) {
 
 			return true;
 		}
@@ -575,10 +568,10 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		UserTracker userTracker = LiveUsers.getUserTracker(
 			themeDisplay.getCompanyId(), session.getId());
 
-		if ((userTracker != null) && (!path.equals(_PATH_C)) &&
+		if ((userTracker != null) && !path.equals(_PATH_C) &&
 			(path.indexOf(_PATH_J_SECURITY_CHECK) == -1) &&
 			(path.indexOf(_PATH_PORTAL_PROTECTED) == -1) &&
-			(!_trackerIgnorePaths.contains(path))) {
+			!_trackerIgnorePaths.contains(path)) {
 
 			String fullPath = null;
 
@@ -674,7 +667,11 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Setup wizard
 
 		if (!SetupWizardUtil.isSetupFinished()) {
-			return _PATH_PORTAL_SETUP_WIZARD;
+			if (!path.equals(_PATH_PORTAL_LICENSE) &&
+				!path.equals(_PATH_PORTAL_STATUS)) {
+
+				return _PATH_PORTAL_SETUP_WIZARD;
+			}
 		}
 		else if (path.equals(_PATH_PORTAL_SETUP_WIZARD)) {
 			return _PATH_PORTAL_LAYOUT;
@@ -683,7 +680,7 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Authenticated users can always log out
 
 		if (((remoteUser != null) || (user != null)) &&
-			(path.equals(_PATH_PORTAL_LOGOUT))) {
+			path.equals(_PATH_PORTAL_LOGOUT)) {
 
 			return path;
 		}
@@ -700,7 +697,7 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Authenticated users can always agree to terms of use
 
 		if (((remoteUser != null) || (user != null)) &&
-			(path.equals(_PATH_PORTAL_UPDATE_TERMS_OF_USE))) {
+			path.equals(_PATH_PORTAL_UPDATE_TERMS_OF_USE)) {
 
 			return path;
 		}
@@ -721,7 +718,8 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 		if (!path.equals(_PATH_PORTAL_JSON_SERVICE) &&
 			!path.equals(_PATH_PORTAL_RENDER_PORTLET) &&
-			!ParamUtil.getBoolean(request, "wsrp")) {
+			!ParamUtil.getBoolean(request, "wsrp") &&
+			!themeDisplay.isImpersonated()) {
 
 			// Authenticated users should agree to Terms of Use
 
@@ -926,7 +924,7 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 						throw new PrincipalException();
 					}
 				}
-				else if (portlet != null && !portlet.isActive()) {
+				else if ((portlet != null) && !portlet.isActive()) {
 					SessionErrors.add(
 						request, PortletActiveException.class.getName());
 
@@ -965,8 +963,6 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 	private static final String _PATH_PORTAL_API_JSONWS = "/portal/api/jsonws";
 
-	private static final String _PATH_PORTAL_EE_LICENSE = "/portal/ee/license";
-
 	private static final String _PATH_PORTAL_ERROR = "/portal/error";
 
 	private static final String _PATH_PORTAL_EXPIRE_SESSION =
@@ -984,6 +980,8 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 	private static final String _PATH_PORTAL_LAYOUT = "/portal/layout";
 
+	private static final String _PATH_PORTAL_LICENSE = "/portal/license";
+
 	private static final String _PATH_PORTAL_LOGIN = "/portal/login";
 
 	private static final String _PATH_PORTAL_LOGOUT = "/portal/logout";
@@ -995,6 +993,8 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 	private static final String _PATH_PORTAL_SETUP_WIZARD =
 		"/portal/setup_wizard";
+
+	private static final String _PATH_PORTAL_STATUS = "/portal/status";
 
 	private static final String _PATH_PORTAL_TCK = "/portal/tck";
 

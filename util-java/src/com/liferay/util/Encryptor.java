@@ -125,6 +125,14 @@ public class Encryptor {
 	public static String encrypt(Key key, String plainText)
 		throws EncryptorException {
 
+		if (key == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Skip encrypting based on a null key");
+			}
+
+			return plainText;
+		}
+
 		byte[] encryptedBytes = encryptUnencoded(key, plainText);
 
 		return Base64.encode(encryptedBytes);
@@ -204,8 +212,8 @@ public class Encryptor {
 			providerClass = Class.forName(PROVIDER_CLASS);
 		}
 		catch (ClassNotFoundException cnfe) {
-			if ((ServerDetector.isWebSphere()) &&
-				(PROVIDER_CLASS.equals(SUN_PROVIDER_CLASS))) {
+			if (ServerDetector.isWebSphere() &&
+				PROVIDER_CLASS.equals(SUN_PROVIDER_CLASS)) {
 
 				if (_log.isWarnEnabled()) {
 					_log.warn(

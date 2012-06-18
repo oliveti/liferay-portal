@@ -32,6 +32,8 @@ import java.io.Serializable;
 import java.sql.Types;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The base model implementation for the Release service. Represents a row in the &quot;Release_&quot; database table, with each column mapped to a property of this class.
@@ -62,9 +64,10 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 			{ "buildNumber", Types.INTEGER },
 			{ "buildDate", Types.TIMESTAMP },
 			{ "verified", Types.BOOLEAN },
+			{ "state_", Types.INTEGER },
 			{ "testString", Types.VARCHAR }
 		};
-	public static final String TABLE_SQL_CREATE = "create table Release_ (releaseId LONG not null primary key,createDate DATE null,modifiedDate DATE null,servletContextName VARCHAR(75) null,buildNumber INTEGER,buildDate DATE null,verified BOOLEAN,testString VARCHAR(1024) null)";
+	public static final String TABLE_SQL_CREATE = "create table Release_ (releaseId LONG not null primary key,createDate DATE null,modifiedDate DATE null,servletContextName VARCHAR(75) null,buildNumber INTEGER,buildDate DATE null,verified BOOLEAN,state_ INTEGER,testString VARCHAR(1024) null)";
 	public static final String TABLE_SQL_DROP = "drop table Release_";
 	public static final String DATA_SOURCE = "liferayDataSource";
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
@@ -107,6 +110,80 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 
 	public String getModelClassName() {
 		return Release.class.getName();
+	}
+
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("releaseId", getReleaseId());
+		attributes.put("createDate", getCreateDate());
+		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("servletContextName", getServletContextName());
+		attributes.put("buildNumber", getBuildNumber());
+		attributes.put("buildDate", getBuildDate());
+		attributes.put("verified", getVerified());
+		attributes.put("state", getState());
+		attributes.put("testString", getTestString());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		Long releaseId = (Long)attributes.get("releaseId");
+
+		if (releaseId != null) {
+			setReleaseId(releaseId);
+		}
+
+		Date createDate = (Date)attributes.get("createDate");
+
+		if (createDate != null) {
+			setCreateDate(createDate);
+		}
+
+		Date modifiedDate = (Date)attributes.get("modifiedDate");
+
+		if (modifiedDate != null) {
+			setModifiedDate(modifiedDate);
+		}
+
+		String servletContextName = (String)attributes.get("servletContextName");
+
+		if (servletContextName != null) {
+			setServletContextName(servletContextName);
+		}
+
+		Integer buildNumber = (Integer)attributes.get("buildNumber");
+
+		if (buildNumber != null) {
+			setBuildNumber(buildNumber);
+		}
+
+		Date buildDate = (Date)attributes.get("buildDate");
+
+		if (buildDate != null) {
+			setBuildDate(buildDate);
+		}
+
+		Boolean verified = (Boolean)attributes.get("verified");
+
+		if (verified != null) {
+			setVerified(verified);
+		}
+
+		Integer state = (Integer)attributes.get("state");
+
+		if (state != null) {
+			setState(state);
+		}
+
+		String testString = (String)attributes.get("testString");
+
+		if (testString != null) {
+			setTestString(testString);
+		}
 	}
 
 	public long getReleaseId() {
@@ -184,6 +261,14 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 		_verified = verified;
 	}
 
+	public int getState() {
+		return _state;
+	}
+
+	public void setState(int state) {
+		_state = state;
+	}
+
 	public String getTestString() {
 		if (_testString == null) {
 			return StringPool.BLANK;
@@ -214,17 +299,15 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(0,
-					Release.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(0,
+			Release.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -238,6 +321,7 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 		releaseImpl.setBuildNumber(getBuildNumber());
 		releaseImpl.setBuildDate(getBuildDate());
 		releaseImpl.setVerified(getVerified());
+		releaseImpl.setState(getState());
 		releaseImpl.setTestString(getTestString());
 
 		releaseImpl.resetOriginalValues();
@@ -343,6 +427,8 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 
 		releaseCacheModel.verified = getVerified();
 
+		releaseCacheModel.state = getState();
+
 		releaseCacheModel.testString = getTestString();
 
 		String testString = releaseCacheModel.testString;
@@ -356,7 +442,7 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(17);
+		StringBundler sb = new StringBundler(19);
 
 		sb.append("{releaseId=");
 		sb.append(getReleaseId());
@@ -372,6 +458,8 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 		sb.append(getBuildDate());
 		sb.append(", verified=");
 		sb.append(getVerified());
+		sb.append(", state=");
+		sb.append(getState());
 		sb.append(", testString=");
 		sb.append(getTestString());
 		sb.append("}");
@@ -380,7 +468,7 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 	}
 
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(28);
+		StringBundler sb = new StringBundler(31);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.portal.model.Release");
@@ -415,6 +503,10 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 		sb.append(getVerified());
 		sb.append("]]></column-value></column>");
 		sb.append(
+			"<column><column-name>state</column-name><column-value><![CDATA[");
+		sb.append(getState());
+		sb.append("]]></column-value></column>");
+		sb.append(
 			"<column><column-name>testString</column-name><column-value><![CDATA[");
 		sb.append(getTestString());
 		sb.append("]]></column-value></column>");
@@ -436,8 +528,8 @@ public class ReleaseModelImpl extends BaseModelImpl<Release>
 	private int _buildNumber;
 	private Date _buildDate;
 	private boolean _verified;
+	private int _state;
 	private String _testString;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private Release _escapedModelProxy;
 }

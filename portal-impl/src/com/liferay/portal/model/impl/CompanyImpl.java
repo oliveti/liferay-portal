@@ -195,9 +195,7 @@ public class CompanyImpl extends CompanyBaseImpl {
 		}
 	}
 
-	public boolean hasCompanyMx(String emailAddress)
-		throws SystemException {
-
+	public boolean hasCompanyMx(String emailAddress) throws SystemException {
 		emailAddress = emailAddress.trim().toLowerCase();
 
 		int pos = emailAddress.indexOf(CharPool.AT);
@@ -206,7 +204,7 @@ public class CompanyImpl extends CompanyBaseImpl {
 			return false;
 		}
 
-		String mx = emailAddress.substring(pos + 1, emailAddress.length());
+		String mx = emailAddress.substring(pos + 1);
 
 		if (mx.equals(getMx())) {
 			return true;

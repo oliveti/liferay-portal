@@ -3,6 +3,12 @@ Liferay = window.Liferay || {};
 ;(function(A, Liferay) {
 	var Lang = A.Lang;
 
+	var owns = A.Object.owns;
+
+	var CONTEXT = themeDisplay.getPathContext();
+
+	var PREFIX_PARAM_NULL_VALUE = '-';
+
 	var REGEX_SELECTOR_ID = /^#/;
 
 	var REGEX_TRIM_SLASH = /^\/|\/$/g;
@@ -64,7 +70,7 @@ Liferay = window.Liferay || {};
 				}
 
 				for (var i in serviceConfig) {
-					if (A.Object.owns(serviceConfig, i)) {
+					if (owns(serviceConfig, i)) {
 						service = i;
 						serviceData = serviceConfig[i];
 
@@ -138,16 +144,44 @@ Liferay = window.Liferay || {};
 			throw 'You must specify a service.';
 		}
 
+		var pieces = service.split('#');
+
+		var url;
+
+		if (pieces.length > 1) {
+			url = Lang.sub(Service.PLUGIN_URL_BASE, pieces);
+		}
+		else {
+			url = Service.URL_BASE + service;
+		}
+
 		if (String(method).toUpperCase() == 'GET') {
 			config.cache = false;
 		}
 
 		config.method = method;
 
-		return A.io.request(Service.URL_BASE + service, config);
+		var prefixedData = {};
+
+		A.Object.each(
+			config.data,
+			function(item, index, collection) {
+				if (Lang.isNull(item) && index.charAt(0) != PREFIX_PARAM_NULL_VALUE) {
+					index = PREFIX_PARAM_NULL_VALUE + index;
+				}
+
+				prefixedData[index] = item;
+			}
+		);
+
+		config.data = prefixedData;
+
+		return Service._ioRequest(url, config);
 	};
 
-	Service.URL_BASE = themeDisplay.getPathContext() + '/api/jsonws/';
+	Service.PLUGIN_URL_BASE = CONTEXT + '/{0}/api/jsonws/{1}';
+
+	Service.URL_BASE = CONTEXT + '/api/jsonws/';
 
 	A.mix(
 		Service,
@@ -160,7 +194,9 @@ Liferay = window.Liferay || {};
 				var instance = this;
 
 				options.serviceParameters = Service.getParameters(options);
+
 				options.doAsUserId = themeDisplay.getDoAsUserIdEncoded();
+				options.p_auth = Liferay.authToken;
 
 				var config = {
 					cache: false,
@@ -188,11 +224,21 @@ Liferay = window.Liferay || {};
 					config.sync = true;
 				}
 
-				A.io.request(instance.actionUrl, config);
+				instance._ioRequest(instance.actionUrl, config);
 
 				if (xHR) {
 					return eval('(' + xHR.responseText + ')');
 				}
+			},
+
+			bind: function() {
+				var instance = this;
+
+				var args = A.Array(arguments, 0, true);
+
+				args.unshift(Liferay.Service, Liferay);
+
+				return A.bind.apply(A, args);
 			},
 
 			getParameters: function(options) {
@@ -282,8 +328,31 @@ Liferay = window.Liferay || {};
 				}
 
 				return instance._JSONParser;
+			},
+
+			_ioRequest: function(uri, config) {
+				var instance = this;
+
+				var data = config.data;
+
+				if (!A.Object.owns(data, 'p_auth')) {
+					data.p_auth = Liferay.authToken;
+				}
+
+				if (A.io && A.io.request) {
+					A.io.request(uri, config);
+				}
+				else {
+					A.use(
+						'aui-io-request',
+						function(A) {
+							A.io.request(uri, config);
+						}
+					);
+				}
 			}
-		}
+		},
+		true
 	);
 
 	A.each(

@@ -15,7 +15,6 @@
 package com.liferay.portlet.messageboards.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class MBStatsUserLocalServiceUtil {
 	* Deletes the message boards stats user with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param statsUserId the primary key of the message boards stats user
+	* @return the message boards stats user that was removed
 	* @throws PortalException if a message boards stats user with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMBStatsUser(long statsUserId)
+	public static com.liferay.portlet.messageboards.model.MBStatsUser deleteMBStatsUser(
+		long statsUserId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMBStatsUser(statsUserId);
+		return getService().deleteMBStatsUser(statsUserId);
 	}
 
 	/**
 	* Deletes the message boards stats user from the database. Also notifies the appropriate model listeners.
 	*
 	* @param mbStatsUser the message boards stats user
+	* @return the message boards stats user that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMBStatsUser(
+	public static com.liferay.portlet.messageboards.model.MBStatsUser deleteMBStatsUser(
 		com.liferay.portlet.messageboards.model.MBStatsUser mbStatsUser)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMBStatsUser(mbStatsUser);
+		return getService().deleteMBStatsUser(mbStatsUser);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -336,20 +342,15 @@ public class MBStatsUserLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(MBStatsUserLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(MBStatsUserLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(MBStatsUserLocalService service) {
-		MethodCache.remove(MBStatsUserLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(MBStatsUserLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(MBStatsUserLocalService.class);
 	}
 
 	private static MBStatsUserLocalService _service;

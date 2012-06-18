@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+
 import java.util.List;
 
 /**
@@ -30,11 +32,21 @@ public class IndexerRegistryUtil {
 	}
 
 	public static IndexerRegistry getIndexerRegistry() {
+		PortalRuntimePermission.checkGetBeanProperty(IndexerRegistryUtil.class);
+
 		return _indexerRegistry;
 	}
 
 	public static List<Indexer> getIndexers() {
 		return getIndexerRegistry().getIndexers();
+	}
+
+	public static Indexer nullSafeGetIndexer(Class<?> clazz) {
+		return getIndexerRegistry().nullSafeGetIndexer(clazz.getName());
+	}
+
+	public static Indexer nullSafeGetIndexer(String className) {
+		return getIndexerRegistry().nullSafeGetIndexer(className);
 	}
 
 	public static void register(Indexer indexer) {
@@ -62,6 +74,8 @@ public class IndexerRegistryUtil {
 	}
 
 	public void setIndexerRegistry(IndexerRegistry indexerRegistry) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_indexerRegistry = indexerRegistry;
 	}
 

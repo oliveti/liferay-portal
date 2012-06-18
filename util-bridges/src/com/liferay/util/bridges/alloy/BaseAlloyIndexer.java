@@ -80,7 +80,8 @@ public abstract class BaseAlloyIndexer extends BaseIndexer {
 		AuditedModel auditedModel = (AuditedModel)obj;
 
 		SearchEngineUtil.deleteDocument(
-			auditedModel.getCompanyId(), document.get(Field.UID));
+			getSearchEngineId(), auditedModel.getCompanyId(),
+			document.get(Field.UID));
 	}
 
 	@Override
@@ -89,7 +90,8 @@ public abstract class BaseAlloyIndexer extends BaseIndexer {
 
 		AuditedModel auditedModel = (AuditedModel)obj;
 
-		SearchEngineUtil.updateDocument(auditedModel.getCompanyId(), document);
+		SearchEngineUtil.updateDocument(
+			getSearchEngineId(), auditedModel.getCompanyId(), document);
 	}
 
 	@Override
@@ -142,7 +144,7 @@ public abstract class BaseAlloyIndexer extends BaseIndexer {
 			return;
 		}
 
-		Collection<Document> documents = new ArrayList<Document>();
+		Collection<Document> documents = new ArrayList<Document>(models.size());
 
 		for (Object model : models) {
 			Document document = getDocument(model);
@@ -150,7 +152,8 @@ public abstract class BaseAlloyIndexer extends BaseIndexer {
 			documents.add(document);
 		}
 
-		SearchEngineUtil.updateDocuments(companyId, documents);
+		SearchEngineUtil.updateDocuments(
+			getSearchEngineId(), companyId, documents);
 	}
 
 	protected String[] classNames;

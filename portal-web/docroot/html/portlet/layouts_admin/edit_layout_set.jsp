@@ -59,6 +59,8 @@ if (!company.isSiteLogo()) {
 }
 
 String[][] categorySections = {mainSections};
+
+boolean hasExportImportLayoutsPermission = GroupPermissionUtil.contains(permissionChecker, liveGroupId, ActionKeys.EXPORT_IMPORT_LAYOUTS);
 %>
 
 <div class="lfr-header-row">
@@ -68,7 +70,7 @@ String[][] categorySections = {mainSections};
 		</liferay-util:include>
 
 		<aui:button-row cssClass="edit-toolbar" id='<%= liferayPortletResponse.getNamespace() + "layoutSetToolbar" %>'>
-			<c:if test="<%= GroupPermissionUtil.contains(permissionChecker, liveGroupId, ActionKeys.EXPORT_IMPORT_LAYOUTS) %>">
+			<c:if test="<%= hasExportImportLayoutsPermission %>">
 				<c:if test="<%= SessionErrors.contains(liferayPortletRequest, LayoutImportException.class.getName()) || SessionErrors.contains(liferayPortletRequest, LARFileException.class.getName()) || SessionErrors.contains(liferayPortletRequest, LARTypeException.class.getName()) %>">
 					<liferay-util:html-top>
 						<div class="aui-helper-hidden" id="<portlet:namespace />importPage">
@@ -85,8 +87,8 @@ String[][] categorySections = {mainSections};
 					<aui:script use="aui-dialog">
 						new A.Dialog(
 							{
+								align: Liferay.Util.Window.ALIGN_CENTER,
 								bodyContent: A.one('#<portlet:namespace />importPage').show(),
-								centered: true,
 								modal: true,
 								title: '<%= UnicodeLanguageUtil.get(pageContext, "import") %>',
 								width: 600
@@ -144,8 +146,8 @@ String[][] categorySections = {mainSections};
 					if (!popup) {
 						popup = new A.Dialog(
 							{
+								align: Liferay.Util.Window.ALIGN_CENTER,
 								bodyContent: content.show(),
-								centered: true,
 								title: '<%= UnicodeLanguageUtil.get(pageContext, "add-page") %>',
 								modal: true,
 								width: 500
@@ -181,7 +183,7 @@ String[][] categorySections = {mainSections};
 		);
 	</c:if>
 
-	<c:if test="<%= GroupPermissionUtil.contains(permissionChecker, liveGroupId, ActionKeys.EXPORT_IMPORT_LAYOUTS) %>">
+	<c:if test="<%= hasExportImportLayoutsPermission %>">
 		layoutSetToolbarChildren.push(
 			{
 				type: 'ToolbarSpacer'
@@ -201,7 +203,7 @@ String[][] categorySections = {mainSections};
 						{
 							dialog:
 								{
-									centered: true,
+									align: Liferay.Util.Window.ALIGN_CENTER,
 									constrain: true,
 									modal: true,
 									width: 600
@@ -230,7 +232,7 @@ String[][] categorySections = {mainSections};
 						{
 							dialog:
 								{
-									centered: true,
+									align: Liferay.Util.Window.ALIGN_CENTER,
 									constrain: true,
 									modal: true,
 									width: 600

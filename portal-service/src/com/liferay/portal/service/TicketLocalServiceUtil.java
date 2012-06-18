@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -65,24 +64,31 @@ public class TicketLocalServiceUtil {
 	* Deletes the ticket with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param ticketId the primary key of the ticket
+	* @return the ticket that was removed
 	* @throws PortalException if a ticket with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteTicket(long ticketId)
+	public static com.liferay.portal.model.Ticket deleteTicket(long ticketId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteTicket(ticketId);
+		return getService().deleteTicket(ticketId);
 	}
 
 	/**
 	* Deletes the ticket from the database. Also notifies the appropriate model listeners.
 	*
 	* @param ticket the ticket
+	* @return the ticket that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteTicket(com.liferay.portal.model.Ticket ticket)
+	public static com.liferay.portal.model.Ticket deleteTicket(
+		com.liferay.portal.model.Ticket ticket)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteTicket(ticket);
+		return getService().deleteTicket(ticket);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -285,20 +291,15 @@ public class TicketLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(TicketLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(TicketLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(TicketLocalService service) {
-		MethodCache.remove(TicketLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(TicketLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(TicketLocalService.class);
 	}
 
 	private static TicketLocalService _service;

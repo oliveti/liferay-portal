@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class UserTrackerPathLocalServiceUtil {
 	* Deletes the user tracker path with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param userTrackerPathId the primary key of the user tracker path
+	* @return the user tracker path that was removed
 	* @throws PortalException if a user tracker path with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteUserTrackerPath(long userTrackerPathId)
+	public static com.liferay.portal.model.UserTrackerPath deleteUserTrackerPath(
+		long userTrackerPathId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteUserTrackerPath(userTrackerPathId);
+		return getService().deleteUserTrackerPath(userTrackerPathId);
 	}
 
 	/**
 	* Deletes the user tracker path from the database. Also notifies the appropriate model listeners.
 	*
 	* @param userTrackerPath the user tracker path
+	* @return the user tracker path that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteUserTrackerPath(
+	public static com.liferay.portal.model.UserTrackerPath deleteUserTrackerPath(
 		com.liferay.portal.model.UserTrackerPath userTrackerPath)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteUserTrackerPath(userTrackerPath);
+		return getService().deleteUserTrackerPath(userTrackerPath);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -272,20 +278,15 @@ public class UserTrackerPathLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(UserTrackerPathLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(UserTrackerPathLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(UserTrackerPathLocalService service) {
-		MethodCache.remove(UserTrackerPathLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(UserTrackerPathLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(UserTrackerPathLocalService.class);
 	}
 
 	private static UserTrackerPathLocalService _service;

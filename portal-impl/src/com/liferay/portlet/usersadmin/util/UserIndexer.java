@@ -14,22 +14,34 @@
 
 package com.liferay.portlet.usersadmin.util;
 
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Projection;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ProjectionList;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.model.Contact;
 import com.liferay.portal.model.Organization;
 import com.liferay.portal.model.User;
+import com.liferay.portal.model.impl.ContactImpl;
 import com.liferay.portal.security.auth.FullNameGenerator;
 import com.liferay.portal.security.auth.FullNameGeneratorFactory;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortletKeys;
@@ -57,6 +69,8 @@ public class UserIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.USERS_ADMIN;
 
 	public UserIndexer() {
+		setIndexerEnabled(PropsValues.USERS_INDEXER_ENABLED);
+		setPermissionAware(true);
 		setStagingAware(false);
 	}
 
@@ -66,16 +80,6 @@ public class UserIndexer extends BaseIndexer {
 
 	public String getPortletId() {
 		return PORTLET_ID;
-	}
-
-	@Override
-	public boolean isIndexerEnabled() {
-		return PropsValues.USERS_INDEXER_ENABLED;
-	}
-
-	@Override
-	public boolean isPermissionAware() {
-		return _PERMISSION_AWARE;
 	}
 
 	@Override
@@ -187,11 +191,28 @@ public class UserIndexer extends BaseIndexer {
 		}
 	}
 
+	protected void addReindexCriteria(
+		DynamicQuery dynamicQuery, long companyId) {
+
+		Property property = PropertyFactoryUtil.forName("companyId");
+
+		dynamicQuery.add(property.eq(companyId));
+	}
+
 	@Override
 	protected void doDelete(Object obj) throws Exception {
 		User user = (User)obj;
 
 		deleteDocument(user.getCompanyId(), user.getUserId());
+
+		Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(Contact.class);
+
+		Contact contact = new ContactImpl();
+
+		contact.setContactId(user.getContactId());
+		contact.setCompanyId(user.getCompanyId());
+
+		indexer.delete(contact);
 	}
 
 	@Override
@@ -329,7 +350,8 @@ public class UserIndexer extends BaseIndexer {
 				long companyId = entry.getKey();
 				Collection<Document> documents = entry.getValue();
 
-				SearchEngineUtil.updateDocuments(companyId, documents);
+				SearchEngineUtil.updateDocuments(
+					getSearchEngineId(), companyId, documents);
 			}
 		}
 		else if (obj instanceof User) {
@@ -341,7 +363,13 @@ public class UserIndexer extends BaseIndexer {
 
 			Document document = getDocument(user);
 
-			SearchEngineUtil.updateDocument(user.getCompanyId(), document);
+			SearchEngineUtil.updateDocument(
+				getSearchEngineId(), user.getCompanyId(), document);
+
+			Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+				Contact.class);
+
+			indexer.reindex(user.getContact());
 		}
 	}
 
@@ -391,29 +419,65 @@ public class UserIndexer extends BaseIndexer {
 	}
 
 	protected void reindexUsers(long companyId) throws Exception {
-		int count = UserLocalServiceUtil.getCompanyUsersCount(companyId);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			User.class, PACLClassLoaderUtil.getPortalClassLoader());
 
-		int pages = count / UserIndexer.DEFAULT_INTERVAL;
+		Projection minUserIdProjection = ProjectionFactoryUtil.min("userId");
+		Projection maxUserIdProjection = ProjectionFactoryUtil.max("userId");
 
-		for (int i = 0; i <= pages; i++) {
-			int start = (i * UserIndexer.DEFAULT_INTERVAL);
-			int end = start + UserIndexer.DEFAULT_INTERVAL;
+		ProjectionList projectionList = ProjectionFactoryUtil.projectionList();
 
-			reindexUsers(companyId, start, end);
+		projectionList.add(minUserIdProjection);
+		projectionList.add(maxUserIdProjection);
+
+		dynamicQuery.setProjection(projectionList);
+
+		addReindexCriteria(dynamicQuery, companyId);
+
+		List<Object[]> results = UserLocalServiceUtil.dynamicQuery(
+			dynamicQuery);
+
+		Object[] minAndMaxUserIds = results.get(0);
+
+		if ((minAndMaxUserIds[0] == null) || (minAndMaxUserIds[1] == null)) {
+			return;
+		}
+
+		long minUserId = (Long)minAndMaxUserIds[0];
+		long maxUserId = (Long)minAndMaxUserIds[1];
+
+		long startUserId = minUserId;
+		long endUserId = startUserId + DEFAULT_INTERVAL;
+
+		while (startUserId <= maxUserId) {
+			reindexUsers(companyId, startUserId, endUserId);
+
+			startUserId = endUserId;
+			endUserId += DEFAULT_INTERVAL;
 		}
 	}
 
-	protected void reindexUsers(long companyId, int start, int end)
+	protected void reindexUsers(
+			long companyId, long startUserId, long endUserId)
 		throws Exception {
 
-		List<User> users = UserLocalServiceUtil.getCompanyUsers(
-			companyId, start, end);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			User.class, PACLClassLoaderUtil.getPortalClassLoader());
+
+		Property property = PropertyFactoryUtil.forName("userId");
+
+		dynamicQuery.add(property.ge(startUserId));
+		dynamicQuery.add(property.lt(endUserId));
+
+		addReindexCriteria(dynamicQuery, companyId);
+
+		List<User> users = UserLocalServiceUtil.dynamicQuery(dynamicQuery);
 
 		if (users.isEmpty()) {
 			return;
 		}
 
-		Collection<Document> documents = new ArrayList<Document>();
+		Collection<Document> documents = new ArrayList<Document>(users.size());
 
 		for (User user : users) {
 			if (user.isDefaultUser()) {
@@ -425,9 +489,8 @@ public class UserIndexer extends BaseIndexer {
 			documents.add(document);
 		}
 
-		SearchEngineUtil.updateDocuments(companyId, documents);
+		SearchEngineUtil.updateDocuments(
+			getSearchEngineId(), companyId, documents);
 	}
-
-	private static final boolean _PERMISSION_AWARE = true;
 
 }

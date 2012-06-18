@@ -305,6 +305,7 @@ public class Validator {
 	 *
 	 * @param  month the month to check
 	 * @param  day the day to check
+	 * @param  year the year to check
 	 * @return <code>true</code> if the date is valid in the Gregorian calendar;
 	 *         <code>false</code> otherwise
 	 */
@@ -405,7 +406,7 @@ public class Validator {
 					return false;
 				}
 
-				if ((!isChar(c)) && (!isDigit(c)) && (c != CharPool.DASH)) {
+				if (!isChar(c) && !isDigit(c) && (c != CharPool.DASH)) {
 					return false;
 				}
 			}
@@ -858,6 +859,7 @@ public class Validator {
 	 * is at least four characters long and contains only letters and decimal
 	 * digits.
 	 *
+	 * @param  password the password to check
 	 * @return <code>true</code> if the string is a valid password;
 	 *         <code>false</code> otherwise
 	 */

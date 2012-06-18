@@ -14,13 +14,10 @@
 
 package com.liferay.taglib.util;
 
-import com.liferay.portal.kernel.servlet.DirectServletContext;
+import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
 import com.liferay.portal.kernel.servlet.PipingPageContext;
 import com.liferay.portal.kernel.servlet.taglib.TagSupport;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutConstants;
@@ -57,6 +54,7 @@ import com.liferay.taglib.ui.StagingTag;
 import com.liferay.taglib.ui.ToggleTag;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
@@ -130,15 +128,16 @@ public class VelocityTaglib {
 		String varImpl = null;
 		String resourceID = null;
 		String cacheability = null;
-		Map<String, String[]> params = HttpUtil.parameterMapFromString(
+		Map<String, String[]> parameterMap = HttpUtil.parameterMapFromString(
 			queryString);
+		Set<String> removedParameterNames = null;
 
 		ActionURLTag.doTag(
 			PortletRequest.ACTION_PHASE, windowState, portletMode, var, varImpl,
 			secure, copyCurrentRenderParameters, escapeXml, name, resourceID,
 			cacheability, plid, refererPlid, portletName, anchor, encrypt,
-			doAsGroupId, doAsUserId, portletConfiguration, params,
-			_pageContext);
+			doAsGroupId, doAsUserId, portletConfiguration, parameterMap,
+			removedParameterNames, _pageContext);
 	}
 
 	public void actionURL(
@@ -367,12 +366,9 @@ public class VelocityTaglib {
 	}
 
 	public void include(String page) throws Exception {
-		if (_DIRECT_SERVLET_CONTEXT_ENABLED) {
-			_request.setAttribute(WebKeys.SERVLET_PATH, page);
-		}
-
 		RequestDispatcher requestDispatcher =
-			_servletContext.getRequestDispatcher(page);
+			DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
+				_servletContext, page);
 
 		requestDispatcher.include(_request, _response);
 	}
@@ -380,10 +376,6 @@ public class VelocityTaglib {
 	public VelocityTaglib init(
 		ServletContext servletContext, HttpServletRequest request,
 		HttpServletResponse response, PageContext pageContext) {
-
-		if (_DIRECT_SERVLET_CONTEXT_ENABLED) {
-			servletContext = new DirectServletContext(servletContext);
-		}
 
 		_servletContext = servletContext;
 		_request = request;
@@ -394,10 +386,21 @@ public class VelocityTaglib {
 	}
 
 	public void journalContentSearch() throws Exception {
+		journalContentSearch(true, null, null);
+	}
+
+	public void journalContentSearch(
+			boolean showListed, String targetPortletId, String type)
+		throws Exception {
+
 		JournalContentSearchTag journalContentSearchTag =
 			new JournalContentSearchTag();
 
 		setUp(journalContentSearchTag);
+
+		journalContentSearchTag.setShowListed(showListed);
+		journalContentSearchTag.setTargetPortletId(targetPortletId);
+		journalContentSearchTag.setType(type);
 
 		journalContentSearchTag.runTag();
 	}
@@ -486,13 +489,28 @@ public class VelocityTaglib {
 
 	public void permissionsURL(
 			String redirect, String modelResource,
+			String modelResourceDescription, long resourceGroupId,
+			String resourcePrimKey, String windowState, int[] roleTypes)
+		throws Exception {
+
+		PermissionsURLTag.doTag(
+			redirect, modelResource, modelResourceDescription, resourceGroupId,
+			resourcePrimKey, windowState, null, roleTypes, _pageContext);
+	}
+
+	/**
+	 * @deprecated {@link #permissionsURL(String, String, String, long, String,
+	 *             String, int[])}
+	 */
+	public void permissionsURL(
+			String redirect, String modelResource,
 			String modelResourceDescription, String resourcePrimKey,
 			String windowState, int[] roleTypes)
 		throws Exception {
 
-		PermissionsURLTag.doTag(
-			redirect, modelResource, modelResourceDescription, resourcePrimKey,
-			windowState, null, roleTypes, _pageContext);
+		permissionsURL(
+			redirect, modelResourceDescription, modelResourceDescription, 0,
+			resourcePrimKey, windowState, roleTypes);
 	}
 
 	public void renderURL(long plid, String portletName, String queryString)
@@ -523,15 +541,16 @@ public class VelocityTaglib {
 		String name = null;
 		String resourceID = null;
 		String cacheability = null;
-		Map<String, String[]> params = HttpUtil.parameterMapFromString(
+		Map<String, String[]> parameterMap = HttpUtil.parameterMapFromString(
 			queryString);
+		Set<String> removedParameterNames = null;
 
 		ActionURLTag.doTag(
 			PortletRequest.RENDER_PHASE, windowState, portletMode, var, varImpl,
 			secure, copyCurrentRenderParameters, escapeXml, name, resourceID,
 			cacheability, plid, refererPlid, portletName, anchor, encrypt,
-			doAsGroupId, doAsUserId, portletConfiguration, params,
-			_pageContext);
+			doAsGroupId, doAsUserId, portletConfiguration, parameterMap,
+			removedParameterNames, _pageContext);
 	}
 
 	/**
@@ -585,18 +604,14 @@ public class VelocityTaglib {
 			queryString);
 	}
 
-	public void runtime(String portletName)
-		throws Exception {
-
+	public void runtime(String portletName) throws Exception {
 		runtime(portletName, null);
 	}
 
 	public void runtime(String portletName, String queryString)
 		throws Exception {
 
-		RuntimeTag.doTag(
-			portletName, queryString, null, _servletContext, _request,
-			_response);
+		RuntimeTag.doTag(portletName, queryString, null, _request, _response);
 	}
 
 	public void runtime(
@@ -604,8 +619,8 @@ public class VelocityTaglib {
 		throws Exception {
 
 		RuntimeTag.doTag(
-			portletName, queryString, defaultPreferences, null, _servletContext,
-			_request, _response);
+			portletName, queryString, defaultPreferences, null, _request,
+			_response);
 	}
 
 	public void search() throws Exception {
@@ -646,10 +661,6 @@ public class VelocityTaglib {
 		tagSupport.setPageContext(
 			new PipingPageContext(_pageContext, _response.getWriter()));
 	}
-
-	private static final boolean _DIRECT_SERVLET_CONTEXT_ENABLED =
-		GetterUtil.getBoolean(
-			PropsUtil.get(PropsKeys.DIRECT_SERVLET_CONTEXT_ENABLED));
 
 	private PageContext _pageContext;
 	private HttpServletRequest _request;

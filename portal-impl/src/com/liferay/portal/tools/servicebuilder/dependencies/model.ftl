@@ -91,6 +91,8 @@ public interface ${entity.name}Model extends
 			 * @return the fully qualified class name of this ${entity.humanName}
 			 */
 			public String getClassName();
+
+			public void setClassName(String className);
 		</#if>
 
 		<#assign autoEscape = true>
@@ -276,6 +278,13 @@ public interface ${entity.name}Model extends
 		 * @return <code>true</code> if this ${entity.humanName} is expired; <code>false</code> otherwise
 		 */
 		public boolean isExpired();
+
+		/**
+		 * Returns <code>true</code> if this ${entity.humanName} is in the Recycle Bin.
+		 *
+		 * @return <code>true</code> if this ${entity.humanName} is in the Recycle Bin; <code>false</code> otherwise
+		 */
+		public boolean isInTrash();
 
 		/**
 		 * Returns <code>true</code> if this ${entity.humanName} is pending.

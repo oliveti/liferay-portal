@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.util.Converter;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 
@@ -52,10 +53,12 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 			new ProxyFactory.ClassLoaderProvider() {
 
 				public ClassLoader get(ProxyFactory proxyFactory) {
-					return Thread.currentThread().getContextClassLoader();
+					return PACLClassLoaderUtil.getContextClassLoader();
 				}
 
 			};
+
+		setBeanClassLoader(getConfigurationClassLoader());
 
 		return super.buildSessionFactory();
 	}
@@ -71,7 +74,9 @@ public class PortalHibernateConfiguration extends LocalSessionFactoryBean {
 	}
 
 	protected ClassLoader getConfigurationClassLoader() {
-		return getClass().getClassLoader();
+		Class<?> clazz = getClass();
+
+		return clazz.getClassLoader();
 	}
 
 	protected String[] getConfigurationResources() {

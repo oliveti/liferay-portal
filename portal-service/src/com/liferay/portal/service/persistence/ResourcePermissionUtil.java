@@ -1953,16 +1953,17 @@ public class ResourcePermissionUtil {
 	* @param roleId the role ID
 	* @param ownerId the owner ID
 	* @param actionIds the action IDs
+	* @return the resource permission that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByC_N_S_P_R_O_A(long companyId,
-		java.lang.String name, int scope, java.lang.String primKey,
-		long roleId, long ownerId, long actionIds)
+	public static com.liferay.portal.model.ResourcePermission removeByC_N_S_P_R_O_A(
+		long companyId, java.lang.String name, int scope,
+		java.lang.String primKey, long roleId, long ownerId, long actionIds)
 		throws com.liferay.portal.NoSuchResourcePermissionException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getPersistence()
-			.removeByC_N_S_P_R_O_A(companyId, name, scope, primKey, roleId,
-			ownerId, actionIds);
+		return getPersistence()
+				   .removeByC_N_S_P_R_O_A(companyId, name, scope, primKey,
+			roleId, ownerId, actionIds);
 	}
 
 	/**
@@ -2208,11 +2209,10 @@ public class ResourcePermissionUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(ResourcePermissionPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(ResourcePermissionUtil.class,
-			"_persistence");
 	}
 
 	private static ResourcePermissionPersistence _persistence;

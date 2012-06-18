@@ -31,7 +31,7 @@ BlogsEntry entry = (BlogsEntry)request.getAttribute(WebKeys.BLOGS_ENTRY);
 		src = entry.getSmallImageURL();
 	}
 	else {
-		src = themeDisplay.getPathImage() + "/blogs/article?img_id=" + entry.getSmallImageId() + "&t=" + WebServerServletTokenUtil.getToken(entry.getSmallImageId()) ;
+		src = themeDisplay.getPathImage() + "/blogs/article?img_id=" + entry.getSmallImageId() + "&t=" + WebServerServletTokenUtil.getToken(entry.getSmallImageId());
 	}
 	%>
 
@@ -44,8 +44,8 @@ BlogsEntry entry = (BlogsEntry)request.getAttribute(WebKeys.BLOGS_ENTRY);
 String summary = entry.getDescription();
 
 if (Validator.isNull(summary)) {
-	summary = StringUtil.shorten(HtmlUtil.stripHtml(entry.getContent()), abstractLength);
+	summary = HtmlUtil.stripHtml(entry.getContent());
 }
 %>
 
-<%= summary %>
+<%= StringUtil.shorten(summary, abstractLength) %>

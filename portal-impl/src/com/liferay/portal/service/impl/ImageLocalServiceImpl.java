@@ -53,7 +53,7 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 	public void afterPropertiesSet() {
 		super.afterPropertiesSet();
 
-		ClassLoader classLoader = getClass().getClassLoader();
+		ClassLoader classLoader = getClassLoader();
 
 		try {
 			InputStream is = classLoader.getResourceAsStream(
@@ -65,9 +65,9 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 
 			_defaultSpacer = getImage(is);
 		}
-		catch (Exception ioe) {
+		catch (Exception e) {
 			_log.error(
-				"Unable to configure the default spacer: " + ioe.getMessage());
+				"Unable to configure the default spacer: " + e.getMessage());
 		}
 
 		try {
@@ -80,10 +80,10 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 
 			_defaultCompanyLogo = getImage(is);
 		}
-		catch (Exception ioe) {
+		catch (Exception e) {
 			_log.error(
 				"Unable to configure the default company logo: " +
-					ioe.getMessage());
+					e.getMessage());
 		}
 
 		try {
@@ -96,10 +96,10 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 
 			_defaultOrganizationLogo = getImage(is);
 		}
-		catch (Exception ioe) {
+		catch (Exception e) {
 			_log.error(
 				"Unable to configure the default organization logo: " +
-					ioe.getMessage());
+					e.getMessage());
 		}
 
 		try {
@@ -112,10 +112,10 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 
 			_defaultUserFemalePortrait = getImage(is);
 		}
-		catch (Exception ioe) {
+		catch (Exception e) {
 			_log.error(
 				"Unable to configure the default user female portrait: " +
-					ioe.getMessage());
+					e.getMessage());
 		}
 
 		try {
@@ -128,19 +128,19 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 
 			_defaultUserMalePortrait = getImage(is);
 		}
-		catch (Exception ioe) {
+		catch (Exception e) {
 			_log.error(
 				"Unable to configure the default user male portrait: " +
-					ioe.getMessage());
+					e.getMessage());
 		}
 	}
 
 	@Override
-	public void deleteImage(long imageId)
+	public Image deleteImage(long imageId)
 		throws PortalException, SystemException {
 
 		if (imageId <= 0) {
-			return;
+			return null;
 		}
 
 		/*if (PropsValues.IMAGE_HOOK_IMPL.equals(
@@ -152,8 +152,10 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 			imagePersistence.clearCache();
 		}
 		else {*/
+			Image image = null;
+
 			try {
-				Image image = getImage(imageId);
+				image = getImage(imageId);
 
 				imagePersistence.remove(imageId);
 
@@ -163,6 +165,8 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 			}
 			catch (NoSuchImageException nsie) {
 			}
+
+			return image;
 		//}
 	}
 
@@ -252,11 +256,6 @@ public class ImageLocalServiceImpl extends ImageLocalServiceBaseImpl {
 
 	public List<Image> getImages() throws SystemException {
 		return imagePersistence.findAll();
-	}
-
-	@Override
-	public List<Image> getImages(int start, int end) throws SystemException {
-		return imagePersistence.findAll(start, end);
 	}
 
 	public List<Image> getImagesBySize(int size) throws SystemException {

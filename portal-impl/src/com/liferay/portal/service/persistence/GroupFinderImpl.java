@@ -33,7 +33,6 @@ import com.liferay.portal.model.impl.GroupImpl;
 import com.liferay.portal.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.service.ResourceBlockLocalServiceUtil;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.util.ArrayList;
@@ -808,8 +807,7 @@ public class GroupFinderImpl
 				continue;
 			}
 
-			if (key.equals("rolePermissions") &&
-				(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6)) {
+			if (key.equals("rolePermissions")) {
 
 				List<Object> values = (List<Object>)value;
 
@@ -863,8 +861,7 @@ public class GroupFinderImpl
 				}
 			}
 			else {
-				if (key.equals("rolePermissions") &&
-					(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6)) {
+				if (key.equals("rolePermissions")) {
 
 					List<Object> values = (List<Object>)entry.getValue();
 
@@ -901,8 +898,7 @@ public class GroupFinderImpl
 					"[$JOIN$]", "[$WHERE$]"
 				},
 				new String[] {
-					StringPool.BLANK,
-					StringPool.BLANK
+					StringPool.BLANK, StringPool.BLANK
 				});
 		}
 
@@ -948,8 +944,7 @@ public class GroupFinderImpl
 				String actionId = (String)values.get(2);
 				Long roleId = (Long)values.get(3);
 
-				if ((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) &&
-					ResourceBlockLocalServiceUtil.isSupported(name)) {
+				if (ResourceBlockLocalServiceUtil.isSupported(name)) {
 
 					// Scope is assumed to always be group
 
@@ -1063,8 +1058,7 @@ public class GroupFinderImpl
 		for (Map.Entry<String, Object> entry : params.entrySet()) {
 			String key = entry.getKey();
 
-			if (key.equals("rolePermissions") &&
-				(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6)) {
+			if (key.equals("rolePermissions")) {
 
 				List<Object> values = (List<Object>)entry.getValue();
 
@@ -1144,9 +1138,11 @@ public class GroupFinderImpl
 				CustomSQLUtil.get(JOIN_BY_ROLE_RESOURCE_TYPE_PERMISSIONS)));
 		joinMap.put("site", _removeWhere(CustomSQLUtil.get(JOIN_BY_SITE)));
 		joinMap.put("type", _removeWhere(CustomSQLUtil.get(JOIN_BY_TYPE)));
-		joinMap.put("userGroupRole",
+		joinMap.put(
+			"userGroupRole",
 			_removeWhere(CustomSQLUtil.get(JOIN_BY_USER_GROUP_ROLE)));
-		joinMap.put("usersGroups",
+		joinMap.put(
+			"usersGroups",
 			_removeWhere(CustomSQLUtil.get(JOIN_BY_USERS_GROUPS)));
 
 		_joinMap = joinMap;

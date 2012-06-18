@@ -70,14 +70,14 @@ public class LiferayResourceLoader extends ResourceLoader {
 
 		if (is == null) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Could not find " + source);
+				_log.debug("Unable to find " + source);
 			}
 
 			throw new ResourceNotFoundException(source);
 		}
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Successfully got " + source);
+			_log.debug("Successfully found " + source);
 		}
 
 		return is;
@@ -101,14 +101,18 @@ public class LiferayResourceLoader extends ResourceLoader {
 
 	@Override
 	public boolean resourceExists(String resourceName) {
-		InputStream is = doGetResourceStream(resourceName);
+		InputStream is = null;
 
 		try {
+			is = doGetResourceStream(resourceName);
+
 			if (is != null) {
 				is.close();
 			}
 		}
 		catch (IOException ioe) {
+		}
+		catch (ResourceNotFoundException rnfe) {
 		}
 
 		if (is != null) {

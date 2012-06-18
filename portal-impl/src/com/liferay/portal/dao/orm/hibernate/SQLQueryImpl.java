@@ -40,6 +40,7 @@ public class SQLQueryImpl implements SQLQuery {
 
 	public SQLQueryImpl(org.hibernate.SQLQuery sqlQuery, boolean strictName) {
 		_sqlQuery = sqlQuery;
+		_strictName = strictName;
 
 		if (!_strictName) {
 			_names = sqlQuery.getNamedParameters();
@@ -82,6 +83,16 @@ public class SQLQueryImpl implements SQLQuery {
 		catch (Exception e) {
 			throw ExceptionTranslator.translate(e);
 		}
+	}
+
+	public Object iterateNext() throws ORMException {
+		Iterator<?> iterator = iterate(false);
+
+		if (iterator.hasNext()) {
+			return iterator.next();
+		}
+
+		return null;
 	}
 
 	public List<?> list() throws ORMException {

@@ -63,10 +63,10 @@ String redirect = ParamUtil.getString(request, "redirect");
 				<aui:select label="maximum-entries-to-display" name="preferences--entriesPerPage--">
 
 					<%
-					for (int deltaValue : PropsValues.SEARCH_CONTAINER_PAGE_DELTA_VALUES) {
+					for (int pageDeltaValue : PropsValues.SEARCH_CONTAINER_PAGE_DELTA_VALUES) {
 					%>
 
-						<aui:option label="<%= deltaValue %>" selected="<%= entriesPerPage == deltaValue %>" />
+						<aui:option label="<%= pageDeltaValue %>" selected="<%= entriesPerPage == pageDeltaValue %>" />
 
 					<%
 					}
@@ -77,7 +77,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 				<aui:field-wrapper label="display-style-views">
 
 					<%
-					Set availableDisplayViews = SetUtil.fromArray(PropsValues.DL_DISPLAY_VIEWS);
+					Set<String> availableDisplayViews = SetUtil.fromArray(PropsValues.DL_DISPLAY_VIEWS);
 
 					// Left list
 
@@ -95,11 +95,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 					Arrays.sort(displayViews);
 
-					Iterator itr = availableDisplayViews.iterator();
-
-					while (itr.hasNext()) {
-						String displayView = (String)itr.next();
-
+					for (String displayView : availableDisplayViews) {
 						if (Arrays.binarySearch(displayViews, displayView) < 0) {
 							rightList.add(new KeyValuePair(displayView, LanguageUtil.get(pageContext, displayView)));
 						}
@@ -109,13 +105,13 @@ String redirect = ParamUtil.getString(request, "redirect");
 					%>
 
 					<liferay-ui:input-move-boxes
-						leftTitle="current"
-						rightTitle="available"
 						leftBoxName="currentDisplayViews"
-						rightBoxName="availableDisplayViews"
-						leftReorder="true"
 						leftList="<%= leftList %>"
+						leftReorder="true"
+						leftTitle="current"
+						rightBoxName="availableDisplayViews"
 						rightList="<%= rightList %>"
+						rightTitle="available"
 					/>
 				</aui:field-wrapper>
 			</aui:fieldset>
@@ -128,7 +124,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 				<aui:field-wrapper label="show-columns">
 
 					<%
-					Set availableEntryColumns = SetUtil.fromArray(StringUtil.split(allEntryColumns));
+					Set<String> availableEntryColumns = SetUtil.fromArray(StringUtil.split(allEntryColumns));
 
 					// Left list
 
@@ -146,11 +142,7 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 					Arrays.sort(entryColumns);
 
-					Iterator itr = availableEntryColumns.iterator();
-
-					while (itr.hasNext()) {
-						String entryColumn = (String)itr.next();
-
+					for (String entryColumn : availableEntryColumns) {
 						if (Arrays.binarySearch(entryColumns, entryColumn) < 0) {
 							rightList.add(new KeyValuePair(entryColumn, LanguageUtil.get(pageContext, entryColumn)));
 						}
@@ -160,19 +152,20 @@ String redirect = ParamUtil.getString(request, "redirect");
 					%>
 
 					<liferay-ui:input-move-boxes
-						leftTitle="current"
-						rightTitle="available"
 						leftBoxName="currentEntryColumns"
-						rightBoxName="availableEntryColumns"
-						leftReorder="true"
 						leftList="<%= leftList %>"
+						leftReorder="true"
+						leftTitle="current"
+						rightBoxName="availableEntryColumns"
 						rightList="<%= rightList %>"
+						rightTitle="available"
 					/>
 				</aui:field-wrapper>
 			</aui:fieldset>
 		</liferay-ui:panel>
 
 		<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id="documentLibraryDocumentsRatingsPanel" persistState="<%= true %>" title="ratings">
+			<aui:input name="preferences--enableRatings--" type="checkbox" value="<%= enableRatings %>" />
 			<aui:input name="preferences--enableCommentRatings--" type="checkbox" value="<%= enableCommentRatings %>" />
 		</liferay-ui:panel>
 	</liferay-ui:panel-container>

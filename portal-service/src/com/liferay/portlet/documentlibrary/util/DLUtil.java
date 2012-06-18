@@ -44,6 +44,7 @@ import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
+import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
 import com.liferay.portlet.documentlibrary.model.DLFileShortcut;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
@@ -268,10 +269,10 @@ public class DLUtil {
 		if ((splitVersion1.length != 2) && (splitVersion2.length != 2)) {
 			return 0;
 		}
-		else if ((splitVersion1.length != 2)) {
+		else if (splitVersion1.length != 2) {
 			return -1;
 		}
-		else if ((splitVersion2.length != 2)) {
+		else if (splitVersion2.length != 2) {
 			return 1;
 		}
 
@@ -293,6 +294,25 @@ public class DLUtil {
 
 	public static Set<String> getAllMediaGalleryMimeTypes() {
 		return _instance._allMediaGalleryMimeTypes;
+	}
+
+	public static String getDDMStructureKey(DLFileEntryType dlFileEntryType) {
+		return getDDMStructureKey(dlFileEntryType.getUuid());
+	}
+
+	public static String getDDMStructureKey(String fileEntryTypeUuid) {
+		return "auto_" + fileEntryTypeUuid;
+	}
+
+	public static String getDeprecatedDDMStructureKey(
+		DLFileEntryType dlFileEntryType) {
+
+		return getDeprecatedDDMStructureKey(
+			dlFileEntryType.getFileEntryTypeId());
+	}
+
+	public static String getDeprecatedDDMStructureKey(long fileEntryTypeId) {
+		return "auto_" + fileEntryTypeId;
 	}
 
 	public static String getDividedPath(long id) {
@@ -399,8 +419,11 @@ public class DLUtil {
 
 		StringBundler sb = new StringBundler(15);
 
-		if (absoluteURL) {
-			sb.append(themeDisplay.getPortalURL());
+		if (themeDisplay != null) {
+			if (absoluteURL) {
+				sb.append(themeDisplay.getPortalURL());
+			}
+
 			sb.append(themeDisplay.getPathContext());
 		}
 
@@ -435,7 +458,7 @@ public class DLUtil {
 
 		String previewURL = sb.toString();
 
-		if ((themeDisplay != null) && (themeDisplay.isAddSessionIdToURL())) {
+		if ((themeDisplay != null) && themeDisplay.isAddSessionIdToURL()) {
 			return PortalUtil.getURLWithSessionId(
 				previewURL, themeDisplay.getSessionId());
 		}
@@ -522,43 +545,79 @@ public class DLUtil {
 
 		String thumbnailSrc = sb.toString();
 
-		if (dlFileShortcut == null) {
-			String thumbnailQueryString = null;
+		String thumbnailQueryString = null;
 
-			if (ImageProcessorUtil.hasImages(fileVersion)) {
-				thumbnailQueryString = "&imageThumbnail=1";
-			}
-			else if (PDFProcessorUtil.hasImages(fileVersion)) {
-				thumbnailQueryString = "&documentThumbnail=1";
-			}
-			else if (VideoProcessorUtil.hasVideo(fileVersion)) {
-				thumbnailQueryString = "&videoThumbnail=1";
-			}
+		if (ImageProcessorUtil.hasImages(fileVersion)) {
+			thumbnailQueryString = "&imageThumbnail=1";
+		}
+		else if (PDFProcessorUtil.hasImages(fileVersion)) {
+			thumbnailQueryString = "&documentThumbnail=1";
+		}
+		else if (VideoProcessorUtil.hasVideo(fileVersion)) {
+			thumbnailQueryString = "&videoThumbnail=1";
+		}
 
-			if (Validator.isNotNull(thumbnailQueryString)) {
-				thumbnailSrc = getPreviewURL(
-					fileEntry, fileVersion, themeDisplay, thumbnailQueryString,
-					true, true);
-			}
+		if (Validator.isNotNull(thumbnailQueryString)) {
+			thumbnailSrc = getPreviewURL(
+				fileEntry, fileVersion, themeDisplay, thumbnailQueryString,
+				true, true);
 		}
 
 		return thumbnailSrc;
 	}
 
 	public static String getThumbnailStyle() throws Exception {
+		return getThumbnailStyle(true, 0);
+	}
+
+	public static String getThumbnailStyle(boolean max, int margin)
+		throws Exception {
+
 		StringBundler sb = new StringBundler(5);
 
-		sb.append("max-height: ");
+		if (max) {
+			sb.append("max-height: ");
+		}
+		else {
+			sb.append("height: ");
+		}
+
 		sb.append(
 			PrefsPropsUtil.getLong(
-				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT));
-		sb.append("px; max-width: ");
+				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_HEIGHT) + 2 * margin);
+
+		if (max) {
+			sb.append("px; max-width: ");
+		}
+		else {
+			sb.append("px; width: ");
+		}
+
 		sb.append(
 			PrefsPropsUtil.getLong(
-				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH));
+				PropsKeys.DL_FILE_ENTRY_THUMBNAIL_MAX_WIDTH) + 2 * margin);
 		sb.append("px;");
 
 		return sb.toString();
+	}
+
+	public static String getTitleWithExtension(FileEntry fileEntry) {
+		String title = fileEntry.getTitle();
+		String extension = fileEntry.getExtension();
+
+		return getTitleWithExtension(title, extension);
+	}
+
+	public static String getTitleWithExtension(String title, String extension) {
+		if (Validator.isNotNull(extension)) {
+			String periodAndExtension = StringPool.PERIOD + extension;
+
+			if (!title.endsWith(periodAndExtension)) {
+				title += periodAndExtension;
+			}
+		}
+
+		return title;
 	}
 
 	public static String getWebDavURL(
@@ -596,6 +655,16 @@ public class DLUtil {
 		return themeDisplay.getPortalURL() + themeDisplay.getPathContext() +
 			"/api/secure/webdav" + group.getFriendlyURL() +
 				"/document_library" + sb.toString();
+	}
+
+	public static boolean isAutoGeneratedDLFileEntryTypeDDMStructureKey(
+		String ddmStructureKey) {
+
+		if (ddmStructureKey.startsWith("auto_")) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private static long _getDefaultFolderId(HttpServletRequest request)
@@ -649,7 +718,7 @@ public class DLUtil {
 				// Strip starting period
 
 				String extension = fileIcons[i];
-				extension = extension.substring(1, extension.length());
+				extension = extension.substring(1);
 
 				_fileIcons.add(extension);
 			}

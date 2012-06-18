@@ -19,7 +19,10 @@ import com.liferay.portal.cache.ehcache.ModifiableEhcacheWrapper;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.PortalLifecycle;
+import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.Validator;
+
+import java.lang.reflect.Field;
 
 import java.net.URL;
 
@@ -37,6 +40,7 @@ import net.sf.ehcache.hibernate.regions.EhcacheCollectionRegion;
 import net.sf.ehcache.hibernate.regions.EhcacheEntityRegion;
 import net.sf.ehcache.hibernate.regions.EhcacheQueryResultsRegion;
 import net.sf.ehcache.hibernate.regions.EhcacheTimestampsRegion;
+import net.sf.ehcache.util.FailSafeTimer;
 
 import org.hibernate.cache.CacheDataDescription;
 import org.hibernate.cache.CacheException;
@@ -123,7 +127,7 @@ public class LiferayEhcacheRegionFactory extends EhCacheRegionFactory {
 	public void reconfigureCaches(URL cacheConfigFile) {
 		synchronized (manager) {
 			Configuration configuration = EhcacheConfigurationUtil.
-				getConfiguration(cacheConfigFile, true);
+				getConfiguration(cacheConfigFile, true, _usingDefault);
 
 			Map<String, CacheConfiguration> cacheConfigurations =
 				configuration.getCacheConfigurations();
@@ -160,11 +164,11 @@ public class LiferayEhcacheRegionFactory extends EhCacheRegionFactory {
 				configuration = ConfigurationFactory.parseConfiguration();
 			}
 			else {
-				boolean usingDefault = configurationPath.equals(
+				_usingDefault = configurationPath.equals(
 					_DEFAULT_CLUSTERED_EHCACHE_CONFIG_FILE);
 
 				configuration = EhcacheConfigurationUtil.getConfiguration(
-					configurationPath, true, usingDefault);
+					configurationPath, true, _usingDefault);
 			}
 
 			/*Object transactionManager =
@@ -173,6 +177,20 @@ public class LiferayEhcacheRegionFactory extends EhCacheRegionFactory {
 			configuration.setDefaultTransactionManager(transactionManager);*/
 
 			manager = new CacheManager(configuration);
+
+			FailSafeTimer failSafeTimer = manager.getTimer();
+
+			failSafeTimer.cancel();
+
+			try {
+				Field cacheManagerTimerField = ReflectionUtil.getDeclaredField(
+					CacheManager.class, "cacheManagerTimer");
+
+				cacheManagerTimerField.set(manager, null);
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 
 			mbeanRegistrationHelper.registerMBean(manager, properties);
 
@@ -208,7 +226,7 @@ public class LiferayEhcacheRegionFactory extends EhCacheRegionFactory {
 	}
 
 	protected void reconfigureCache(Ehcache replacementCache) {
- 		String cacheName = replacementCache.getName();
+		String cacheName = replacementCache.getName();
 
 		Ehcache ehcache = manager.getEhcache(cacheName);
 
@@ -258,5 +276,6 @@ public class LiferayEhcacheRegionFactory extends EhCacheRegionFactory {
 		LiferayEhcacheRegionFactory.class);
 
 	private MBeanRegisteringPortalLifecycle _mBeanRegisteringPortalLifecycle;
+	private boolean _usingDefault;
 
 }

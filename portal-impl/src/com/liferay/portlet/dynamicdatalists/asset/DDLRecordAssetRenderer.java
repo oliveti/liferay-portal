@@ -60,6 +60,10 @@ public class DDLRecordAssetRenderer extends BaseAssetRenderer {
 		}
 	}
 
+	public String getAssetRendererFactoryClassName() {
+		return DDLRecordAssetRendererFactory.CLASS_NAME;
+	}
+
 	public long getClassPK() {
 		return _record.getRecordId();
 	}
@@ -98,6 +102,10 @@ public class DDLRecordAssetRenderer extends BaseAssetRenderer {
 
 	public long getUserId() {
 		return _record.getUserId();
+	}
+
+	public String getUserName() {
+		return _record.getUserName();
 	}
 
 	public String getUuid() {

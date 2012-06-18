@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.SessionParamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -33,6 +32,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.Theme;
 import com.liferay.portal.scripting.ruby.RubyExecutor;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.ThemeLocalServiceUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.tools.SassToCssBuilder;
@@ -59,7 +59,7 @@ public class DynamicCSSUtil {
 	public static void init() {
 		try {
 			_rubyScript = StringUtil.read(
-				PortalClassLoaderUtil.getClassLoader(),
+				PACLClassLoaderUtil.getPortalClassLoader(),
 				"com/liferay/portal/servlet/filters/dynamiccss/main.rb");
 		}
 		catch (Exception e) {
@@ -319,7 +319,7 @@ public class DynamicCSSUtil {
 				_CSS_IMPORT_END, importX + _CSS_IMPORT_BEGIN.length());
 
 			if ((importX == -1) || (importY == -1)) {
-				sb.append(content.substring(pos, content.length()));
+				sb.append(content.substring(pos));
 
 				break;
 			}

@@ -19,12 +19,17 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.model.CompanyConstants;
@@ -58,8 +63,7 @@ import java.util.Map;
  * @author Marcellus Tavares
  * @author Eduardo Lundgren
  */
-public class DDLRecordLocalServiceImpl
-	extends DDLRecordLocalServiceBaseImpl {
+public class DDLRecordLocalServiceImpl extends DDLRecordLocalServiceBaseImpl {
 
 	public DDLRecord addRecord(
 			long userId, long groupId, long recordSetId, int displayIndex,
@@ -165,6 +169,13 @@ public class DDLRecordLocalServiceImpl
 				DDLRecord.class.getName(), recordVersion.getPrimaryKey());
 		}
 
+		// Indexer
+
+		Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+			DDLRecord.class);
+
+		indexer.delete(record);
+
 		// Document library
 
 		try {
@@ -202,6 +213,45 @@ public class DDLRecordLocalServiceImpl
 		return ddlRecordPersistence.fetchByPrimaryKey(recordId);
 	}
 
+	public List<DDLRecord> getCompanyRecords(
+			long companyId, int status, int scope, int start, int end,
+			OrderByComparator orderByComparator)
+		throws SystemException {
+
+		return ddlRecordFinder.findByC_S_S(
+			companyId, status, scope, start, end, orderByComparator);
+	}
+
+	/**
+	 * @deprecated {@link #getCompanyRecords(long, int, int, int, int,
+	 *             OrderByComparator)}
+	 */
+	public List<DDLRecord> getCompanyRecords(
+			long companyId, int scope, int start, int end,
+			OrderByComparator orderByComparator)
+		throws SystemException {
+
+		return getCompanyRecords(
+			companyId, WorkflowConstants.STATUS_ANY, scope, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * @deprecated {@link #getCompanyRecordsCount(long, int, int)}
+	 */
+	public int getCompanyRecordsCount(long companyId, int scope)
+		throws SystemException {
+
+		return getCompanyRecordsCount(
+			companyId, WorkflowConstants.STATUS_ANY, scope);
+	}
+
+	public int getCompanyRecordsCount(long companyId, int status, int scope)
+		throws SystemException {
+
+		return ddlRecordFinder.countByC_S_S(companyId, status, scope);
+	}
+
 	public DDLRecordVersion getLatestRecordVersion(long recordId)
 		throws PortalException, SystemException {
 
@@ -221,15 +271,29 @@ public class DDLRecordLocalServiceImpl
 		return recordVersions.get(0);
 	}
 
+	public Long[] getMinAndMaxCompanyRecordIds(
+			long companyId, int status, int scope)
+		throws SystemException {
+
+		return ddlRecordFinder.findByC_S_S_MinAndMax(companyId, status, scope);
+	}
+
+	public List<DDLRecord> getMinAndMaxCompanyRecords(
+			long companyId, int status, int scope, long minRecordId,
+			long maxRecordId)
+		throws SystemException {
+
+		return ddlRecordFinder.findByC_S_S_MinAndMax(
+			companyId, status, scope, minRecordId, maxRecordId);
+	}
+
 	public DDLRecord getRecord(long recordId)
 		throws PortalException, SystemException {
 
 		return ddlRecordPersistence.findByPrimaryKey(recordId);
 	}
 
-	public List<DDLRecord> getRecords(long recordSetId)
-		throws SystemException {
-
+	public List<DDLRecord> getRecords(long recordSetId) throws SystemException {
 		return ddlRecordPersistence.findByRecordSetId(recordSetId);
 	}
 
@@ -275,9 +339,7 @@ public class DDLRecordLocalServiceImpl
 			recordId, start, end, orderByComparator);
 	}
 
-	public int getRecordVersionsCount(long recordId)
-		throws SystemException {
-
+	public int getRecordVersionsCount(long recordId) throws SystemException {
 		return ddlRecordVersionPersistence.countByRecordId(recordId);
 	}
 
@@ -298,6 +360,18 @@ public class DDLRecordLocalServiceImpl
 		updateRecord(
 			userId, recordId, true, recordVersion.getDisplayIndex(), fields,
 			false, serviceContext);
+	}
+
+	public Hits search(SearchContext searchContext) throws SystemException {
+		try {
+			Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+				DDLRecord.class);
+
+			return indexer.search(searchContext);
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
 	}
 
 	public void updateAsset(
@@ -466,7 +540,9 @@ public class DDLRecordLocalServiceImpl
 			}
 		}
 		else {
-			if (record.getVersion().equals(recordVersion.getVersion())) {
+			if (Validator.equals(
+					record.getVersion(), recordVersion.getVersion())) {
+
 				String newVersion = DDLRecordConstants.VERSION_DEFAULT;
 
 				List<DDLRecordVersion> approvedRecordVersions =
@@ -482,6 +558,27 @@ public class DDLRecordLocalServiceImpl
 
 				ddlRecordPersistence.update(record, false);
 			}
+
+			// Indexer
+
+			if (Validator.equals(
+					recordVersion.getVersion(),
+					DDLRecordConstants.VERSION_DEFAULT)) {
+
+				Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+					DDLRecord.class);
+
+				indexer.delete(record);
+			}
+		}
+
+		// Indexer
+
+		if (status == WorkflowConstants.STATUS_APPROVED) {
+			Indexer indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+				DDLRecord.class);
+
+			indexer.reindex(record);
 		}
 
 		return record;

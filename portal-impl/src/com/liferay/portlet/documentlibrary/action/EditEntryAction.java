@@ -55,6 +55,7 @@ import org.apache.struts.action.ActionMapping;
 /**
  * @author Brian Wing Shun Chan
  * @author Sergio González
+ * @author Manuel de la Peña
  */
 public class EditEntryAction extends PortletAction {
 
@@ -67,10 +68,7 @@ public class EditEntryAction extends PortletAction {
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
 
 		try {
-			if (cmd.equals(Constants.DELETE)) {
-				deleteEntries(actionRequest);
-			}
-			else if (cmd.equals(Constants.CANCEL_CHECKOUT)) {
+			if (cmd.equals(Constants.CANCEL_CHECKOUT)) {
 				cancelCheckedOutEntries(actionRequest);
 			}
 			else if (cmd.equals(Constants.CHECKIN)) {
@@ -79,8 +77,14 @@ public class EditEntryAction extends PortletAction {
 			else if (cmd.equals(Constants.CHECKOUT)) {
 				checkOutEntries(actionRequest);
 			}
+			else if (cmd.equals(Constants.DELETE)) {
+				deleteEntries(actionRequest, false);
+			}
 			else if (cmd.equals(Constants.MOVE)) {
 				moveEntries(actionRequest);
+			}
+			else if (cmd.equals(Constants.MOVE_TO_TRASH)) {
+				deleteEntries(actionRequest, true);
 			}
 
 			WindowState windowState = actionRequest.getWindowState();
@@ -107,10 +111,10 @@ public class EditEntryAction extends PortletAction {
 					DuplicateLockException dle = (DuplicateLockException)e;
 
 					SessionErrors.add(
-						actionRequest, dle.getClass().getName(), dle.getLock());
+						actionRequest, dle.getClass(), dle.getLock());
 				}
 				else {
-					SessionErrors.add(actionRequest, e.getClass().getName());
+					SessionErrors.add(actionRequest, e.getClass());
 				}
 
 				setForward(actionRequest, "portlet.document_library.error");
@@ -128,12 +132,12 @@ public class EditEntryAction extends PortletAction {
 						ServletResponseConstants.SC_DUPLICATE_FILE_EXCEPTION);
 				}
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else if (e instanceof AssetCategoryException ||
 					 e instanceof AssetTagException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName(), e);
+				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
 			else {
 				throw e;
@@ -156,7 +160,7 @@ public class EditEntryAction extends PortletAction {
 			if (e instanceof NoSuchFileEntryException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass().getName());
+				SessionErrors.add(renderRequest, e.getClass());
 
 				return mapping.findForward("portlet.document_library.error");
 			}
@@ -237,14 +241,20 @@ public class EditEntryAction extends PortletAction {
 		}
 	}
 
-	protected void deleteEntries(ActionRequest actionRequest)
+	protected void deleteEntries(
+			ActionRequest actionRequest, boolean moveToTrash)
 		throws Exception {
 
 		long[] deleteFolderIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "folderIds"), 0L);
 
 		for (long deleteFolderId : deleteFolderIds) {
-			DLAppServiceUtil.deleteFolder(deleteFolderId);
+			if (moveToTrash) {
+				DLAppServiceUtil.moveFolderToTrash(deleteFolderId);
+			}
+			else {
+				DLAppServiceUtil.deleteFolder(deleteFolderId);
+			}
 		}
 
 		// Delete file shortcuts before file entries. See LPS-21348.
@@ -253,20 +263,28 @@ public class EditEntryAction extends PortletAction {
 			ParamUtil.getString(actionRequest, "fileShortcutIds"), 0L);
 
 		for (long deleteFileShortcutId : deleteFileShortcutIds) {
-			DLAppServiceUtil.deleteFileShortcut(deleteFileShortcutId);
+			if (moveToTrash) {
+				DLAppServiceUtil.moveFileShortcutToTrash(deleteFileShortcutId);
+			}
+			else {
+				DLAppServiceUtil.deleteFileShortcut(deleteFileShortcutId);
+			}
 		}
 
 		long[] deleteFileEntryIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "fileEntryIds"), 0L);
 
 		for (long deleteFileEntryId : deleteFileEntryIds) {
-			DLAppServiceUtil.deleteFileEntry(deleteFileEntryId);
+			if (moveToTrash) {
+				DLAppServiceUtil.moveFileEntryToTrash(deleteFileEntryId);
+			}
+			else {
+				DLAppServiceUtil.deleteFileEntry(deleteFileEntryId);
+			}
 		}
 	}
 
-	protected void moveEntries(ActionRequest actionRequest)
-		throws Exception {
-
+	protected void moveEntries(ActionRequest actionRequest) throws Exception {
 		long newFolderId = ParamUtil.getLong(actionRequest, "newFolderId");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(

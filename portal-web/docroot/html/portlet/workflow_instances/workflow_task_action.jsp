@@ -84,7 +84,7 @@ WorkflowTask workflowTask = (WorkflowTask)row.getObject();
 </liferay-ui:icon-menu>
 
 <div class="aui-helper-hidden" id="<%= randomId %>updateComments">
-	<aui:input cols="55" name="comment" type="textarea" rows="10" />
+	<aui:input cols="55" name="comment" rows="10" type="textarea" />
 </div>
 
 <aui:script use="aui-dialog">
@@ -104,6 +104,7 @@ WorkflowTask workflowTask = (WorkflowTask)row.getObject();
 
 		var dialog = new A.Dialog(
 			{
+				align: Liferay.Util.Window.ALIGN_CENTER,
 				bodyContent: form,
 				buttons: [
 					{
@@ -119,7 +120,6 @@ WorkflowTask workflowTask = (WorkflowTask)row.getObject();
 						label: '<%= UnicodeLanguageUtil.get(pageContext, "cancel") %>'
 					}
 				],
-				centered: true,
 				modal: true,
 				title: title,
 				width: 400

@@ -163,7 +163,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 
 		boolean[] hasWaiterMarker = new boolean[1];
 
-		if (_runState == _RUNNING &&
+		if ((_runState == _RUNNING) &&
 			_taskQueue.offer(runnable, hasWaiterMarker)) {
 
 			if (_runState != _RUNNING) {
@@ -433,7 +433,11 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 					((runState == _SHUTDOWN) && (poolSize == 0) &&
 					 !_taskQueue.isEmpty())) {
 
-					_doAddWorkerThread(_taskQueue.poll());
+					Runnable runnable = _taskQueue.poll();
+
+					if (runnable != null) {
+						_doAddWorkerThread(runnable);
+					}
 				}
 			}
 			finally {

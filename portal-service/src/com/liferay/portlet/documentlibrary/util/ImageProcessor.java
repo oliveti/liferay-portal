@@ -37,15 +37,27 @@ public interface ImageProcessor {
 			Element fileEntryElement)
 		throws Exception;
 
-	public void generateImages(FileVersion fileVersion);
+	public void generateImages(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
+		throws Exception;
 
 	public Set<String> getImageMimeTypes();
+
+	public InputStream getPreviewAsStream(FileVersion fileVersion)
+		throws Exception;
+
+	public long getPreviewFileSize(FileVersion fileVersion)
+		throws Exception;
+
+	public String getPreviewType(FileVersion fileVersion);
 
 	public InputStream getThumbnailAsStream(FileVersion fileVersion, int index)
 		throws Exception;
 
 	public long getThumbnailFileSize(FileVersion fileVersion, int index)
 		throws Exception;
+
+	public String getThumbnailType(FileVersion fileVersion);
 
 	public boolean hasImages(FileVersion fileVersion);
 
@@ -66,6 +78,7 @@ public interface ImageProcessor {
 			String type)
 		throws Exception;
 
-	public void trigger(FileVersion fileVersion);
+	public void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion);
 
 }

@@ -282,7 +282,7 @@ public class JournalFeedLocalServiceImpl
 			String orderByType, String targetLayoutFriendlyUrl,
 			String targetPortletId, String contentField, String feedType,
 			double feedVersion, ServiceContext serviceContext)
-		throws PortalException, SystemException{
+		throws PortalException, SystemException {
 
 		// Feed
 
@@ -365,7 +365,7 @@ public class JournalFeedLocalServiceImpl
 		throws PortalException, SystemException {
 
 		if (!autoFeedId) {
-			if ((Validator.isNull(feedId)) || (Validator.isNumber(feedId)) ||
+			if (Validator.isNull(feedId) || Validator.isNumber(feedId) ||
 				(feedId.indexOf(CharPool.SPACE) != -1)) {
 
 				throw new FeedIdException();

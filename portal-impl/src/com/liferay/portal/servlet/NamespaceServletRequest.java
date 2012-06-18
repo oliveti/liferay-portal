@@ -14,9 +14,9 @@
 
 package com.liferay.portal.servlet;
 
+import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.util.servlet.DynamicServletRequest;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,8 +94,7 @@ public class NamespaceServletRequest extends DynamicServletRequest {
 			String name = enu.nextElement();
 
 			if (name.startsWith(_attrNamespace)) {
-				names.add(
-					name.substring(_attrNamespace.length(), name.length()));
+				names.add(name.substring(_attrNamespace.length()));
 			}
 			else if (_isReservedParam(name)) {
 				names.add(name);

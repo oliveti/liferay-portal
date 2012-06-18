@@ -55,14 +55,16 @@ request.setAttribute("record_set_action.jsp-selRecordSet", selRecordSet);
 
 	<c:if test="<%= selRecordSet != null %>">
 
+		<%
+		long structureClassNameId = PortalUtil.getClassNameId(DDMStructure.class);
+		%>
+
 		<aui:fieldset label="templates">
 			<aui:select helpMessage="select-the-list-template-used-to-diplay-the-list-records" label="list-template" name="listTemplateId" onChange='<%= "document." + renderResponse.getNamespace() + "fm." + renderResponse.getNamespace() + "listDDMTemplateId.value = this.value;" %>'>
 				<aui:option label="default" value="<%= 0 %>" />
 
 				<%
-				long ddmStructureId = selRecordSet.getDDMStructureId();
-
-				List<DDMTemplate> templates = DDMTemplateLocalServiceUtil.getTemplates(ddmStructureId, DDMTemplateConstants.TEMPLATE_TYPE_LIST);
+				List<DDMTemplate> templates = DDMTemplateLocalServiceUtil.getTemplates(structureClassNameId, selRecordSet.getDDMStructureId(), DDMTemplateConstants.TEMPLATE_TYPE_LIST);
 
 				for (DDMTemplate template : templates) {
 					boolean selected = false;
@@ -72,7 +74,7 @@ request.setAttribute("record_set_action.jsp-selRecordSet", selRecordSet);
 					}
 				%>
 
-					<aui:option label="<%= template.getName() %>" selected="<%= selected %>" value="<%= template.getTemplateId() %>" />
+					<aui:option label="<%= template.getName(locale) %>" selected="<%= selected %>" value="<%= template.getTemplateId() %>" />
 
 				<%
 				}
@@ -84,9 +86,7 @@ request.setAttribute("record_set_action.jsp-selRecordSet", selRecordSet);
 				<aui:option label="default" value="<%= 0 %>" />
 
 				<%
-				long ddmStructureId = selRecordSet.getDDMStructureId();
-
-				List<DDMTemplate> templates = DDMTemplateLocalServiceUtil.getTemplates(ddmStructureId, DDMTemplateConstants.TEMPLATE_TYPE_DETAIL, DDMTemplateConstants.TEMPLATE_MODE_CREATE);
+				List<DDMTemplate> templates = DDMTemplateLocalServiceUtil.getTemplates(structureClassNameId, selRecordSet.getDDMStructureId(), DDMTemplateConstants.TEMPLATE_TYPE_DETAIL, DDMTemplateConstants.TEMPLATE_MODE_CREATE);
 
 				for (DDMTemplate template : templates) {
 					boolean selected = false;
@@ -96,7 +96,7 @@ request.setAttribute("record_set_action.jsp-selRecordSet", selRecordSet);
 					}
 				%>
 
-					<aui:option label="<%= template.getName() %>" selected="<%= selected %>" value="<%= template.getTemplateId() %>" />
+					<aui:option label="<%= template.getName(locale) %>" selected="<%= selected %>" value="<%= template.getTemplateId() %>" />
 
 				<%
 				}
@@ -104,9 +104,9 @@ request.setAttribute("record_set_action.jsp-selRecordSet", selRecordSet);
 
 			</aui:select>
 
-			<aui:input helpMessage="check-to-allow-users-to-add-records-to-the-list" name="editable" type="checkbox" value="<%= editable %>" onChange='<%= "document." + renderResponse.getNamespace() + "fm." + renderResponse.getNamespace() + "editable.value = this.checked;" %>' />
+			<aui:input helpMessage="check-to-allow-users-to-add-records-to-the-list" name="editable" onChange='<%= "document." + renderResponse.getNamespace() + "fm." + renderResponse.getNamespace() + "editable.value = this.checked;" %>' type="checkbox" value="<%= editable %>" />
 
-			<aui:input helpMessage="check-to-view-the-list-records-in-a-spreadsheet" label="spreadsheet-view" name="spreadsheet" type="checkbox" value="<%= spreadsheet %>" onChange='<%= "document." + renderResponse.getNamespace() + "fm." + renderResponse.getNamespace() + "spreadsheet.value = this.checked;" %>' />
+			<aui:input helpMessage="check-to-view-the-list-records-in-a-spreadsheet" label="spreadsheet-view" name="spreadsheet" onChange='<%= "document." + renderResponse.getNamespace() + "fm." + renderResponse.getNamespace() + "spreadsheet.value = this.checked;" %>' type="checkbox" value="<%= spreadsheet %>" />
 		</aui:fieldset>
 	</c:if>
 

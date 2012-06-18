@@ -15,7 +15,6 @@
 package com.liferay.portlet.announcements.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class AnnouncementsDeliveryLocalServiceUtil {
 	* Deletes the announcements delivery with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param deliveryId the primary key of the announcements delivery
+	* @return the announcements delivery that was removed
 	* @throws PortalException if a announcements delivery with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteAnnouncementsDelivery(long deliveryId)
+	public static com.liferay.portlet.announcements.model.AnnouncementsDelivery deleteAnnouncementsDelivery(
+		long deliveryId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteAnnouncementsDelivery(deliveryId);
+		return getService().deleteAnnouncementsDelivery(deliveryId);
 	}
 
 	/**
 	* Deletes the announcements delivery from the database. Also notifies the appropriate model listeners.
 	*
 	* @param announcementsDelivery the announcements delivery
+	* @return the announcements delivery that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteAnnouncementsDelivery(
+	public static com.liferay.portlet.announcements.model.AnnouncementsDelivery deleteAnnouncementsDelivery(
 		com.liferay.portlet.announcements.model.AnnouncementsDelivery announcementsDelivery)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteAnnouncementsDelivery(announcementsDelivery);
+		return getService().deleteAnnouncementsDelivery(announcementsDelivery);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -326,20 +332,15 @@ public class AnnouncementsDeliveryLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(AnnouncementsDeliveryLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(AnnouncementsDeliveryLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(AnnouncementsDeliveryLocalService service) {
-		MethodCache.remove(AnnouncementsDeliveryLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(AnnouncementsDeliveryLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(AnnouncementsDeliveryLocalService.class);
 	}
 
 	private static AnnouncementsDeliveryLocalService _service;

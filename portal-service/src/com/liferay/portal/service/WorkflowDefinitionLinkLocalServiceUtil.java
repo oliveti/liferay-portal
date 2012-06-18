@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -67,26 +66,33 @@ public class WorkflowDefinitionLinkLocalServiceUtil {
 	* Deletes the workflow definition link with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param workflowDefinitionLinkId the primary key of the workflow definition link
+	* @return the workflow definition link that was removed
 	* @throws PortalException if a workflow definition link with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteWorkflowDefinitionLink(
+	public static com.liferay.portal.model.WorkflowDefinitionLink deleteWorkflowDefinitionLink(
 		long workflowDefinitionLinkId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteWorkflowDefinitionLink(workflowDefinitionLinkId);
+		return getService()
+				   .deleteWorkflowDefinitionLink(workflowDefinitionLinkId);
 	}
 
 	/**
 	* Deletes the workflow definition link from the database. Also notifies the appropriate model listeners.
 	*
 	* @param workflowDefinitionLink the workflow definition link
+	* @return the workflow definition link that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteWorkflowDefinitionLink(
+	public static com.liferay.portal.model.WorkflowDefinitionLink deleteWorkflowDefinitionLink(
 		com.liferay.portal.model.WorkflowDefinitionLink workflowDefinitionLink)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteWorkflowDefinitionLink(workflowDefinitionLink);
+		return getService().deleteWorkflowDefinitionLink(workflowDefinitionLink);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -386,20 +392,15 @@ public class WorkflowDefinitionLinkLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(WorkflowDefinitionLinkLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(WorkflowDefinitionLinkLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(WorkflowDefinitionLinkLocalService service) {
-		MethodCache.remove(WorkflowDefinitionLinkLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(WorkflowDefinitionLinkLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(WorkflowDefinitionLinkLocalService.class);
 	}
 
 	private static WorkflowDefinitionLinkLocalService _service;

@@ -35,7 +35,8 @@ import com.liferay.portal.kernel.transaction.Transactional;
  */
 @Transactional(isolation = Isolation.PORTAL, rollbackFor =  {
 	PortalException.class, SystemException.class})
-public interface LayoutLocalService extends PersistedModelLocalService {
+public interface LayoutLocalService extends BaseLocalService,
+	PersistedModelLocalService {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
@@ -65,10 +66,11 @@ public interface LayoutLocalService extends PersistedModelLocalService {
 	* Deletes the layout with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param plid the primary key of the layout
+	* @return the layout that was removed
 	* @throws PortalException if a layout with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteLayout(long plid)
+	public com.liferay.portal.model.Layout deleteLayout(long plid)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
@@ -76,10 +78,14 @@ public interface LayoutLocalService extends PersistedModelLocalService {
 	* Deletes the layout from the database. Also notifies the appropriate model listeners.
 	*
 	* @param layout the layout
+	* @return the layout that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteLayout(com.liferay.portal.model.Layout layout)
+	public com.liferay.portal.model.Layout deleteLayout(
+		com.liferay.portal.model.Layout layout)
 		throws com.liferay.portal.kernel.exception.SystemException;
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery();
 
 	/**
 	* Performs a dynamic query on the database and returns the matching rows.
@@ -787,6 +793,11 @@ public interface LayoutLocalService extends PersistedModelLocalService {
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getLayoutsByLayoutPrototypeUuidCount(
+		java.lang.String layoutPrototypeUuid)
+		throws com.liferay.portal.kernel.exception.SystemException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutsCount(com.liferay.portal.model.Group group,
 		boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -862,14 +873,9 @@ public interface LayoutLocalService extends PersistedModelLocalService {
 			com.liferay.portal.kernel.exception.SystemException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public boolean hasLayoutSetPrototypeLayout(long layoutSetPrototypeId,
-		java.lang.String layoutUuid)
-		throws com.liferay.portal.kernel.exception.PortalException,
-			com.liferay.portal.kernel.exception.SystemException;
-
-	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public boolean hasLayoutSetPrototypeLayout(
-		java.lang.String layoutSetPrototypeUuid, java.lang.String layoutUuid)
+		java.lang.String layoutSetPrototypeUuid, java.lang.String layoutUuid,
+		long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
@@ -1212,6 +1218,18 @@ public interface LayoutLocalService extends PersistedModelLocalService {
 	*/
 	public com.liferay.portal.model.Layout updateParentLayoutId(long plid,
 		long parentPlid)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	/**
+	* Updates the priorities of the layouts.
+	*
+	* @param groupId the primary key of the group
+	* @param privateLayout whether the layout is private to the group
+	* @throws PortalException if a matching layout could not be found
+	* @throws SystemException if a system exception occurred
+	*/
+	public void updatePriorities(long groupId, boolean privateLayout)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 

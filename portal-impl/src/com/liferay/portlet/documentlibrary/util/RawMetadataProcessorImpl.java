@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.util.InstancePool;
+import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileVersion;
@@ -64,6 +65,10 @@ public class RawMetadataProcessorImpl
 	}
 
 	public void cleanUp(FileVersion fileVersion) {
+	}
+
+	public void copy(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
 	}
 
 	public void exportGeneratedFiles(
@@ -123,11 +128,18 @@ public class RawMetadataProcessorImpl
 		}
 
 		if (rawMetadataMap == null) {
-			InputStream inputStream = fileVersion.getContentStream(false);
+			InputStream inputStream = null;
 
-			rawMetadataMap = RawMetadataProcessorUtil.getRawMetadataMap(
-				fileVersion.getExtension(), fileVersion.getMimeType(),
-				inputStream);
+			try {
+				inputStream = fileVersion.getContentStream(false);
+
+				rawMetadataMap = RawMetadataProcessorUtil.getRawMetadataMap(
+					fileVersion.getExtension(), fileVersion.getMimeType(),
+					inputStream);
+			}
+			finally {
+				StreamUtil.cleanUp(inputStream);
+			}
 		}
 
 		List<DDMStructure> ddmStructures =
@@ -158,11 +170,17 @@ public class RawMetadataProcessorImpl
 	}
 
 	public void trigger(FileVersion fileVersion) {
+		trigger(fileVersion, fileVersion);
+	}
+
+	public void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
+
 		if (PropsValues.DL_FILE_ENTRY_PROCESSORS_TRIGGER_SYNCHRONOUSLY) {
 			try {
 				MessageBusUtil.sendSynchronousMessage(
 					DestinationNames.DOCUMENT_LIBRARY_RAW_METADATA_PROCESSOR,
-					fileVersion);
+					destinationFileVersion);
 			}
 			catch (MessageBusException mbe) {
 				if (_log.isWarnEnabled()) {
@@ -173,7 +191,7 @@ public class RawMetadataProcessorImpl
 		else {
 			MessageBusUtil.sendMessage(
 				DestinationNames.DOCUMENT_LIBRARY_RAW_METADATA_PROCESSOR,
-				fileVersion);
+				destinationFileVersion);
 		}
 	}
 

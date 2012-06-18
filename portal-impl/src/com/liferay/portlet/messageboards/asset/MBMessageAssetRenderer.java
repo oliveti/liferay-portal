@@ -48,6 +48,10 @@ public class MBMessageAssetRenderer extends BaseAssetRenderer {
 		_message = message;
 	}
 
+	public String getAssetRendererFactoryClassName() {
+		return MBCategoryAssetRendererFactory.CLASS_NAME;
+	}
+
 	public long getClassPK() {
 		return _message.getMessageId();
 	}
@@ -115,6 +119,10 @@ public class MBMessageAssetRenderer extends BaseAssetRenderer {
 
 	public long getUserId() {
 		return _message.getUserId();
+	}
+
+	public String getUserName() {
+		return _message.getUserName();
 	}
 
 	public String getUuid() {

@@ -45,7 +45,7 @@ if (url != null) {
 			z = url.length();
 		}
 
-		url = url.substring(0, y) + url.substring(z, url.length());
+		url = url.substring(0, y) + url.substring(z);
 	}
 
 	// Strip trailing &
@@ -89,7 +89,7 @@ String onClick = GetterUtil.getString((String)request.getAttribute("liferay-ui:t
 	<%
 	String oldPortletURLValue = null;
 
-	if (portletURL != null) {
+	if ((portletURL != null) && (param != null)) {
 		oldPortletURLValue = portletURL.getParameter(param);
 	}
 	%>
@@ -138,7 +138,7 @@ String onClick = GetterUtil.getString((String)request.getAttribute("liferay-ui:t
 						curURL += "document." + namespace + formName + "." + namespace + param + ".value = '" + names[i] + "';";
 					}
 
-					curURL += "Liferay.Portal.Tabs.show('" + namespace + param + "', " + namesJS + ", '" + names[i] + "');";
+					curURL += "Liferay.Portal.Tabs.show('" + namespace + param + "', " + namesJS + ", '" + UnicodeFormatter.toString(names[i]) + "');";
 				}
 			}
 		}
@@ -150,8 +150,7 @@ String onClick = GetterUtil.getString((String)request.getAttribute("liferay-ui:t
 				curOnClick = onClick + "('" + curURL + "', '" + values[i] + "'); return false;";
 			}
 			else {
-				curOnClick = "Liferay.Portal.Tabs.show('" + namespace + param + "', " + namesJS + ", '" + names[i] + "', " + onClick + ");";
-
+				curOnClick = "Liferay.Portal.Tabs.show('" + namespace + param + "', " + namesJS + ", '" + UnicodeFormatter.toString(names[i]) + "', " + onClick + ");";
 				curURL = "javascript:;";
 			}
 		}
@@ -168,7 +167,7 @@ String onClick = GetterUtil.getString((String)request.getAttribute("liferay-ui:t
 			cssClassName += " first";
 		}
 
-		if (i == values.length - 1) {
+		if (i == (values.length - 1)) {
 			cssClassName += " last";
 		}
 	%>
@@ -257,7 +256,7 @@ String onClick = GetterUtil.getString((String)request.getAttribute("liferay-ui:t
 	</c:choose>
 
 	<%
-	if (portletURL != null) {
+	if ((portletURL != null) && (param != null) && (oldPortletURLValue != null)) {
 		portletURL.setParameter(param, oldPortletURLValue);
 	}
 	%>

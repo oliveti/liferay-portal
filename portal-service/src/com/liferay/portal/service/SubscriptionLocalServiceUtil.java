@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,27 +65,34 @@ public class SubscriptionLocalServiceUtil {
 	* Deletes the subscription with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param subscriptionId the primary key of the subscription
+	* @return the subscription that was removed
 	* @throws PortalException if a subscription with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSubscription(long subscriptionId)
+	public static com.liferay.portal.model.Subscription deleteSubscription(
+		long subscriptionId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSubscription(subscriptionId);
+		return getService().deleteSubscription(subscriptionId);
 	}
 
 	/**
 	* Deletes the subscription from the database. Also notifies the appropriate model listeners.
 	*
 	* @param subscription the subscription
+	* @return the subscription that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSubscription(
+	public static com.liferay.portal.model.Subscription deleteSubscription(
 		com.liferay.portal.model.Subscription subscription)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSubscription(subscription);
+		return getService().deleteSubscription(subscription);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -344,20 +350,15 @@ public class SubscriptionLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(SubscriptionLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(SubscriptionLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(SubscriptionLocalService service) {
-		MethodCache.remove(SubscriptionLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(SubscriptionLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(SubscriptionLocalService.class);
 	}
 
 	private static SubscriptionLocalService _service;

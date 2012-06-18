@@ -37,8 +37,7 @@ import java.util.List;
 /**
  * @author Igor Spasic
  */
-public class UserAtomCollectionAdapter
-	extends BaseAtomCollectionAdapter<User> {
+public class UserAtomCollectionAdapter extends BaseAtomCollectionAdapter<User> {
 
 	public String getCollectionName() {
 		return _COLLECTION_NAME;
@@ -157,8 +156,8 @@ public class UserAtomCollectionAdapter
 
 			AtomUtil.saveAtomPagerInRequest(atomRequestContext, atomPager);
 
-			List<User> users = UserLocalServiceUtil.getCompanyUsers(companyId,
-				atomPager.getStart(), atomPager.getEnd() + 1);
+			List<User> users = UserLocalServiceUtil.getCompanyUsers(
+				companyId, atomPager.getStart(), atomPager.getEnd() + 1);
 
 			return users;
 		}

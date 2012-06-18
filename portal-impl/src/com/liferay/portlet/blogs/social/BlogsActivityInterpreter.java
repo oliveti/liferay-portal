@@ -81,18 +81,23 @@ public class BlogsActivityInterpreter extends BaseSocialActivityInterpreter {
 		if ((activityType == BlogsActivityKeys.ADD_COMMENT) ||
 			(activityType == SocialActivityConstants.TYPE_ADD_COMMENT)) {
 
-			titlePattern = "activity-blogs-add-comment";
+			if (Validator.isNull(groupName)) {
+				titlePattern = "activity-blogs-add-comment";
+			}
+			else {
+				titlePattern = "activity-blogs-add-comment-in";
+			}
 		}
 		else if (activityType == BlogsActivityKeys.ADD_ENTRY) {
-			titlePattern = "activity-blogs-add-entry";
+			if (Validator.isNull(groupName)) {
+				titlePattern = "activity-blogs-add-entry";
+			}
+			else {
+				titlePattern = "activity-blogs-add-entry-in";
+			}
 		}
 
-		if (Validator.isNotNull(groupName)) {
-			titlePattern += "-in";
-		}
-
-		String entryTitle = wrapLink(
-			link, HtmlUtil.escape(cleanContent(entry.getTitle())));
+		String entryTitle = wrapLink(link, HtmlUtil.escape(entry.getTitle()));
 
 		Object[] titleArguments = new Object[] {
 			groupName, creatorUserName, receiverUserName, entryTitle

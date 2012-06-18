@@ -15,7 +15,6 @@
 package com.liferay.portlet.messageboards.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class MBMessageLocalServiceUtil {
 	* Deletes the message-boards message with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param messageId the primary key of the message-boards message
+	* @return the message-boards message that was removed
 	* @throws PortalException if a message-boards message with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMBMessage(long messageId)
+	public static com.liferay.portlet.messageboards.model.MBMessage deleteMBMessage(
+		long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMBMessage(messageId);
+		return getService().deleteMBMessage(messageId);
 	}
 
 	/**
 	* Deletes the message-boards message from the database. Also notifies the appropriate model listeners.
 	*
 	* @param mbMessage the message-boards message
+	* @return the message-boards message that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMBMessage(
+	public static com.liferay.portlet.messageboards.model.MBMessage deleteMBMessage(
 		com.liferay.portlet.messageboards.model.MBMessage mbMessage)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMBMessage(mbMessage);
+		return getService().deleteMBMessage(mbMessage);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -365,10 +371,11 @@ public class MBMessageLocalServiceUtil {
 			.addMessageResources(message, groupPermissions, guestPermissions);
 	}
 
-	public static void deleteDiscussionMessage(long messageId)
+	public static com.liferay.portlet.messageboards.model.MBMessage deleteDiscussionMessage(
+		long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteDiscussionMessage(messageId);
+		return getService().deleteDiscussionMessage(messageId);
 	}
 
 	public static void deleteDiscussionMessages(java.lang.String className,
@@ -378,17 +385,18 @@ public class MBMessageLocalServiceUtil {
 		getService().deleteDiscussionMessages(className, classPK);
 	}
 
-	public static void deleteMessage(long messageId)
+	public static com.liferay.portlet.messageboards.model.MBMessage deleteMessage(
+		long messageId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMessage(messageId);
+		return getService().deleteMessage(messageId);
 	}
 
-	public static void deleteMessage(
+	public static com.liferay.portlet.messageboards.model.MBMessage deleteMessage(
 		com.liferay.portlet.messageboards.model.MBMessage message)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMessage(message);
+		return getService().deleteMessage(message);
 	}
 
 	public static java.util.List<com.liferay.portlet.messageboards.model.MBMessage> getCategoryMessages(
@@ -724,20 +732,15 @@ public class MBMessageLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(MBMessageLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(MBMessageLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(MBMessageLocalService service) {
-		MethodCache.remove(MBMessageLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(MBMessageLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(MBMessageLocalService.class);
 	}
 
 	private static MBMessageLocalService _service;

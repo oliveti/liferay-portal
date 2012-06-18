@@ -90,6 +90,10 @@ public abstract class BaseRepositoryImpl implements BaseRepository {
 		deleteFileEntry(fileEntry.getFileEntryId());
 	}
 
+	public void deleteFileVersion(long fileEntryId, String version) {
+		throw new UnsupportedOperationException();
+	}
+
 	public void deleteFolder(long parentFolderId, String title)
 		throws PortalException, SystemException {
 
@@ -121,6 +125,14 @@ public abstract class BaseRepositoryImpl implements BaseRepository {
 		throws PortalException, SystemException {
 
 		return getFileEntriesCount(folderId, mimeTypes);
+	}
+
+	public List<Folder> getFolders(
+			long parentFolderId, int status, boolean includeMountfolders,
+			int start, int end, OrderByComparator obc)
+		throws PortalException, SystemException {
+
+		return getFolders(parentFolderId, includeMountfolders, start, end, obc);
 	}
 
 	public abstract List<Object> getFoldersAndFileEntries(
@@ -170,6 +182,13 @@ public abstract class BaseRepositoryImpl implements BaseRepository {
 	public abstract int getFoldersAndFileEntriesCount(
 			long folderId, String[] mimeTypes)
 		throws PortalException, SystemException;
+
+	public int getFoldersCount(
+			long parentFolderId, int status, boolean includeMountfolders)
+		throws PortalException, SystemException {
+
+		return getFoldersCount(parentFolderId, includeMountfolders);
+	}
 
 	public long getGroupId() {
 		return _groupId;

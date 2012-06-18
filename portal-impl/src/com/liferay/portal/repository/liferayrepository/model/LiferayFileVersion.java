@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.security.auth.PrincipalThreadLocal;
 import com.liferay.portlet.documentlibrary.model.DLFileVersion;
 import com.liferay.portlet.documentlibrary.service.DLFileEntryLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.util.DLAppUtil;
 import com.liferay.portlet.expando.model.ExpandoBridge;
 
 import java.io.File;
@@ -175,7 +176,7 @@ public class LiferayFileVersion extends LiferayModel implements FileVersion {
 	}
 
 	public String getTitle() {
-		return _dlFileVersion.getTitle();
+		return DLAppUtil.stripTrashNamespace(_dlFileVersion.getTitle());
 	}
 
 	public long getUserId() {
@@ -221,6 +222,10 @@ public class LiferayFileVersion extends LiferayModel implements FileVersion {
 
 	public boolean isExpired() {
 		return _dlFileVersion.isExpired();
+	}
+
+	public boolean isInTrash() {
+		return _dlFileVersion.isInTrash();
 	}
 
 	public boolean isPending() {

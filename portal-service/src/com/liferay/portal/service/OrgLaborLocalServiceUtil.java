@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class OrgLaborLocalServiceUtil {
 	* Deletes the org labor with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param orgLaborId the primary key of the org labor
+	* @return the org labor that was removed
 	* @throws PortalException if a org labor with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteOrgLabor(long orgLaborId)
+	public static com.liferay.portal.model.OrgLabor deleteOrgLabor(
+		long orgLaborId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteOrgLabor(orgLaborId);
+		return getService().deleteOrgLabor(orgLaborId);
 	}
 
 	/**
 	* Deletes the org labor from the database. Also notifies the appropriate model listeners.
 	*
 	* @param orgLabor the org labor
+	* @return the org labor that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteOrgLabor(
+	public static com.liferay.portal.model.OrgLabor deleteOrgLabor(
 		com.liferay.portal.model.OrgLabor orgLabor)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteOrgLabor(orgLabor);
+		return getService().deleteOrgLabor(orgLabor);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -297,20 +303,15 @@ public class OrgLaborLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(OrgLaborLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(OrgLaborLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(OrgLaborLocalService service) {
-		MethodCache.remove(OrgLaborLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(OrgLaborLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(OrgLaborLocalService.class);
 	}
 
 	private static OrgLaborLocalService _service;

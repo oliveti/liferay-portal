@@ -124,35 +124,37 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 					"java.lang.Integer", "java.lang.Integer", "com.liferay.portal.kernel.util.OrderByComparator"
 				});
 
-			public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case} = new FinderPath(
-				${entity.name}ModelImpl.ENTITY_CACHE_ENABLED,
-				${entity.name}ModelImpl.FINDER_CACHE_ENABLED,
-				${entity.name}Impl.class,
-				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-				"findBy${finder.name}",
-				new String[] {
-					<#list finderColsList as finderCol>
-						${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.class.getName()
+			<#if !finder.hasCustomComparator()>
+				public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case} = new FinderPath(
+					${entity.name}ModelImpl.ENTITY_CACHE_ENABLED,
+					${entity.name}ModelImpl.FINDER_CACHE_ENABLED,
+					${entity.name}Impl.class,
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"findBy${finder.name}",
+					new String[] {
+						<#list finderColsList as finderCol>
+							${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.class.getName()
 
-						<#if finderCol_has_next>
-							,
-						</#if>
-					</#list>
-				}
+							<#if finderCol_has_next>
+								,
+							</#if>
+						</#list>
+					}
 
-				<#if columnBitmaskEnabled>
-					,
+					<#if columnBitmaskEnabled>
+						,
 
-					<#list finderColsList as finderCol>
-						${entity.name}ModelImpl.${finderCol.name?upper_case}_COLUMN_BITMASK
+						<#list finderColsList as finderCol>
+							${entity.name}ModelImpl.${finderCol.name?upper_case}_COLUMN_BITMASK
 
-						<#if finderCol_has_next>
-							|
-						</#if>
-					</#list>
-				</#if>
+							<#if finderCol_has_next>
+								|
+							</#if>
+						</#list>
+					</#if>
 
-				);
+					);
+			</#if>
 		<#else>
 			public static final FinderPath FINDER_PATH_FETCH_BY_${finder.name?upper_case} = new FinderPath(
 				${entity.name}ModelImpl.ENTITY_CACHE_ENABLED,
@@ -185,23 +187,25 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				);
 		</#if>
 
-		public static final FinderPath FINDER_PATH_COUNT_BY_${finder.name?upper_case} = new FinderPath(
-			${entity.name}ModelImpl.ENTITY_CACHE_ENABLED,
-			${entity.name}ModelImpl.FINDER_CACHE_ENABLED,
-			Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-			"countBy${finder.name}",
-			new String[] {
-				<#list finderColsList as finderCol>
-					${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.class.getName()
+		<#if !finder.hasCustomComparator()>
+			public static final FinderPath FINDER_PATH_COUNT_BY_${finder.name?upper_case} = new FinderPath(
+				${entity.name}ModelImpl.ENTITY_CACHE_ENABLED,
+				${entity.name}ModelImpl.FINDER_CACHE_ENABLED,
+				Long.class,
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+				"countBy${finder.name}",
+				new String[] {
+					<#list finderColsList as finderCol>
+						${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.class.getName()
 
-					<#if finderCol_has_next>
-						,
-					</#if>
-				</#list>
-			});
+						<#if finderCol_has_next>
+							,
+						</#if>
+					</#list>
+				});
+		</#if>
 
-		<#if finder.hasArrayableOperator()>
+		<#if finder.hasArrayableOperator() || finder.hasCustomComparator()>
 			public static final FinderPath FINDER_PATH_WITH_PAGINATION_COUNT_BY_${finder.name?upper_case} = new FinderPath(
 				${entity.name}ModelImpl.ENTITY_CACHE_ENABLED,
 				${entity.name}ModelImpl.FINDER_CACHE_ENABLED,
@@ -224,7 +228,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		${entity.name}ModelImpl.ENTITY_CACHE_ENABLED,
 		${entity.name}ModelImpl.FINDER_CACHE_ENABLED,
 		${entity.name}Impl.class,
-		FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+		FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
 		"findAll",
 		new String[0]);
 
@@ -232,7 +236,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		${entity.name}ModelImpl.ENTITY_CACHE_ENABLED,
 		${entity.name}ModelImpl.FINDER_CACHE_ENABLED,
 		${entity.name}Impl.class,
-		FINDER_CLASS_NAME_LIST_WITH_PAGINATION,
+		FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 		"findAll",
 		new String[0]);
 
@@ -499,9 +503,31 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 	public ${entity.name} updateImpl(${packagePath}.model.${entity.name} ${entity.varName}, boolean merge) throws SystemException {
 		${entity.varName} = toUnwrappedModel(${entity.varName});
 
-		<#if (entity.finderColumnsList?size != 0) || entity.isHierarchicalTree()>
-			boolean isNew = ${entity.varName}.isNew();
+		boolean isNew = ${entity.varName}.isNew();
 
+		<#assign collectionFinderList = entity.getCollectionFinderList()>
+
+		<#assign castEntityModelImpl = false>
+
+		<#if entity.isHierarchicalTree()>
+			<#assign castEntityModelImpl = true>
+		</#if>
+
+		<#if collectionFinderList?size != 0>
+			<#list collectionFinderList as finder>
+				<#if !finder.hasCustomComparator()>
+					<#assign castEntityModelImpl = true>
+				</#if>
+			</#list>
+		</#if>
+
+		<#assign uniqueFinderList = entity.getUniqueFinderList()>
+
+		<#if uniqueFinderList?size != 0>
+			<#assign castEntityModelImpl = true>
+		</#if>
+
+		<#if castEntityModelImpl>
 			${entity.name}ModelImpl ${entity.varName}ModelImpl = (${entity.name}ModelImpl)${entity.varName};
 		</#if>
 
@@ -609,71 +635,32 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 
 		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		<#assign collectionFinderList = entity.getCollectionFinderList()>
-
-		<#if columnBitmaskEnabled>
-			if (isNew || !${entity.name}ModelImpl.COLUMN_BITMASK_ENABLED) {
-				FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-			}
-
-			<#if collectionFinderList?size != 0>
-				else {
-					<#list collectionFinderList as finder>
-						if ((${entity.varName}ModelImpl.getColumnBitmask() & FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case}.getColumnBitmask()) != 0) {
-							Object[] args = new Object[] {
-								<#list finder.getColumns() as finderCol>
-									<#if finderCol.isPrimitiveType()>
-										${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.valueOf(
-									</#if>
-
-									${entity.varName}ModelImpl.getOriginal${finderCol.methodName}()
-
-									<#if finderCol.isPrimitiveType()>
-										)
-									</#if>
-
-									<#if finderCol_has_next>
-										,
-									</#if>
-								</#list>
-							};
-
-							FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, args);
-							FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case}, args);
-
-							args = new Object[] {
-								<#list finder.getColumns() as finderCol>
-									<#if finderCol.isPrimitiveType()>
-										${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.valueOf(
-									</#if>
-
-									${entity.varName}ModelImpl.get${finderCol.methodName}()
-
-									<#if finderCol.isPrimitiveType()>
-										)
-									</#if>
-
-									<#if finderCol_has_next>
-										,
-									</#if>
-								</#list>
-							};
-
-							FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, args);
-							FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case}, args);
-						}
-					</#list>
-				}
+		if (isNew
+			<#if columnBitmaskEnabled>
+				|| !${entity.name}ModelImpl.COLUMN_BITMASK_ENABLED
 			</#if>
-		<#else>
-			<#if entity.finderColumnsList?size != 0>
-				if (isNew) {
-					FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-				}
-				else {
-					<#list entity.collectionFinderList as finder>
-						<#assign finderColsList = finder.getColumns()>
-						if (
+			) {
+
+			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+
+		<#if collectionFinderList?size != 0>
+			<#assign hasEqualComparator = false>
+
+			<#list collectionFinderList as finder>
+				<#assign finderColsList = finder.getColumns()>
+
+				<#if !finder.hasCustomComparator()>
+					<#if !hasEqualComparator>
+						<#assign hasEqualComparator = true>
+
+						else {
+					</#if>
+
+					if (
+						<#if columnBitmaskEnabled>
+							(${entity.varName}ModelImpl.getColumnBitmask() & FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case}.getColumnBitmask()) != 0
+						<#else>
 							<#list finderColsList as finderCol>
 								<#if finderCol.isPrimitiveType()>
 									(${entity.varName}.get${finderCol.methodName}() != ${entity.varName}ModelImpl.getOriginal${finderCol.methodName}())
@@ -685,57 +672,60 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 									||
 								</#if>
 							</#list>
+						</#if>
 						) {
-							Object[] args = new Object[] {
-								<#list finderColsList as finderCol>
-									<#if finderCol.isPrimitiveType()>
-										${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.valueOf(
-									</#if>
 
-									${entity.varName}ModelImpl.getOriginal${finderCol.methodName}()
+						Object[] args = new Object[] {
+							<#list finderColsList as finderCol>
+								<#if finderCol.isPrimitiveType()>
+									${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.valueOf(
+								</#if>
 
-									<#if finderCol.isPrimitiveType()>
-										)
-									</#if>
+								${entity.varName}ModelImpl.getOriginal${finderCol.methodName}()
 
-									<#if finderCol_has_next>
-										,
-									</#if>
-								</#list>
-							});
+								<#if finderCol.isPrimitiveType()>
+									)
+								</#if>
 
-							FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, args);
-							FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case}, args);
+								<#if finderCol_has_next>
+									,
+								</#if>
+							</#list>
+						};
 
-							args = new Object[] {
-								<#list finderColsList as finderCol>
-									<#if finderCol.isPrimitiveType()>
-										${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.valueOf(
-									</#if>
+						FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, args);
+						FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case}, args);
 
-									${entity.varName}ModelImpl.get${finderCol.methodName}()
+						args = new Object[] {
+							<#list finderColsList as finderCol>
+								<#if finderCol.isPrimitiveType()>
+									${serviceBuilder.getPrimitiveObj("${finderCol.type}")}.valueOf(
+								</#if>
 
-									<#if finderCol.isPrimitiveType()>
-										)
-									</#if>
+								${entity.varName}ModelImpl.get${finderCol.methodName}()
 
-									<#if finderCol_has_next>
-										,
-									</#if>
-								</#list>
-							});
+								<#if finderCol.isPrimitiveType()>
+									)
+								</#if>
 
-							FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, args);
-							FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case}, args);
-						}
-					</#list>
+								<#if finderCol_has_next>
+									,
+								</#if>
+							</#list>
+						};
+
+						FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, args);
+						FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case}, args);
+					}
+				</#if>
+			</#list>
+
+			<#if hasEqualComparator>
 				}
 			</#if>
 		</#if>
 
 		EntityCacheUtil.putResult(${entity.name}ModelImpl.ENTITY_CACHE_ENABLED, ${entity.name}Impl.class, ${entity.varName}.getPrimaryKey(), ${entity.varName});
-
-		<#assign uniqueFinderList = entity.getUniqueFinderList()>
 
 		<#if uniqueFinderList?size &gt; 0>
 			if (isNew) {
@@ -787,7 +777,10 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 							</#list>
 						};
 
-						FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, args);
+						<#if !finder.hasCustomComparator()>
+							FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, args);
+						</#if>
+
 						FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_${finder.name?upper_case}, args);
 
 						FinderCacheUtil.putResult(
@@ -1048,28 +1041,34 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				FinderPath finderPath = null;
 				Object[] finderArgs = null;
 
-				if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) && (orderByComparator == null)) {
-					finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case};
-					finderArgs = new Object[] {
-						<#list finderColsList as finderCol>
-							${finderCol.name}
+				<#if !finder.hasCustomComparator()>
+					if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) && (orderByComparator == null)) {
+						finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_${finder.name?upper_case};
+						finderArgs = new Object[] {
+							<#list finderColsList as finderCol>
+								${finderCol.name}
 
-							<#if finderCol_has_next>
-								,
-							</#if>
-						</#list>
-					};
-				}
-				else {
-					finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_${finder.name?upper_case};
-					finderArgs = new Object[] {
-						<#list finderColsList as finderCol>
-							${finderCol.name},
-						</#list>
+								<#if finderCol_has_next>
+									,
+								</#if>
+							</#list>
+						};
+					}
+					else {
+				</#if>
 
-						start, end, orderByComparator
-					};
-				}
+				finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_${finder.name?upper_case};
+				finderArgs = new Object[] {
+					<#list finderColsList as finderCol>
+						${finderCol.name},
+					</#list>
+
+					start, end, orderByComparator
+				};
+
+				<#if !finder.hasCustomComparator()>
+					}
+				</#if>
 
 				List<${entity.name}> list = (List<${entity.name}>)FinderCacheUtil.getResult(finderPath, finderArgs, this);
 
@@ -2522,11 +2521,11 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		Object[] finderArgs = new Object[] {start, end, orderByComparator};
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) && (orderByComparator == null)) {
-			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_ALL;
+			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL;
 			finderArgs = FINDER_ARGS_EMPTY;
 		}
 		else {
-			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL;
+			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_ALL;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
@@ -2629,9 +2628,10 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 			<#list finderColsList as finderCol>
 			 * @param ${finderCol.name} the ${finderCol.humanName}
 			</#list>
+			 * @return the ${entity.humanName} that was removed
 			 * @throws SystemException if a system exception occurred
 			 */
-			public void removeBy${finder.name}(
+			public ${entity.name} removeBy${finder.name}(
 
 			<#list finderColsList as finderCol>
 				${finderCol.type} ${finderCol.name}
@@ -2654,7 +2654,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 
 				);
 
-				remove(${entity.varName});
+				return remove(${entity.varName});
 			}
 		</#if>
 	</#list>
@@ -2703,7 +2703,13 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				</#list>
 			};
 
-			Long count = (Long)FinderCacheUtil.getResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, finderArgs, this);
+			Long count = (Long)FinderCacheUtil.getResult(
+				<#if !finder.hasCustomComparator()>
+					FINDER_PATH_COUNT_BY_${finder.name?upper_case},
+				<#else>
+					FINDER_PATH_WITH_PAGINATION_COUNT_BY_${finder.name?upper_case},
+				</#if>
+				finderArgs, this);
 
 			if (count == null) {
 				<#include "persistence_impl_count_by_query.ftl">
@@ -2731,7 +2737,13 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 						count = Long.valueOf(0);
 					}
 
-					FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_${finder.name?upper_case}, finderArgs, count);
+					FinderCacheUtil.putResult(
+						<#if !finder.hasCustomComparator()>
+							FINDER_PATH_COUNT_BY_${finder.name?upper_case},
+						<#else>
+							FINDER_PATH_WITH_PAGINATION_COUNT_BY_${finder.name?upper_case},
+						</#if>
+						finderArgs, count);
 
 					closeSession(session);
 				}
