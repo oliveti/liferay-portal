@@ -21,13 +21,11 @@ import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
-import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.model.LayoutSetPrototype;
 import com.liferay.portal.model.PersistedModel;
@@ -35,6 +33,7 @@ import com.liferay.portal.service.AccountLocalService;
 import com.liferay.portal.service.AccountService;
 import com.liferay.portal.service.AddressLocalService;
 import com.liferay.portal.service.AddressService;
+import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.BrowserTrackerLocalService;
 import com.liferay.portal.service.CMISRepositoryLocalService;
 import com.liferay.portal.service.ClassNameLocalService;
@@ -78,7 +77,6 @@ import com.liferay.portal.service.PasswordPolicyLocalService;
 import com.liferay.portal.service.PasswordPolicyRelLocalService;
 import com.liferay.portal.service.PasswordPolicyService;
 import com.liferay.portal.service.PasswordTrackerLocalService;
-import com.liferay.portal.service.PermissionLocalService;
 import com.liferay.portal.service.PermissionService;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.service.PhoneLocalService;
@@ -103,11 +101,9 @@ import com.liferay.portal.service.ResourceActionLocalService;
 import com.liferay.portal.service.ResourceBlockLocalService;
 import com.liferay.portal.service.ResourceBlockPermissionLocalService;
 import com.liferay.portal.service.ResourceBlockService;
-import com.liferay.portal.service.ResourceCodeLocalService;
 import com.liferay.portal.service.ResourceLocalService;
 import com.liferay.portal.service.ResourcePermissionLocalService;
 import com.liferay.portal.service.ResourcePermissionService;
-import com.liferay.portal.service.ResourceService;
 import com.liferay.portal.service.ResourceTypePermissionLocalService;
 import com.liferay.portal.service.RoleLocalService;
 import com.liferay.portal.service.RoleService;
@@ -162,8 +158,6 @@ import com.liferay.portal.service.persistence.ListTypePersistence;
 import com.liferay.portal.service.persistence.LockFinder;
 import com.liferay.portal.service.persistence.LockPersistence;
 import com.liferay.portal.service.persistence.MembershipRequestPersistence;
-import com.liferay.portal.service.persistence.OrgGroupPermissionFinder;
-import com.liferay.portal.service.persistence.OrgGroupPermissionPersistence;
 import com.liferay.portal.service.persistence.OrgGroupRolePersistence;
 import com.liferay.portal.service.persistence.OrgLaborPersistence;
 import com.liferay.portal.service.persistence.OrganizationFinder;
@@ -172,8 +166,6 @@ import com.liferay.portal.service.persistence.PasswordPolicyFinder;
 import com.liferay.portal.service.persistence.PasswordPolicyPersistence;
 import com.liferay.portal.service.persistence.PasswordPolicyRelPersistence;
 import com.liferay.portal.service.persistence.PasswordTrackerPersistence;
-import com.liferay.portal.service.persistence.PermissionFinder;
-import com.liferay.portal.service.persistence.PermissionPersistence;
 import com.liferay.portal.service.persistence.PhonePersistence;
 import com.liferay.portal.service.persistence.PluginSettingPersistence;
 import com.liferay.portal.service.persistence.PortalPreferencesPersistence;
@@ -189,11 +181,8 @@ import com.liferay.portal.service.persistence.ResourceActionPersistence;
 import com.liferay.portal.service.persistence.ResourceBlockFinder;
 import com.liferay.portal.service.persistence.ResourceBlockPermissionPersistence;
 import com.liferay.portal.service.persistence.ResourceBlockPersistence;
-import com.liferay.portal.service.persistence.ResourceCodePersistence;
-import com.liferay.portal.service.persistence.ResourceFinder;
 import com.liferay.portal.service.persistence.ResourcePermissionFinder;
 import com.liferay.portal.service.persistence.ResourcePermissionPersistence;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.ResourceTypePermissionFinder;
 import com.liferay.portal.service.persistence.ResourceTypePermissionPersistence;
 import com.liferay.portal.service.persistence.RoleFinder;
@@ -240,7 +229,8 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class LayoutSetPrototypeLocalServiceBaseImpl
-	implements LayoutSetPrototypeLocalService, IdentifiableBean {
+	extends BaseLocalServiceImpl implements LayoutSetPrototypeLocalService,
+		IdentifiableBean {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
@@ -254,27 +244,12 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	 * @return the layout set prototype that was added
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public LayoutSetPrototype addLayoutSetPrototype(
 		LayoutSetPrototype layoutSetPrototype) throws SystemException {
 		layoutSetPrototype.setNew(true);
 
-		layoutSetPrototype = layoutSetPrototypePersistence.update(layoutSetPrototype,
-				false);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(layoutSetPrototype);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return layoutSetPrototype;
+		return layoutSetPrototypePersistence.update(layoutSetPrototype, false);
 	}
 
 	/**
@@ -292,50 +267,36 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	 * Deletes the layout set prototype with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param layoutSetPrototypeId the primary key of the layout set prototype
+	 * @return the layout set prototype that was removed
 	 * @throws PortalException if a layout set prototype with the primary key could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteLayoutSetPrototype(long layoutSetPrototypeId)
-		throws PortalException, SystemException {
-		LayoutSetPrototype layoutSetPrototype = layoutSetPrototypePersistence.remove(layoutSetPrototypeId);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.delete(layoutSetPrototype);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+	@Indexable(type = IndexableType.DELETE)
+	public LayoutSetPrototype deleteLayoutSetPrototype(
+		long layoutSetPrototypeId) throws PortalException, SystemException {
+		return layoutSetPrototypePersistence.remove(layoutSetPrototypeId);
 	}
 
 	/**
 	 * Deletes the layout set prototype from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param layoutSetPrototype the layout set prototype
+	 * @return the layout set prototype that was removed
 	 * @throws PortalException
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteLayoutSetPrototype(LayoutSetPrototype layoutSetPrototype)
+	@Indexable(type = IndexableType.DELETE)
+	public LayoutSetPrototype deleteLayoutSetPrototype(
+		LayoutSetPrototype layoutSetPrototype)
 		throws PortalException, SystemException {
-		layoutSetPrototypePersistence.remove(layoutSetPrototype);
+		return layoutSetPrototypePersistence.remove(layoutSetPrototype);
+	}
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
+	public DynamicQuery dynamicQuery() {
+		Class<?> clazz = getClass();
 
-		if (indexer != null) {
-			try {
-				indexer.delete(layoutSetPrototype);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return DynamicQueryFactoryUtil.forClass(LayoutSetPrototype.class,
+			clazz.getClassLoader());
 	}
 
 	/**
@@ -461,6 +422,7 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	 * @return the layout set prototype that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public LayoutSetPrototype updateLayoutSetPrototype(
 		LayoutSetPrototype layoutSetPrototype) throws SystemException {
 		return updateLayoutSetPrototype(layoutSetPrototype, true);
@@ -474,28 +436,13 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	 * @return the layout set prototype that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public LayoutSetPrototype updateLayoutSetPrototype(
 		LayoutSetPrototype layoutSetPrototype, boolean merge)
 		throws SystemException {
 		layoutSetPrototype.setNew(false);
 
-		layoutSetPrototype = layoutSetPrototypePersistence.update(layoutSetPrototype,
-				merge);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(layoutSetPrototype);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return layoutSetPrototype;
+		return layoutSetPrototypePersistence.update(layoutSetPrototype, merge);
 	}
 
 	/**
@@ -1755,44 +1702,6 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the org group permission persistence.
-	 *
-	 * @return the org group permission persistence
-	 */
-	public OrgGroupPermissionPersistence getOrgGroupPermissionPersistence() {
-		return orgGroupPermissionPersistence;
-	}
-
-	/**
-	 * Sets the org group permission persistence.
-	 *
-	 * @param orgGroupPermissionPersistence the org group permission persistence
-	 */
-	public void setOrgGroupPermissionPersistence(
-		OrgGroupPermissionPersistence orgGroupPermissionPersistence) {
-		this.orgGroupPermissionPersistence = orgGroupPermissionPersistence;
-	}
-
-	/**
-	 * Returns the org group permission finder.
-	 *
-	 * @return the org group permission finder
-	 */
-	public OrgGroupPermissionFinder getOrgGroupPermissionFinder() {
-		return orgGroupPermissionFinder;
-	}
-
-	/**
-	 * Sets the org group permission finder.
-	 *
-	 * @param orgGroupPermissionFinder the org group permission finder
-	 */
-	public void setOrgGroupPermissionFinder(
-		OrgGroupPermissionFinder orgGroupPermissionFinder) {
-		this.orgGroupPermissionFinder = orgGroupPermissionFinder;
-	}
-
-	/**
 	 * Returns the org group role persistence.
 	 *
 	 * @return the org group role persistence
@@ -2019,25 +1928,6 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the permission local service.
-	 *
-	 * @return the permission local service
-	 */
-	public PermissionLocalService getPermissionLocalService() {
-		return permissionLocalService;
-	}
-
-	/**
-	 * Sets the permission local service.
-	 *
-	 * @param permissionLocalService the permission local service
-	 */
-	public void setPermissionLocalService(
-		PermissionLocalService permissionLocalService) {
-		this.permissionLocalService = permissionLocalService;
-	}
-
-	/**
 	 * Returns the permission remote service.
 	 *
 	 * @return the permission remote service
@@ -2053,43 +1943,6 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	 */
 	public void setPermissionService(PermissionService permissionService) {
 		this.permissionService = permissionService;
-	}
-
-	/**
-	 * Returns the permission persistence.
-	 *
-	 * @return the permission persistence
-	 */
-	public PermissionPersistence getPermissionPersistence() {
-		return permissionPersistence;
-	}
-
-	/**
-	 * Sets the permission persistence.
-	 *
-	 * @param permissionPersistence the permission persistence
-	 */
-	public void setPermissionPersistence(
-		PermissionPersistence permissionPersistence) {
-		this.permissionPersistence = permissionPersistence;
-	}
-
-	/**
-	 * Returns the permission finder.
-	 *
-	 * @return the permission finder
-	 */
-	public PermissionFinder getPermissionFinder() {
-		return permissionFinder;
-	}
-
-	/**
-	 * Sets the permission finder.
-	 *
-	 * @param permissionFinder the permission finder
-	 */
-	public void setPermissionFinder(PermissionFinder permissionFinder) {
-		this.permissionFinder = permissionFinder;
 	}
 
 	/**
@@ -2649,60 +2502,6 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the resource remote service.
-	 *
-	 * @return the resource remote service
-	 */
-	public ResourceService getResourceService() {
-		return resourceService;
-	}
-
-	/**
-	 * Sets the resource remote service.
-	 *
-	 * @param resourceService the resource remote service
-	 */
-	public void setResourceService(ResourceService resourceService) {
-		this.resourceService = resourceService;
-	}
-
-	/**
-	 * Returns the resource persistence.
-	 *
-	 * @return the resource persistence
-	 */
-	public ResourcePersistence getResourcePersistence() {
-		return resourcePersistence;
-	}
-
-	/**
-	 * Sets the resource persistence.
-	 *
-	 * @param resourcePersistence the resource persistence
-	 */
-	public void setResourcePersistence(ResourcePersistence resourcePersistence) {
-		this.resourcePersistence = resourcePersistence;
-	}
-
-	/**
-	 * Returns the resource finder.
-	 *
-	 * @return the resource finder
-	 */
-	public ResourceFinder getResourceFinder() {
-		return resourceFinder;
-	}
-
-	/**
-	 * Sets the resource finder.
-	 *
-	 * @param resourceFinder the resource finder
-	 */
-	public void setResourceFinder(ResourceFinder resourceFinder) {
-		this.resourceFinder = resourceFinder;
-	}
-
-	/**
 	 * Returns the resource action local service.
 	 *
 	 * @return the resource action local service
@@ -2851,44 +2650,6 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	public void setResourceBlockPermissionPersistence(
 		ResourceBlockPermissionPersistence resourceBlockPermissionPersistence) {
 		this.resourceBlockPermissionPersistence = resourceBlockPermissionPersistence;
-	}
-
-	/**
-	 * Returns the resource code local service.
-	 *
-	 * @return the resource code local service
-	 */
-	public ResourceCodeLocalService getResourceCodeLocalService() {
-		return resourceCodeLocalService;
-	}
-
-	/**
-	 * Sets the resource code local service.
-	 *
-	 * @param resourceCodeLocalService the resource code local service
-	 */
-	public void setResourceCodeLocalService(
-		ResourceCodeLocalService resourceCodeLocalService) {
-		this.resourceCodeLocalService = resourceCodeLocalService;
-	}
-
-	/**
-	 * Returns the resource code persistence.
-	 *
-	 * @return the resource code persistence
-	 */
-	public ResourceCodePersistence getResourceCodePersistence() {
-		return resourceCodePersistence;
-	}
-
-	/**
-	 * Sets the resource code persistence.
-	 *
-	 * @param resourceCodePersistence the resource code persistence
-	 */
-	public void setResourceCodePersistence(
-		ResourceCodePersistence resourceCodePersistence) {
-		this.resourceCodePersistence = resourceCodePersistence;
 	}
 
 	/**
@@ -4197,10 +3958,6 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	protected OrganizationPersistence organizationPersistence;
 	@BeanReference(type = OrganizationFinder.class)
 	protected OrganizationFinder organizationFinder;
-	@BeanReference(type = OrgGroupPermissionPersistence.class)
-	protected OrgGroupPermissionPersistence orgGroupPermissionPersistence;
-	@BeanReference(type = OrgGroupPermissionFinder.class)
-	protected OrgGroupPermissionFinder orgGroupPermissionFinder;
 	@BeanReference(type = OrgGroupRolePersistence.class)
 	protected OrgGroupRolePersistence orgGroupRolePersistence;
 	@BeanReference(type = OrgLaborLocalService.class)
@@ -4225,14 +3982,8 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	protected PasswordTrackerLocalService passwordTrackerLocalService;
 	@BeanReference(type = PasswordTrackerPersistence.class)
 	protected PasswordTrackerPersistence passwordTrackerPersistence;
-	@BeanReference(type = PermissionLocalService.class)
-	protected PermissionLocalService permissionLocalService;
 	@BeanReference(type = PermissionService.class)
 	protected PermissionService permissionService;
-	@BeanReference(type = PermissionPersistence.class)
-	protected PermissionPersistence permissionPersistence;
-	@BeanReference(type = PermissionFinder.class)
-	protected PermissionFinder permissionFinder;
 	@BeanReference(type = PhoneLocalService.class)
 	protected PhoneLocalService phoneLocalService;
 	@BeanReference(type = PhoneService.class)
@@ -4293,12 +4044,6 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	protected RepositoryEntryPersistence repositoryEntryPersistence;
 	@BeanReference(type = ResourceLocalService.class)
 	protected ResourceLocalService resourceLocalService;
-	@BeanReference(type = ResourceService.class)
-	protected ResourceService resourceService;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
-	@BeanReference(type = ResourceFinder.class)
-	protected ResourceFinder resourceFinder;
 	@BeanReference(type = ResourceActionLocalService.class)
 	protected ResourceActionLocalService resourceActionLocalService;
 	@BeanReference(type = ResourceActionPersistence.class)
@@ -4315,10 +4060,6 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	protected ResourceBlockPermissionLocalService resourceBlockPermissionLocalService;
 	@BeanReference(type = ResourceBlockPermissionPersistence.class)
 	protected ResourceBlockPermissionPersistence resourceBlockPermissionPersistence;
-	@BeanReference(type = ResourceCodeLocalService.class)
-	protected ResourceCodeLocalService resourceCodeLocalService;
-	@BeanReference(type = ResourceCodePersistence.class)
-	protected ResourceCodePersistence resourceCodePersistence;
 	@BeanReference(type = ResourcePermissionLocalService.class)
 	protected ResourcePermissionLocalService resourcePermissionLocalService;
 	@BeanReference(type = ResourcePermissionService.class)
@@ -4441,6 +4182,5 @@ public abstract class LayoutSetPrototypeLocalServiceBaseImpl
 	protected CounterLocalService counterLocalService;
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
 	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
-	private static Log _log = LogFactoryUtil.getLog(LayoutSetPrototypeLocalServiceBaseImpl.class);
 	private String _beanIdentifier;
 }

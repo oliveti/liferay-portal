@@ -15,12 +15,19 @@
 package com.liferay.portal.kernel.servlet;
 
 import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.servlet.filters.invoker.FilterMapping;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
+
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -46,7 +53,21 @@ public abstract class BaseFilter implements LiferayFilter {
 			HttpServletRequest request = (HttpServletRequest)servletRequest;
 			HttpServletResponse response = (HttpServletResponse)servletResponse;
 
-			processFilter(request, response, filterChain);
+			if (_invokerEnabled) {
+				processFilter(request, response, filterChain);
+			}
+			else {
+				String uri = request.getRequestURI();
+
+				if (isFilterEnabled() && isFilterEnabled(request, response) &&
+					_filterMapping.isMatchURLRegexPattern(request, uri)) {
+
+					processFilter(request, response, filterChain);
+				}
+				else {
+					filterChain.doFilter(servletRequest, servletResponse);
+				}
+			}
 		}
 		catch (IOException ioe) {
 			throw ioe;
@@ -67,6 +88,20 @@ public abstract class BaseFilter implements LiferayFilter {
 
 	public void init(FilterConfig filterConfig) {
 		_filterConfig = filterConfig;
+
+		if (_TCK_URL) {
+			ServletContext servletContext = _filterConfig.getServletContext();
+
+			_invokerEnabled = GetterUtil.get(
+				servletContext.getInitParameter("liferay-invoker-enabled"),
+				true);
+
+			if (!_invokerEnabled) {
+				_filterMapping = new FilterMapping(
+					this, filterConfig, new ArrayList<String>(0),
+					new ArrayList<String>(0));
+			}
+		}
 
 		LiferayFilterTracker.addLiferayFilter(this);
 	}
@@ -161,7 +196,12 @@ public abstract class BaseFilter implements LiferayFilter {
 
 	private static final String _DEPTHER = "DEPTHER";
 
+	private static final boolean _TCK_URL = GetterUtil.getBoolean(
+		PropsUtil.get(PropsKeys.TCK_URL));
+
 	private FilterConfig _filterConfig;
 	private boolean _filterEnabled = true;
+	private FilterMapping _filterMapping;
+	private boolean _invokerEnabled = true;
 
 }

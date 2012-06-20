@@ -50,13 +50,13 @@ import com.liferay.portal.model.impl.LockImpl;
 import com.liferay.portal.security.permission.ResourceActionsUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LockLocalServiceUtil;
-import com.liferay.portal.service.PermissionLocalServiceUtil;
+import com.liferay.portal.service.ResourceBlockLocalServiceUtil;
+import com.liferay.portal.service.ResourceBlockPermissionLocalServiceUtil;
 import com.liferay.portal.service.ResourcePermissionLocalServiceUtil;
 import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.asset.NoSuchEntryException;
 import com.liferay.portlet.asset.model.AssetCategory;
 import com.liferay.portlet.asset.model.AssetEntry;
@@ -113,7 +113,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -180,10 +179,6 @@ public class PortletDataContextImpl implements PortletDataContext {
 		List<AssetCategory> assetCategories =
 			AssetCategoryLocalServiceUtil.getCategories(
 				clazz.getName(), classPK);
-
-		if (assetCategories.isEmpty()) {
-			return;
-		}
 
 		_assetCategoryUuidsMap.put(
 			getPrimaryKeyString(clazz, classPK),
@@ -273,10 +268,6 @@ public class PortletDataContextImpl implements PortletDataContext {
 		String[] tagNames = AssetTagLocalServiceUtil.getTagNames(
 			clazz.getName(), classPK);
 
-		if (tagNames.length == 0) {
-			return;
-		}
-
 		_assetTagNamesMap.put(getPrimaryKeyString(clazz, classPK), tagNames);
 	}
 
@@ -309,19 +300,28 @@ public class PortletDataContextImpl implements PortletDataContext {
 			addLocks(clazz, String.valueOf(classPK));
 			addPermissions(clazz, classPK);
 
-			if (getBooleanParameter(namespace, "categories")) {
+			boolean portletMetadataAll = getBooleanParameter(
+				namespace, PortletDataHandlerKeys.PORTLET_METADATA_ALL);
+
+			if (portletMetadataAll ||
+				getBooleanParameter(namespace, "categories")) {
+
 				addAssetCategories(clazz, classPK);
 			}
 
-			if (getBooleanParameter(namespace, "comments")) {
+			if (portletMetadataAll ||
+				getBooleanParameter(namespace, "comments")) {
+
 				addComments(clazz, classPK);
 			}
 
-			if (getBooleanParameter(namespace, "ratings")) {
+			if (portletMetadataAll ||
+				getBooleanParameter(namespace, "ratings")) {
+
 				addRatingsEntries(clazz, classPK);
 			}
 
-			if (getBooleanParameter(namespace, "tags")) {
+			if (portletMetadataAll || getBooleanParameter(namespace, "tags")) {
 				addAssetTags(clazz, classPK);
 			}
 		}
@@ -348,11 +348,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 			return;
 		}
 
-		Iterator<MBMessage> itr = messages.iterator();
-
-		while (itr.hasNext()) {
-			MBMessage message = itr.next();
-
+		for (MBMessage message : messages) {
 			message.setUserUuid(message.getUserUuid());
 
 			addRatingsEntries(MBDiscussion.class, message.getPrimaryKey());
@@ -427,10 +423,8 @@ public class PortletDataContextImpl implements PortletDataContext {
 	public void addPermissions(String resourceName, long resourcePK)
 		throws PortalException, SystemException {
 
-		if (((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 5) &&
-			 (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 6)) ||
-			(!MapUtil.getBoolean(
-				_parameterMap, PortletDataHandlerKeys.PERMISSIONS))) {
+		if (!MapUtil.getBoolean(
+				_parameterMap, PortletDataHandlerKeys.PERMISSIONS)) {
 
 			return;
 		}
@@ -474,45 +468,24 @@ public class PortletDataContextImpl implements PortletDataContext {
 		List<String> actionIds = ResourceActionsUtil.getModelResourceActions(
 			resourceName);
 
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 5) {
-			for (Map.Entry<Long, String> entry : roleIdsToNames.entrySet()) {
-				long roleId = entry.getKey();
-				String name = entry.getValue();
+		Map<Long, Set<String>> roleIdsToActionIds = getActionIds(
+			_companyId, roleIds.getArray(), resourceName, resourcePK,
+			actionIds);
 
-				String availableActionIds = getActionIds_5(
-					_companyId, roleId, resourceName,
-					String.valueOf(resourcePK), actionIds);
+		for (Map.Entry<Long, String> entry : roleIdsToNames.entrySet()) {
+			long roleId = entry.getKey();
+			String name = entry.getValue();
 
-				KeyValuePair permission = new KeyValuePair(
-					name, availableActionIds);
+			Set<String> availableActionIds = roleIdsToActionIds.get(roleId);
 
-				permissions.add(permission);
+			if ((availableActionIds == null) || availableActionIds.isEmpty()) {
+				continue;
 			}
 
-		}
-		else if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) {
+			KeyValuePair permission = new KeyValuePair(
+				name, StringUtil.merge(availableActionIds));
 
-			Map<Long, Set<String>> roleIdsToActionIds = getActionIds_6(
-				_companyId, roleIds.getArray(), resourceName,
-				String.valueOf(resourcePK), actionIds);
-
-			for (Map.Entry<Long, String> entry : roleIdsToNames.entrySet()) {
-				long roleId = entry.getKey();
-				String name = entry.getValue();
-
-				Set<String> availableActionIds = roleIdsToActionIds.get(roleId);
-
-				if ((availableActionIds == null) ||
-					availableActionIds.isEmpty()) {
-
-					continue;
-				}
-
-				KeyValuePair permission = new KeyValuePair(
-					name, StringUtil.merge(availableActionIds));
-
-				permissions.add(permission);
-			}
+			permissions.add(permission);
 		}
 
 		_permissionsMap.put(
@@ -521,12 +494,6 @@ public class PortletDataContextImpl implements PortletDataContext {
 
 	public void addPermissions(
 		String resourceName, long resourcePK, List<KeyValuePair> permissions) {
-
-		if ((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 5) &&
-			(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 6)) {
-
-			return;
-		}
 
 		_permissionsMap.put(
 			getPrimaryKeyString(resourceName, resourcePK), permissions);
@@ -552,11 +519,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 			return;
 		}
 
-		Iterator<RatingsEntry> itr = ratingsEntries.iterator();
-
-		while (itr.hasNext()) {
-			RatingsEntry entry = itr.next();
-
+		for (RatingsEntry entry : ratingsEntries) {
 			entry.setUserUuid(entry.getUserUuid());
 		}
 
@@ -822,7 +785,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return _startDate;
 	}
 
-	public long getUserId(String userUuid) throws SystemException {
+	public long getUserId(String userUuid) {
 		return _userIdStrategy.getUserId(userUuid);
 	}
 
@@ -917,11 +880,14 @@ public class PortletDataContextImpl implements PortletDataContext {
 		importLocks(clazz, String.valueOf(classPK), String.valueOf(newClassPK));
 		importPermissions(clazz, classPK, newClassPK);
 
-		if (getBooleanParameter(namespace, "comments")) {
+		boolean portletMetadataAll = getBooleanParameter(
+			namespace, PortletDataHandlerKeys.PORTLET_METADATA_ALL);
+
+		if (portletMetadataAll || getBooleanParameter(namespace, "comments")) {
 			importComments(clazz, classPK, newClassPK, getScopeGroupId());
 		}
 
-		if (getBooleanParameter(namespace, "ratings")) {
+		if (portletMetadataAll || getBooleanParameter(namespace, "ratings")) {
 			importRatingsEntries(clazz, classPK, newClassPK);
 		}
 	}
@@ -1064,10 +1030,8 @@ public class PortletDataContextImpl implements PortletDataContext {
 			String resourceName, long resourcePK, long newResourcePK)
 		throws PortalException, SystemException {
 
-		if (((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 5) &&
-			 (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 6)) ||
-			(!MapUtil.getBoolean(
-				_parameterMap, PortletDataHandlerKeys.PERMISSIONS))) {
+		if (!MapUtil.getBoolean(
+				_parameterMap, PortletDataHandlerKeys.PERMISSIONS)) {
 
 			return;
 		}
@@ -1130,13 +1094,12 @@ public class PortletDataContextImpl implements PortletDataContext {
 			return;
 		}
 
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 5) {
-			PermissionLocalServiceUtil.setRolesPermissions(
-				_companyId, roleIdsToActionIds, resourceName,
-				ResourceConstants.SCOPE_INDIVIDUAL,
-				String.valueOf(newResourcePK));
+		if (ResourceBlockLocalServiceUtil.isSupported(resourceName)) {
+			ResourceBlockLocalServiceUtil.setIndividualScopePermissions(
+				_companyId, _groupId, resourceName, newResourcePK,
+				roleIdsToActionIds);
 		}
-		else if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) {
+		else {
 			ResourcePermissionLocalServiceUtil.setResourcePermissions(
 				_companyId, resourceName, ResourceConstants.SCOPE_INDIVIDUAL,
 				String.valueOf(newResourcePK), roleIdsToActionIds);
@@ -1180,7 +1143,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 		}
 	}
 
-	public boolean isDataStrategyMirrorWithOverwritting() {
+	public boolean isDataStrategyMirrorWithOverwriting() {
 		if (_dataStrategy.equals(
 				PortletDataHandlerKeys.DATA_STRATEGY_MIRROR_OVERWRITE)) {
 
@@ -1209,7 +1172,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 			return true;
 		}
 		else if ((_startDate.compareTo(modifiedDate) <= 0) &&
-				 (_endDate.after(modifiedDate))) {
+				 _endDate.after(modifiedDate)) {
 
 			return true;
 		}
@@ -1306,14 +1269,19 @@ public class PortletDataContextImpl implements PortletDataContext {
 
 		// Asset
 
+		boolean portletMetadataAll = getBooleanParameter(
+			namespace, PortletDataHandlerKeys.PORTLET_METADATA_ALL);
+
 		if (isResourceMain(classedModel)) {
-			if (getBooleanParameter(namespace, "categories")) {
+			if (portletMetadataAll ||
+				getBooleanParameter(namespace, "categories")) {
+
 				long[] assetCategoryIds = getAssetCategoryIds(clazz, classPK);
 
 				serviceContext.setAssetCategoryIds(assetCategoryIds);
 			}
 
-			if (getBooleanParameter(namespace, "tags")) {
+			if (portletMetadataAll || getBooleanParameter(namespace, "tags")) {
 				String[] assetTagNames = getAssetTagNames(clazz, classPK);
 
 				serviceContext.setAssetTagNames(assetTagNames);
@@ -1349,35 +1317,22 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return serviceContext;
 	}
 
-	protected String getActionIds_5(
-			long companyId, long roleId, String className, String primKey,
-			List<String> actionIds)
-		throws SystemException {
-
-		List<String> availableActionIds = new ArrayList<String>(
-			actionIds.size());
-
-		for (String actionId : actionIds) {
-			if (PermissionLocalServiceUtil.hasRolePermission(
-					roleId, companyId, className,
-					ResourceConstants.SCOPE_INDIVIDUAL, primKey, actionId)) {
-
-				availableActionIds.add(actionId);
-			}
-		}
-
-		return StringUtil.merge(availableActionIds);
-	}
-
-	protected Map<Long, Set<String>> getActionIds_6(
-			long companyId, long[] roleIds, String className, String primKey,
+	protected Map<Long, Set<String>> getActionIds(
+			long companyId, long[] roleIds, String className, long primKey,
 			List<String> actionIds)
 		throws PortalException, SystemException {
 
-		return ResourcePermissionLocalServiceUtil.
-			getAvailableResourcePermissionActionIds(
-				companyId, className, ResourceConstants.SCOPE_INDIVIDUAL,
-				primKey, roleIds, actionIds);
+		if (ResourceBlockLocalServiceUtil.isSupported(className)) {
+			return ResourceBlockPermissionLocalServiceUtil.
+				getAvailableResourceBlockPermissionActionIds(
+					roleIds, className, primKey, actionIds);
+		}
+		else {
+			return ResourcePermissionLocalServiceUtil.
+				getAvailableResourcePermissionActionIds(
+					companyId, className, ResourceConstants.SCOPE_INDIVIDUAL,
+					String.valueOf(primKey), roleIds, actionIds);
+		}
 	}
 
 	protected long getClassPK(ClassedModel classedModel) {
@@ -1400,7 +1355,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 		}
 
 		return path.substring(0, pos).concat("-expando").concat(
-			path.substring(pos, path.length()));
+			path.substring(pos));
 	}
 
 	protected String getPrimaryKeyString(Class<?> clazz, long classPK) {

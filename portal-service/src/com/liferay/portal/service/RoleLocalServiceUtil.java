@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -65,26 +64,33 @@ public class RoleLocalServiceUtil {
 	* Deletes the role with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param roleId the primary key of the role
+	* @return the role that was removed
 	* @throws PortalException if a role with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteRole(long roleId)
+	public static com.liferay.portal.model.Role deleteRole(long roleId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteRole(roleId);
+		return getService().deleteRole(roleId);
 	}
 
 	/**
 	* Deletes the role from the database. Also notifies the appropriate model listeners.
 	*
 	* @param role the role
+	* @return the role that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteRole(com.liferay.portal.model.Role role)
+	public static com.liferay.portal.model.Role deleteRole(
+		com.liferay.portal.model.Role role)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteRole(role);
+		return getService().deleteRole(role);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -812,9 +818,8 @@ public class RoleLocalServiceUtil {
 	* @param keywords the keywords (space separated), which may occur in the
 	role's name or description (optionally <code>null</code>)
 	* @param types the role types (optionally <code>null</code>)
-	* @param params the finder parameters. Can specify values for
-	"permissionsResourceId" and "usersRoles" keys. For more
-	information, see {@link
+	* @param params the finder parameters. Can specify values for the
+	"usersRoles" key. For more information, see {@link
 	com.liferay.portal.service.persistence.RoleFinder}
 	* @param start the lower bound of the range of roles to return
 	* @param end the upper bound of the range of roles to return (not
@@ -890,9 +895,8 @@ public class RoleLocalServiceUtil {
 	* @param name the role's name (optionally <code>null</code>)
 	* @param description the role's description (optionally <code>null</code>)
 	* @param types the role types (optionally <code>null</code>)
-	* @param params the finder's parameters. Can specify values for
-	"permissionsResourceId" and "usersRoles" keys. For more
-	information, see {@link
+	* @param params the finder's parameters. Can specify values for the
+	"usersRoles" key. For more information, see {@link
 	com.liferay.portal.service.persistence.RoleFinder}
 	* @param start the lower bound of the range of the roles to return
 	* @param end the upper bound of the range of the roles to return (not
@@ -974,9 +978,8 @@ public class RoleLocalServiceUtil {
 	* @param name the role's name (optionally <code>null</code>)
 	* @param description the role's description (optionally <code>null</code>)
 	* @param types the role types (optionally <code>null</code>)
-	* @param params the finder parameters. Can specify values for
-	"permissionsResourceId" and "usersRoles" keys. For more
-	information, see {@link
+	* @param params the finder parameters. Can specify values for the
+	"usersRoles" key. For more information, see {@link
 	com.liferay.portal.service.persistence.RoleFinder}
 	* @return the number of matching roles
 	* @throws SystemException if a system exception occurred
@@ -1053,20 +1056,15 @@ public class RoleLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(RoleLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(RoleLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(RoleLocalService service) {
-		MethodCache.remove(RoleLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(RoleLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(RoleLocalService.class);
 	}
 
 	private static RoleLocalService _service;

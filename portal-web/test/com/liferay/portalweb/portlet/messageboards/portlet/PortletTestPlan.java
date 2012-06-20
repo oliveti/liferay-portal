@@ -15,9 +15,10 @@
 package com.liferay.portalweb.portlet.messageboards.portlet;
 
 import com.liferay.portalweb.portal.BaseTestSuite;
-import com.liferay.portalweb.portlet.messageboards.portlet.addportlet.AddPortletTests;
-import com.liferay.portalweb.portlet.messageboards.portlet.addportletduplicate.AddPortletDuplicateTests;
-import com.liferay.portalweb.portlet.messageboards.portlet.removeportlet.RemovePortletTests;
+import com.liferay.portalweb.portlet.messageboards.portlet.addportletmb.AddPortletMBTests;
+import com.liferay.portalweb.portlet.messageboards.portlet.addportletmbduplicate.AddPortletMBDuplicateTests;
+import com.liferay.portalweb.portlet.messageboards.portlet.addportletmbsite.AddPortletMBSiteTests;
+import com.liferay.portalweb.portlet.messageboards.portlet.removeportletmb.RemovePortletMBTests;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -30,9 +31,10 @@ public class PortletTestPlan extends BaseTestSuite {
 	public static Test suite() {
 		TestSuite testSuite = new TestSuite();
 
-		testSuite.addTest(AddPortletTests.suite());
-		testSuite.addTest(AddPortletDuplicateTests.suite());
-		testSuite.addTest(RemovePortletTests.suite());
+		testSuite.addTest(AddPortletMBTests.suite());
+		testSuite.addTest(AddPortletMBDuplicateTests.suite());
+		testSuite.addTest(AddPortletMBSiteTests.suite());
+		testSuite.addTest(RemovePortletMBTests.suite());
 
 		return testSuite;
 	}

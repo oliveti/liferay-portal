@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.dao.search.SearchEntry;
 import com.liferay.portal.kernel.dao.search.TextSearchEntry;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
@@ -45,11 +46,12 @@ public class SearchContainerColumnTextTag<R>
 				(SearchContainerRowTag<R>)findAncestorWithClass(
 					this, SearchContainerRowTag.class);
 
-			ResultRow row = searchContainerRowTag.getRow();
+			ResultRow resultRow = searchContainerRowTag.getRow();
 
 			if (Validator.isNotNull(_property)) {
 				_value = String.valueOf(
-					BeanPropertiesUtil.getObject(row.getObject(), _property));
+					BeanPropertiesUtil.getObject(
+						resultRow.getObject(), _property));
 			}
 			else if (Validator.isNotNull(_buffer)) {
 				_value = _sb.toString();
@@ -62,7 +64,7 @@ public class SearchContainerColumnTextTag<R>
 				}
 				else {
 					Object object = BeanPropertiesUtil.getObject(
-						row.getObject(), getName());
+						resultRow.getObject(), getName());
 
 					_value = String.valueOf(object);
 				}
@@ -73,10 +75,12 @@ public class SearchContainerColumnTextTag<R>
 			}
 
 			if (index <= -1) {
-				index = row.getEntries().size();
+				List<SearchEntry> searchEntries = resultRow.getEntries();
+
+				index = searchEntries.size();
 			}
 
-			if (row.isRestricted()) {
+			if (resultRow.isRestricted()) {
 				_href = null;
 			}
 
@@ -91,7 +95,7 @@ public class SearchContainerColumnTextTag<R>
 			textSearchEntry.setTitle(getTitle());
 			textSearchEntry.setValign(getValign());
 
-			row.addSearchEntry(index, textSearchEntry);
+			resultRow.addSearchEntry(index, textSearchEntry);
 
 			return EVAL_PAGE;
 		}
@@ -164,7 +168,7 @@ public class SearchContainerColumnTextTag<R>
 			return SKIP_BODY;
 		}
 		else if (Validator.isNotNull(_buffer)) {
-			_sb = new StringBuilder();
+			_sb = new StringBundler();
 
 			pageContext.setAttribute(_buffer, _sb);
 
@@ -255,7 +259,7 @@ public class SearchContainerColumnTextTag<R>
 	private boolean _orderable;
 	private String _orderableProperty;
 	private String _property;
-	private StringBuilder _sb;
+	private StringBundler _sb;
 	private String _target;
 	private String _title;
 	private boolean _translate;

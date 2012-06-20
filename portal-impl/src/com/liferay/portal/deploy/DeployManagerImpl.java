@@ -17,6 +17,7 @@ package com.liferay.portal.deploy;
 import com.liferay.portal.events.GlobalStartupAction;
 import com.liferay.portal.kernel.deploy.DeployManager;
 import com.liferay.portal.kernel.deploy.auto.AutoDeployListener;
+import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.plugin.PluginPackageUtil;
@@ -24,6 +25,7 @@ import com.liferay.portal.plugin.PluginPackageUtil;
 import java.io.File;
 
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Jonathan Potter
@@ -32,16 +34,14 @@ import java.util.List;
  */
 public class DeployManagerImpl implements DeployManager {
 
-	public void deploy(File file) throws Exception {
-		deploy(file, null);
-	}
+	public void deploy(AutoDeploymentContext autoDeploymentContext)
+		throws Exception {
 
-	public void deploy(File file, String context) throws Exception {
 		List<AutoDeployListener> autoDeployListeners =
 			GlobalStartupAction.getAutoDeployListeners();
 
 		for (AutoDeployListener autoDeployListener : autoDeployListeners) {
-			autoDeployListener.deploy(file, context);
+			autoDeployListener.deploy(autoDeploymentContext);
 		}
 	}
 
@@ -52,13 +52,12 @@ public class DeployManagerImpl implements DeployManager {
 	public String getInstalledDir() throws Exception {
 		if (ServerDetector.isGlassfish()) {
 			File file = new File(
-				System.getProperty("catalina.home"), "applications");
+				System.getProperty("com.sun.aas.instanceRoot"), "autodeploy");
 
 			return file.getAbsolutePath();
 		}
-		else {
-			return DeployUtil.getAutoDeployDestDir();
-		}
+
+		return DeployUtil.getAutoDeployDestDir();
 	}
 
 	public PluginPackage getInstalledPluginPackage(String context) {
@@ -71,6 +70,17 @@ public class DeployManagerImpl implements DeployManager {
 
 	public boolean isDeployed(String context) {
 		return PluginPackageUtil.isInstalled(context);
+	}
+
+	public PluginPackage readPluginPackageProperties(
+		String displayName, Properties properties) {
+
+		return PluginPackageUtil.readPluginPackageProperties(
+			displayName, properties);
+	}
+
+	public PluginPackage readPluginPackageXml(String xml) throws Exception {
+		return PluginPackageUtil.readPluginPackageXml(xml);
 	}
 
 	public void redeploy(String context) throws Exception {

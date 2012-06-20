@@ -24,6 +24,9 @@ public class ImportLARCPTest extends BaseTestCase {
 	public void testImportLARCP() throws Exception {
 		selenium.open("/web/guest/home/");
 		loadRequiredJavaScriptModules();
+		assertEquals(RuntimeVariables.replace("Go to"),
+			selenium.getText("//li[@id='_145_mySites']/a/span"));
+		selenium.mouseOver("//li[@id='_145_mySites']/a/span");
 
 		for (int second = 0;; second++) {
 			if (second >= 90) {
@@ -31,7 +34,7 @@ public class ImportLARCPTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isElementPresent("link=Control Panel")) {
+				if (selenium.isVisible("link=Control Panel")) {
 					break;
 				}
 			}
@@ -78,17 +81,21 @@ public class ImportLARCPTest extends BaseTestCase {
 		selenium.clickAt("link=Import", RuntimeVariables.replace("Import"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
-		selenium.type("_86_importFileName",
+		selenium.type("//input[@id='_86_importFileName']",
 			RuntimeVariables.replace(
 				"L:\\portal\\build\\portal-web\\test\\com\\liferay\\portalweb\\portal\\controlpanel\\blogs\\dependencies\\Selenium-Blogs.portlet.lar"));
-		assertFalse(selenium.isChecked("_86_DELETE_PORTLET_DATACheckbox"));
-		selenium.clickAt("_86_DELETE_PORTLET_DATACheckbox",
-			RuntimeVariables.replace(""));
-		assertTrue(selenium.isChecked("_86_DELETE_PORTLET_DATACheckbox"));
-		assertFalse(selenium.isChecked("_86_PORTLET_DATACheckbox"));
-		selenium.clickAt("_86_PORTLET_DATACheckbox",
-			RuntimeVariables.replace(""));
-		assertTrue(selenium.isChecked("_86_PORTLET_DATACheckbox"));
+		assertFalse(selenium.isChecked(
+				"//input[@id='_86_DELETE_PORTLET_DATACheckbox']"));
+		selenium.clickAt("//input[@id='_86_DELETE_PORTLET_DATACheckbox']",
+			RuntimeVariables.replace(
+				"Delete Portlet data before importing Checkbox"));
+		assertTrue(selenium.isChecked(
+				"//input[@id='_86_DELETE_PORTLET_DATACheckbox']"));
+		assertFalse(selenium.isChecked(
+				"//input[@id='_86_PORTLET_DATACheckbox']"));
+		selenium.clickAt("//input[@id='_86_PORTLET_DATACheckbox']",
+			RuntimeVariables.replace("Data Checkbox"));
+		assertTrue(selenium.isChecked("//input[@id='_86_PORTLET_DATACheckbox']"));
 		selenium.clickAt("//input[@value='Import']",
 			RuntimeVariables.replace("Import"));
 		selenium.waitForPageToLoad("30000");

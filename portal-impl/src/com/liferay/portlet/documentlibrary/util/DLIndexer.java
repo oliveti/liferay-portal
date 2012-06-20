@@ -14,6 +14,13 @@
 
 package com.liferay.portlet.documentlibrary.util;
 
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Projection;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ProjectionList;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -27,7 +34,6 @@ import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
 import com.liferay.portal.kernel.search.SearchException;
@@ -41,16 +47,14 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.GroupLocalServiceUtil;
-import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.asset.model.AssetCategory;
-import com.liferay.portlet.asset.service.AssetCategoryLocalServiceUtil;
-import com.liferay.portlet.asset.service.AssetTagLocalServiceUtil;
+import com.liferay.portlet.bookmarks.service.BookmarksFolderLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryMetadata;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryType;
@@ -98,6 +102,11 @@ public class DLIndexer extends BaseIndexer {
 
 	public static final String PORTLET_ID = PortletKeys.DOCUMENT_LIBRARY;
 
+	public DLIndexer() {
+		setFilterSearch(true);
+		setPermissionAware(true);
+	}
+
 	public String[] getClassNames() {
 		return CLASS_NAMES;
 	}
@@ -108,22 +117,12 @@ public class DLIndexer extends BaseIndexer {
 
 	@Override
 	public boolean hasPermission(
-			PermissionChecker permissionChecker, long entryClassPK,
-			String actionId)
+			PermissionChecker permissionChecker, String entryClassName,
+			long entryClassPK, String actionId)
 		throws Exception {
 
 		return DLFileEntryPermission.contains(
 			permissionChecker, entryClassPK, ActionKeys.VIEW);
-	}
-
-	@Override
-	public boolean isFilterSearch() {
-		return _FILTER_SEARCH;
-	}
-
-	@Override
-	public boolean isPermissionAware() {
-		return _PERMISSION_AWARE;
 	}
 
 	@Override
@@ -259,6 +258,26 @@ public class DLIndexer extends BaseIndexer {
 		}
 	}
 
+	protected void addReindexCriteria(
+		DynamicQuery dynamicQuery, long companyId) {
+
+		Property property = PropertyFactoryUtil.forName("companyId");
+
+		dynamicQuery.add(property.eq(companyId));
+	}
+
+	protected void addReindexCriteria(
+		DynamicQuery dynamicQuery, long groupId, long folderId) {
+
+		Property groupIdProperty = PropertyFactoryUtil.forName("groupId");
+
+		dynamicQuery.add(groupIdProperty.eq(groupId));
+
+		Property folderIdProperty = PropertyFactoryUtil.forName("folderId");
+
+		dynamicQuery.add(folderIdProperty.eq(folderId));
+	}
+
 	@Override
 	protected void doDelete(Object obj) throws Exception {
 		DLFileEntry dlFileEntry = (DLFileEntry)obj;
@@ -268,7 +287,8 @@ public class DLIndexer extends BaseIndexer {
 		document.addUID(PORTLET_ID, dlFileEntry.getFileEntryId());
 
 		SearchEngineUtil.deleteDocument(
-			dlFileEntry.getCompanyId(), document.get(Field.UID));
+			getSearchEngineId(), dlFileEntry.getCompanyId(),
+			document.get(Field.UID));
 	}
 
 	@Override
@@ -324,36 +344,11 @@ public class DLIndexer extends BaseIndexer {
 			return null;
 		}
 
+		DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
+
 		try {
-			Document document = new DocumentImpl();
-
-			long fileEntryId = dlFileEntry.getFileEntryId();
-
-			document.addUID(PORTLET_ID, fileEntryId);
-
-			List<AssetCategory> assetCategories =
-				AssetCategoryLocalServiceUtil.getCategories(
-					DLFileEntry.class.getName(), fileEntryId);
-
-			long[] assetCategoryIds = StringUtil.split(
-				ListUtil.toString(
-					assetCategories, AssetCategory.CATEGORY_ID_ACCESSOR),
-				0L);
-
-			document.addKeyword(Field.ASSET_CATEGORY_IDS, assetCategoryIds);
-
-			String[] assetCategoryNames = StringUtil.split(
-				ListUtil.toString(
-					assetCategories, AssetCategory.NAME_ACCESSOR));
-
-			document.addKeyword(Field.ASSET_CATEGORY_NAMES, assetCategoryNames);
-
-			String[] assetTagNames = AssetTagLocalServiceUtil.getTagNames(
-				DLFileEntry.class.getName(), fileEntryId);
-
-			document.addKeyword(Field.ASSET_TAG_NAMES, assetTagNames);
-
-			document.addKeyword(Field.COMPANY_ID, dlFileEntry.getCompanyId());
+			Document document = getBaseModelDocument(
+				PORTLET_ID, dlFileEntry, dlFileVersion);
 
 			if (indexContent) {
 				try {
@@ -366,32 +361,11 @@ public class DLIndexer extends BaseIndexer {
 			}
 
 			document.addText(Field.DESCRIPTION, dlFileEntry.getDescription());
-			document.addKeyword(
-				Field.ENTRY_CLASS_NAME, DLFileEntry.class.getName());
-			document.addKeyword(Field.ENTRY_CLASS_PK, fileEntryId);
 			document.addKeyword(Field.FOLDER_ID, dlFileEntry.getFolderId());
-			document.addKeyword(
-				Field.GROUP_ID, getParentGroupId(dlFileEntry.getGroupId()));
-			document.addDate(
-				Field.MODIFIED_DATE, dlFileEntry.getModifiedDate());
-			document.addKeyword(Field.PORTLET_ID, PORTLET_ID);
 			document.addText(
 				Field.PROPERTIES, dlFileEntry.getLuceneProperties());
-			document.addKeyword(Field.SCOPE_GROUP_ID, dlFileEntry.getGroupId());
 
-			DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
-
-			document.addKeyword(Field.STATUS, dlFileVersion.getStatus());
 			document.addText(Field.TITLE, dlFileEntry.getTitle());
-
-			long userId = dlFileEntry.getUserId();
-
-			document.addKeyword(Field.USER_ID, userId);
-			document.addKeyword(
-				Field.USER_NAME, PortalUtil.getUserName(
-					userId, dlFileEntry.getUserName()),
-				true);
-
 			document.addKeyword(
 				"dataRepositoryId", dlFileEntry.getDataRepositoryId());
 			document.addKeyword("extension", dlFileEntry.getExtension());
@@ -460,7 +434,7 @@ public class DLIndexer extends BaseIndexer {
 	protected void doReindex(Object obj) throws Exception {
 		DLFileEntry dlFileEntry = (DLFileEntry)obj;
 
-		DLFileVersion dlFileVersion = dlFileEntry.getLatestFileVersion(true);
+		DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
 
 		if (!dlFileVersion.isApproved()) {
 			return;
@@ -470,7 +444,7 @@ public class DLIndexer extends BaseIndexer {
 
 		if (document != null) {
 			SearchEngineUtil.updateDocument(
-				dlFileEntry.getCompanyId(), document);
+				getSearchEngineId(), dlFileEntry.getCompanyId(), document);
 		}
 	}
 
@@ -508,33 +482,76 @@ public class DLIndexer extends BaseIndexer {
 			long companyId, long groupId, long dataRepositoryId)
 		throws Exception {
 
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DLFileEntry.class, PACLClassLoaderUtil.getPortalClassLoader());
+
+		Projection minFileEntryIdProjection = ProjectionFactoryUtil.min(
+			"fileEntryId");
+		Projection maxFileEntryIdProjection = ProjectionFactoryUtil.max(
+			"fileEntryId");
+
+		ProjectionList projectionList = ProjectionFactoryUtil.projectionList();
+
+		projectionList.add(minFileEntryIdProjection);
+		projectionList.add(maxFileEntryIdProjection);
+
+		dynamicQuery.setProjection(projectionList);
+
 		long folderId = DLFolderConstants.getFolderId(
 			groupId, dataRepositoryId);
 
-		int fileEntriesCount = DLFileEntryLocalServiceUtil.getFileEntriesCount(
-			companyId, folderId);
+		addReindexCriteria(dynamicQuery, groupId, folderId);
 
-		int fileEntriesPages = fileEntriesCount / Indexer.DEFAULT_INTERVAL;
+		List<Object[]> results = DLFileEntryLocalServiceUtil.dynamicQuery(
+			dynamicQuery);
 
-		for (int i = 0; i <= fileEntriesPages; i++) {
-			int fileEntriesStart = (i * Indexer.DEFAULT_INTERVAL);
-			int fileEntriesEnd = fileEntriesStart + Indexer.DEFAULT_INTERVAL;
+		Object[] minAndMaxFileEntryIds = results.get(0);
 
+		if ((minAndMaxFileEntryIds[0] == null) ||
+			(minAndMaxFileEntryIds[1] == null)) {
+
+			return;
+		}
+
+		long minFileEntryId = (Long)minAndMaxFileEntryIds[0];
+		long maxFileEntryId = (Long)minAndMaxFileEntryIds[1];
+
+		long startFileEntryId = minFileEntryId;
+		long endFileEntryId = startFileEntryId + DEFAULT_INTERVAL;
+
+		while (startFileEntryId <= maxFileEntryId) {
 			reindexFileEntries(
-				companyId, groupId, folderId, fileEntriesStart, fileEntriesEnd);
+				companyId, groupId, folderId, startFileEntryId, endFileEntryId);
+
+			startFileEntryId = endFileEntryId;
+			endFileEntryId += DEFAULT_INTERVAL;
 		}
 	}
 
 	protected void reindexFileEntries(
-			long companyId, long groupId, long folderId, int fileEntriesStart,
-			int fileEntriesEnd)
+			long companyId, long groupId, long folderId, long startFileEntryId,
+			long endFileEntryId)
 		throws Exception {
 
-		Collection<Document> documents = new ArrayList<Document>();
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DLFileEntry.class, PACLClassLoaderUtil.getPortalClassLoader());
+
+		Property property = PropertyFactoryUtil.forName("fileEntryId");
+
+		dynamicQuery.add(property.ge(startFileEntryId));
+		dynamicQuery.add(property.lt(endFileEntryId));
+
+		addReindexCriteria(dynamicQuery, groupId, folderId);
 
 		List<DLFileEntry> dlFileEntries =
-			DLFileEntryLocalServiceUtil.getFileEntries(
-				groupId, folderId, fileEntriesStart, fileEntriesEnd, null);
+			DLFileEntryLocalServiceUtil.dynamicQuery(dynamicQuery);
+
+		if (dlFileEntries.isEmpty()) {
+			return;
+		}
+
+		Collection<Document> documents = new ArrayList<Document>(
+			dlFileEntries.size());
 
 		for (DLFileEntry dlFileEntry : dlFileEntries) {
 			Document document = getDocument(dlFileEntry);
@@ -544,29 +561,69 @@ public class DLIndexer extends BaseIndexer {
 			}
 		}
 
-		SearchEngineUtil.updateDocuments(companyId, documents);
+		SearchEngineUtil.updateDocuments(
+			getSearchEngineId(), companyId, documents);
 	}
 
 	protected void reindexFolders(long companyId) throws Exception {
-		int folderCount = DLFolderLocalServiceUtil.getCompanyFoldersCount(
-			companyId);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DLFolder.class, PACLClassLoaderUtil.getPortalClassLoader());
 
-		int folderPages = folderCount / Indexer.DEFAULT_INTERVAL;
+		Projection minFolderIdProjection = ProjectionFactoryUtil.min(
+			"folderId");
+		Projection maxFolderIdProjection = ProjectionFactoryUtil.max(
+			"folderId");
 
-		for (int i = 0; i <= folderPages; i++) {
-			int folderStart = (i * Indexer.DEFAULT_INTERVAL);
-			int folderEnd = folderStart + Indexer.DEFAULT_INTERVAL;
+		ProjectionList projectionList = ProjectionFactoryUtil.projectionList();
 
-			reindexFolders(companyId, folderStart, folderEnd);
+		projectionList.add(minFolderIdProjection);
+		projectionList.add(maxFolderIdProjection);
+
+		dynamicQuery.setProjection(projectionList);
+
+		addReindexCriteria(dynamicQuery, companyId);
+
+		List<Object[]> results = BookmarksFolderLocalServiceUtil.dynamicQuery(
+			dynamicQuery);
+
+		Object[] minAndMaxFolderIds = results.get(0);
+
+		if ((minAndMaxFolderIds[0] == null) ||
+			(minAndMaxFolderIds[1] == null)) {
+
+			return;
+		}
+
+		long minFolderId = (Long)minAndMaxFolderIds[0];
+		long maxFolderId = (Long)minAndMaxFolderIds[1];
+
+		long startFolderId = minFolderId;
+		long endFolderId = startFolderId + DEFAULT_INTERVAL;
+
+		while (startFolderId <= maxFolderId) {
+			reindexFolders(companyId, startFolderId, endFolderId);
+
+			startFolderId = endFolderId;
+			endFolderId += DEFAULT_INTERVAL;
 		}
 	}
 
 	protected void reindexFolders(
-			long companyId, int folderStart, int folderEnd)
+			long companyId, long startFolderId, long endFolderId)
 		throws Exception {
 
-		List<DLFolder> dlFolders = DLFolderLocalServiceUtil.getCompanyFolders(
-			companyId, folderStart, folderEnd);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			DLFolder.class, PACLClassLoaderUtil.getPortalClassLoader());
+
+		Property property = PropertyFactoryUtil.forName("folderId");
+
+		dynamicQuery.add(property.ge(startFolderId));
+		dynamicQuery.add(property.lt(endFolderId));
+
+		addReindexCriteria(dynamicQuery, companyId);
+
+		List<DLFolder> dlFolders = DLFolderLocalServiceUtil.dynamicQuery(
+			dynamicQuery);
 
 		for (DLFolder dlFolder : dlFolders) {
 			String portletId = PortletKeys.DOCUMENT_LIBRARY;
@@ -583,23 +640,59 @@ public class DLIndexer extends BaseIndexer {
 	}
 
 	protected void reindexRoot(long companyId) throws Exception {
-		int groupCount = GroupLocalServiceUtil.getCompanyGroupsCount(companyId);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Group.class, PACLClassLoaderUtil.getPortalClassLoader());
 
-		int groupPages = groupCount / Indexer.DEFAULT_INTERVAL;
+		Projection minGroupIdProjection = ProjectionFactoryUtil.min("groupId");
+		Projection maxGroupIdProjection = ProjectionFactoryUtil.max("groupId");
 
-		for (int i = 0; i <= groupPages; i++) {
-			int groupStart = (i * Indexer.DEFAULT_INTERVAL);
-			int groupEnd = groupStart + Indexer.DEFAULT_INTERVAL;
+		ProjectionList projectionList = ProjectionFactoryUtil.projectionList();
 
-			reindexRoot(companyId, groupStart, groupEnd);
+		projectionList.add(minGroupIdProjection);
+		projectionList.add(maxGroupIdProjection);
+
+		dynamicQuery.setProjection(projectionList);
+
+		addReindexCriteria(dynamicQuery, companyId);
+
+		List<Object[]> results = GroupLocalServiceUtil.dynamicQuery(
+			dynamicQuery);
+
+		Object[] minAndMaxGroupIds = results.get(0);
+
+		if ((minAndMaxGroupIds[0] == null) || (minAndMaxGroupIds[1] == null)) {
+			return;
+		}
+
+		long minGroupId = (Long)minAndMaxGroupIds[0];
+		long maxGroupId = (Long)minAndMaxGroupIds[1];
+
+		long startGroupId = minGroupId;
+		long endGroupId = startGroupId + DEFAULT_INTERVAL;
+
+		while (startGroupId <= maxGroupId) {
+			reindexRoot(companyId, startGroupId, endGroupId);
+
+			startGroupId = endGroupId;
+			endGroupId += DEFAULT_INTERVAL;
 		}
 	}
 
-	protected void reindexRoot(long companyId, int groupStart, int groupEnd)
+	protected void reindexRoot(
+			long companyId, long startGroupId, long endGroupId)
 		throws Exception {
 
-		List<Group> groups = GroupLocalServiceUtil.getCompanyGroups(
-			companyId, groupStart, groupEnd);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Group.class, PACLClassLoaderUtil.getPortalClassLoader());
+
+		Property property = PropertyFactoryUtil.forName("groupId");
+
+		dynamicQuery.add(property.ge(startGroupId));
+		dynamicQuery.add(property.lt(endGroupId));
+
+		addReindexCriteria(dynamicQuery, companyId);
+
+		List<Group> groups = GroupLocalServiceUtil.dynamicQuery(dynamicQuery);
 
 		for (Group group : groups) {
 			String portletId = PortletKeys.DOCUMENT_LIBRARY;
@@ -614,10 +707,6 @@ public class DLIndexer extends BaseIndexer {
 			reindex(newIds);
 		}
 	}
-
-	private static final boolean _FILTER_SEARCH = true;
-
-	private static final boolean _PERMISSION_AWARE = true;
 
 	private static Log _log = LogFactoryUtil.getLog(DLIndexer.class);
 

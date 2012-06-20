@@ -22,7 +22,7 @@ import com.liferay.portalweb.portal.util.RuntimeVariables;
  */
 public class ViewLinkPrivateMessagingTest extends BaseTestCase {
 	public void testViewLinkPrivateMessaging() throws Exception {
-		selenium.open("/user/joebloggs/home1/");
+		selenium.open("/user/joebloggs/so/dashboard/");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -60,7 +60,9 @@ public class ViewLinkPrivateMessagingTest extends BaseTestCase {
 		assertEquals(RuntimeVariables.replace("Sites"),
 			selenium.getText("//div[@id='so-sidebar']/h3"));
 		assertTrue(selenium.isVisible("//div/input[1]"));
+		assertEquals(RuntimeVariables.replace("Liferay, Inc."),
+			selenium.getText("//li/span[2]/a"));
 		assertEquals(RuntimeVariables.replace("Liferay"),
-			selenium.getText("//li[3]/span[2]"));
+			selenium.getText("//li[2]/span[2]/a"));
 	}
 }

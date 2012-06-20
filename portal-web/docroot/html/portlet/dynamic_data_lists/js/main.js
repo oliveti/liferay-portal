@@ -5,14 +5,6 @@ AUI.add(
 
 		var Lang = A.Lang;
 
-		var DDL = Liferay.Service.DDL;
-
-		var DDLRecord = DDL.DDLRecord;
-
-		var DDLRecordSet = DDL.DDLRecordSet;
-
-		var DLApp = Liferay.Service.DL.DLApp;
-
 		var getObjectKeys = A.Object.keys;
 
 		var JSON = A.JSON;
@@ -73,6 +65,7 @@ AUI.add(
 
 						Liferay.Util.openWindow(
 							{
+								id: 'selectDocumentLibrary',
 								title: Liferay.Language.get('javax.portlet.title.20'),
 								uri: uri
 							}
@@ -223,9 +216,10 @@ AUI.add(
 
 						var recordsetId = instance.get('recordsetId');
 
-						DDLRecordSet.updateMinDisplayRows(
+						Liferay.Service(
+							'/ddlrecordset/update-min-display-rows',
 							{
-								recordsetId: recordsetId,
+								recordSetId: recordsetId,
 								minDisplayRows: minDisplayRows,
 								serviceContext: JSON.stringify(
 									{
@@ -289,6 +283,7 @@ AUI.add(
 							}
 						);
 
+						delete normalized.classPK;
 						delete normalized.displayIndex;
 						delete normalized.recordId;
 
@@ -315,8 +310,8 @@ AUI.add(
 
 								var fieldsMap = instance._normalizeRecordData(data);
 
-								if (data.recordId > 0) {
-									SpreadSheet.updateRecord(data.recordId, recordIndex, fieldsMap, true);
+								if (data.classPK > 0) {
+									SpreadSheet.updateRecord(data.classPK, recordIndex, fieldsMap, true);
 								}
 								else {
 									SpreadSheet.addRecord(
@@ -325,7 +320,7 @@ AUI.add(
 										fieldsMap,
 										function(json) {
 											if (json.recordId > 0) {
-												data.recordId = json.recordId;
+												data.classPK = json.recordId;
 											}
 										}
 									);
@@ -340,18 +335,11 @@ AUI.add(
 
 					callback = (callback && A.bind(callback, instance)) || EMPTY_FN;
 
-					var serviceParameterTypes = [
-						'long',
-						'long',
-						'int',
-						'java.util.Map<java.lang.String, java.io.Serializable>',
-						'com.liferay.portal.service.ServiceContext'
-					];
-
-					DDLRecord.addRecord(
+					Liferay.Service(
+						'/ddlrecord/add-record',
 						{
 							groupId: themeDisplay.getScopeGroupId(),
-							recordsetId: recordsetId,
+							recordSetId: recordsetId,
 							displayIndex: displayIndex,
 							fieldsMap: JSON.stringify(fieldsMap),
 							serviceContext: JSON.stringify(
@@ -360,8 +348,7 @@ AUI.add(
 									userId: themeDisplay.getUserId(),
 									workflowAction: Liferay.Workflow.ACTION_PUBLISH
 								}
-							),
-							serviceParameterTypes: JSON.stringify(serviceParameterTypes)
+							)
 						},
 						callback
 					);
@@ -602,28 +589,20 @@ AUI.add(
 
 					callback = (callback && A.bind(callback, instance)) || EMPTY_FN;
 
-					var serviceParameterTypes = [
-						'long',
-						'int',
-						'java.util.Map<java.lang.String, java.io.Serializable>',
-						'boolean',
-						'com.liferay.portal.service.ServiceContext'
-					];
-
-					DDLRecord.updateRecord(
+					Liferay.Service(
+						'/ddlrecord/update-record',
 						{
 							recordId: recordId,
 							displayIndex: displayIndex,
 							fieldsMap: JSON.stringify(fieldsMap),
-							merge: merge,
+							mergeFields: merge,
 							serviceContext: JSON.stringify(
 								{
 									scopeGroupId: themeDisplay.getScopeGroupId(),
 									userId: themeDisplay.getUserId(),
 									workflowAction: Liferay.Workflow.ACTION_PUBLISH
 								}
-							),
-							serviceParameterTypes: JSON.stringify(serviceParameterTypes)
+							)
 						},
 						callback
 					);
@@ -637,7 +616,8 @@ AUI.add(
 
 				fileJSON = instance.parseJSON(fileJSON);
 
-				DLApp.getFileEntryByUuidAndGroupId(
+				Liferay.Service(
+					'/dlapp/get-file-entry-by-uuid-and-group-id',
 					{
 						uuid: fileJSON.uuid,
 						groupId: fileJSON.groupId

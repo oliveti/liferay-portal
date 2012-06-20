@@ -55,6 +55,7 @@ public class ImportExportCommunityLARWikiUseCaseTest extends BaseTestCase {
 			RuntimeVariables.replace("Search"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
+		Thread.sleep(5000);
 		assertEquals(RuntimeVariables.replace("Actions"),
 			selenium.getText("//span[@title='Actions']/ul/li/strong/a/span"));
 		selenium.clickAt("//span[@title='Actions']/ul/li/strong/a/span",
@@ -104,7 +105,7 @@ public class ImportExportCommunityLARWikiUseCaseTest extends BaseTestCase {
 			Thread.sleep(1000);
 		}
 
-		selenium.uploadFile("//input[@id='_156_importFileName']",
+		selenium.uploadTempFile("//input[@id='_156_importFileName']",
 			RuntimeVariables.replace("Wiki_Use_Case.Community.lar"));
 		assertFalse(selenium.isChecked(
 				"//input[@id='_156_DELETE_MISSING_LAYOUTSCheckbox']"));

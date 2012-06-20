@@ -46,17 +46,47 @@ public class BaseTestCase extends LiferaySeleneseTestCase {
 			return;
 		}
 
+		if (className.contains(".sampledata525.")) {
+			return;
+		}
+
+		if (className.contains(".sampledata527.")) {
+			return;
+		}
+
+		if (className.contains(".sampledata528.")) {
+			return;
+		}
+
+		if (className.contains(".sampledata529.")) {
+			return;
+		}
+
 		String location = selenium.getLocation();
+
+		if (location.contains("/blogs/rss")) {
+			return;
+		}
 
 		if (location.contains("/documents/")) {
 			return;
 		}
 
-		if (!location.contains(TestPropsValues.PORTAL_URL)) {
+		if (location.contains("/journal/rss/")) {
 			return;
 		}
 
-		selenium.getEval("window.Liferay.fire(\'initDockbar\');");
+		if (location.contains(TestPropsValues.PORTAL_URL) ||
+			location.contains("www.able.com") ||
+			location.contains("www.baker.com") ||
+			location.contains("www.charlie.com") ||
+			location.contains("www.dog.com") ||
+			location.contains("www.easy.com") ||
+			location.contains("www.fox.com")) {
+
+			selenium.getEval("window.Liferay.fire(\'initDockbar\');");
+		}
+
 	}
 
 }

@@ -19,19 +19,16 @@
 <%
 Group group = GroupLocalServiceUtil.getGroup(scopeGroupId);
 
-int start = 0;
-int end = 10;
-
 List<SocialActivity> activities = null;
 
 if (group.isOrganization()) {
-	activities = SocialActivityLocalServiceUtil.getOrganizationActivities(group.getOrganizationId(), start, end);
+	activities = SocialActivityLocalServiceUtil.getOrganizationActivities(group.getOrganizationId(), 0, max);
 }
 else if (group.isRegularSite()) {
-	activities = SocialActivityLocalServiceUtil.getGroupActivities(group.getGroupId(), start, end);
+	activities = SocialActivityLocalServiceUtil.getGroupActivities(group.getGroupId(), 0, max);
 }
 else if (group.isUser()) {
-	activities = SocialActivityLocalServiceUtil.getUserActivities(group.getClassPK(), start, end);
+	activities = SocialActivityLocalServiceUtil.getUserActivities(group.getClassPK(), 0, max);
 }
 
 ResourceURL rssURL = liferayPortletResponse.createResourceURL();
@@ -46,7 +43,7 @@ String taglibFeedLinkMessage = LanguageUtil.format(pageContext, "subscribe-to-x'
 <liferay-ui:social-activities
 	activities="<%= activities %>"
 	feedEnabled="<%= true %>"
-	feedTitle="<%= HtmlUtil.escape(taglibFeedTitle) %>"
 	feedLink="<%= rssURL.toString() %>"
 	feedLinkMessage="<%= HtmlUtil.escape(taglibFeedLinkMessage) %>"
+	feedTitle="<%= HtmlUtil.escape(taglibFeedTitle) %>"
 />

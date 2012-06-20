@@ -56,26 +56,33 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	* Deletes the user with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param userId the primary key of the user
+	* @return the user that was removed
 	* @throws PortalException if a user with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteUser(long userId)
+	public com.liferay.portal.model.User deleteUser(long userId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_userLocalService.deleteUser(userId);
+		return _userLocalService.deleteUser(userId);
 	}
 
 	/**
 	* Deletes the user from the database. Also notifies the appropriate model listeners.
 	*
 	* @param user the user
+	* @return the user that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteUser(com.liferay.portal.model.User user)
+	public com.liferay.portal.model.User deleteUser(
+		com.liferay.portal.model.User user)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_userLocalService.deleteUser(user);
+		return _userLocalService.deleteUser(user);
+	}
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return _userLocalService.dynamicQuery();
 	}
 
 	/**
@@ -246,6 +253,30 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	*/
 	public void setBeanIdentifier(java.lang.String beanIdentifier) {
 		_userLocalService.setBeanIdentifier(beanIdentifier);
+	}
+
+	/**
+	* Adds a default admin user for the company.
+	*
+	* @param companyId the primary key of the user's company
+	* @param screenName the user's screen name
+	* @param emailAddress the user's email address
+	* @param locale the user's locale
+	* @param firstName the user's first name
+	* @param middleName the user's middle name
+	* @param lastName the user's last name
+	* @return the new default admin user
+	* @throws PortalException n if a portal exception occurred
+	* @throws SystemException if a system exception occurred
+	*/
+	public com.liferay.portal.model.User addDefaultAdminUser(long companyId,
+		java.lang.String screenName, java.lang.String emailAddress,
+		java.util.Locale locale, java.lang.String firstName,
+		java.lang.String middleName, java.lang.String lastName)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _userLocalService.addDefaultAdminUser(companyId, screenName,
+			emailAddress, locale, firstName, middleName, lastName);
 	}
 
 	/**
@@ -1577,14 +1608,32 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	*
 	* @param uuid the user's universally unique identifier
 	* @return the user with the universally unique identifier
-	* @throws PortalException if a user with the universally unique identifier
-	could not be found
+	* @throws PortalException if a user with the universally unique
+	identifier could not be found
 	* @throws SystemException if a system exception occurred
+	* @deprecated {@link #getUserByUuidAndCompanyId(String, long)}
 	*/
 	public com.liferay.portal.model.User getUserByUuid(java.lang.String uuid)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _userLocalService.getUserByUuid(uuid);
+	}
+
+	/**
+	* Returns the user with the universally unique identifier.
+	*
+	* @param uuid the user's universally unique identifier
+	* @param companyId the primary key of the user's company
+	* @return the user with the universally unique identifier
+	* @throws PortalException if a user with the universally unique identifier
+	could not be found
+	* @throws SystemException if a system exception occurred
+	*/
+	public com.liferay.portal.model.User getUserByUuidAndCompanyId(
+		java.lang.String uuid, long companyId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _userLocalService.getUserByUuidAndCompanyId(uuid, companyId);
 	}
 
 	/**
@@ -1800,6 +1849,14 @@ public class UserLocalServiceWrapper implements UserLocalService,
 		return _userLocalService.isPasswordExpiringSoon(user);
 	}
 
+	/**
+	* Returns the default user for the company.
+	*
+	* @param companyId the primary key of the company
+	* @return the default user for the company
+	* @throws PortalException if the user could not be found
+	* @throws SystemException if a system exception occurred
+	*/
 	public com.liferay.portal.model.User loadGetDefaultUser(long companyId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
@@ -2129,6 +2186,7 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	*
 	* @param groupId the primary key of the group
 	* @param userIds the primary keys of the users
+	* @param serviceContext the service context (optionally <code>null</code>)
 	* @throws PortalException if a portal exception occurred
 	* @throws SystemException if a system exception occurred
 	*/
@@ -2302,6 +2360,9 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	* @param password the user's password
 	* @param emailAddress1 the user's new email address
 	* @param emailAddress2 the user's new email address confirmation
+	* @param serviceContext the service context. Must set the portal URL, main
+	path, primary key of the layout, remote address, remote host, and
+	agent for the user.
 	* @return the user
 	* @throws PortalException if a user with the primary key could not be found
 	* @throws SystemException if a system exception occurred
@@ -2354,6 +2415,7 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	*
 	* @param userId the primary key of the user
 	* @param newGroupIds the primary keys of the groups
+	* @param serviceContext the service context (optionally <code>null</code>)
 	* @throws PortalException if a portal exception occurred
 	* @throws SystemException if a system exception occurred
 	*/
@@ -2565,6 +2627,8 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	*
 	* @param userId the primary key of the user
 	* @param newOrganizationIds the primary keys of the organizations
+	* @param serviceContext the service context. Must set whether user
+	indexing is enabled.
 	* @throws PortalException if a user with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/

@@ -17,6 +17,7 @@ package com.liferay.portlet;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
+import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.URLEncoder;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
@@ -30,7 +31,6 @@ import com.liferay.portal.struts.StrutsURLEncoder;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.WebKeys;
-import com.liferay.util.servlet.DynamicServletRequest;
 
 import java.io.IOException;
 
@@ -183,7 +183,7 @@ public class PortletRequestDispatcherImpl implements PortletRequestDispatcher {
 
 			if (pos != -1) {
 				pathNoQueryString = _path.substring(0, pos);
-				queryString = _path.substring(pos + 1, _path.length());
+				queryString = _path.substring(pos + 1);
 
 				Map<String, String[]> queryParams =
 					new HashMap<String, String[]>();
@@ -279,10 +279,16 @@ public class PortletRequestDispatcherImpl implements PortletRequestDispatcher {
 
 			if ((pathInfo == null) && (servletPath == null)) {
 				pathInfo = pathNoQueryString;
-				servletPath = pathNoQueryString;
 			}
 
-			requestURI = portletRequest.getContextPath() + pathNoQueryString;
+			String contextPath = portletRequest.getContextPath();
+
+			if (contextPath.equals(StringPool.SLASH)) {
+				requestURI = pathNoQueryString;
+			}
+			else {
+				requestURI = contextPath + pathNoQueryString;
+			}
 		}
 
 		PortletServletRequest portletServletRequest = new PortletServletRequest(

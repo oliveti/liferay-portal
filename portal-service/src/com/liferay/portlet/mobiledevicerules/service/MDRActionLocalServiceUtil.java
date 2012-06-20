@@ -15,7 +15,6 @@
 package com.liferay.portlet.mobiledevicerules.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class MDRActionLocalServiceUtil {
 	* Deletes the m d r action with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param actionId the primary key of the m d r action
+	* @return the m d r action that was removed
 	* @throws PortalException if a m d r action with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMDRAction(long actionId)
+	public static com.liferay.portlet.mobiledevicerules.model.MDRAction deleteMDRAction(
+		long actionId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMDRAction(actionId);
+		return getService().deleteMDRAction(actionId);
 	}
 
 	/**
 	* Deletes the m d r action from the database. Also notifies the appropriate model listeners.
 	*
 	* @param mdrAction the m d r action
+	* @return the m d r action that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMDRAction(
+	public static com.liferay.portlet.mobiledevicerules.model.MDRAction deleteMDRAction(
 		com.liferay.portlet.mobiledevicerules.model.MDRAction mdrAction)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMDRAction(mdrAction);
+		return getService().deleteMDRAction(mdrAction);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -383,20 +389,15 @@ public class MDRActionLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(MDRActionLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(MDRActionLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(MDRActionLocalService service) {
-		MethodCache.remove(MDRActionLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(MDRActionLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(MDRActionLocalService.class);
 	}
 
 	private static MDRActionLocalService _service;

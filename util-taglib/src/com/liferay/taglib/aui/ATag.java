@@ -15,13 +15,15 @@
 package com.liferay.taglib.aui;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.servlet.taglib.CustomAttributes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.aui.base.BaseATag;
+import com.liferay.taglib.util.InlineUtil;
+
+import java.io.IOException;
 
 import java.util.Map;
 
@@ -140,17 +142,11 @@ public class ATag extends BaseATag {
 				jspWriter.write("\" ");
 			}
 
-			CustomAttributes customAttributes = getCustomAttributes();
-
-			if (customAttributes != null) {
-				jspWriter.write(customAttributes.toString());
-			}
-
 			if (data != null) {
 				jspWriter.write(AUIUtil.buildData(data));
 			}
 
-			writeDynamicAttributes(jspWriter);
+			_writeDynamicAttributes(jspWriter);
 
 			jspWriter.write(">");
 
@@ -195,17 +191,11 @@ public class ATag extends BaseATag {
 				jspWriter.write("\" ");
 			}
 
-			CustomAttributes customAttributes = getCustomAttributes();
-
-			if (customAttributes != null) {
-				jspWriter.write(customAttributes.toString());
-			}
-
 			if (data != null) {
 				jspWriter.write(AUIUtil.buildData(data));
 			}
 
-			writeDynamicAttributes(jspWriter);
+			_writeDynamicAttributes(jspWriter);
 
 			jspWriter.write(">");
 
@@ -234,6 +224,17 @@ public class ATag extends BaseATag {
 		}
 
 		return namespace;
+	}
+
+	private void _writeDynamicAttributes(JspWriter jspWriter)
+		throws IOException {
+
+		String dynamicAttributesString = InlineUtil.buildDynamicAttributes(
+			getDynamicAttributes());
+
+		if (Validator.isNotNull(dynamicAttributesString)) {
+			jspWriter.write(dynamicAttributesString);
+		}
 	}
 
 }

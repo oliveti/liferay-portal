@@ -15,6 +15,7 @@
 package com.liferay.portlet.documentlibrary.util;
 
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.io.InputStream;
 
@@ -25,8 +26,12 @@ import java.util.Set;
  */
 public class AudioProcessorUtil {
 
-	public static void generateAudio(FileVersion fileVersion) throws Exception {
-		getAudioProcessor().generateAudio(fileVersion);
+	public static void generateAudio(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
+		throws Exception {
+
+		getAudioProcessor().generateAudio(
+			sourceFileVersion, destinationFileVersion);
 	}
 
 	public static Set<String> getAudioMimeTypes() {
@@ -34,19 +39,22 @@ public class AudioProcessorUtil {
 	}
 
 	public static AudioProcessor getAudioProcessor() {
+		PortalRuntimePermission.checkGetBeanProperty(AudioProcessorUtil.class);
+
 		return _audioProcessor;
 	}
 
-	public static InputStream getPreviewAsStream(FileVersion fileVersion)
+	public static InputStream getPreviewAsStream(
+			FileVersion fileVersion, String type)
 		throws Exception {
 
-		return getAudioProcessor().getPreviewAsStream(fileVersion);
+		return getAudioProcessor().getPreviewAsStream(fileVersion, type);
 	}
 
-	public static long getPreviewFileSize(FileVersion fileVersion)
+	public static long getPreviewFileSize(FileVersion fileVersion, String type)
 		throws Exception {
 
-		return getAudioProcessor().getPreviewFileSize(fileVersion);
+		return getAudioProcessor().getPreviewFileSize(fileVersion, type);
 	}
 
 	public static boolean hasAudio(FileVersion fileVersion) {
@@ -65,11 +73,15 @@ public class AudioProcessorUtil {
 		return getAudioProcessor().isSupported(mimeType);
 	}
 
-	public static void trigger(FileVersion fileVersion) {
-		getAudioProcessor().trigger(fileVersion);
+	public static void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
+
+		getAudioProcessor().trigger(sourceFileVersion, destinationFileVersion);
 	}
 
 	public void setAudioProcessor(AudioProcessor audioProcessor) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_audioProcessor = audioProcessor;
 	}
 

@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,27 +65,34 @@ public class LayoutRevisionLocalServiceUtil {
 	* Deletes the layout revision with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param layoutRevisionId the primary key of the layout revision
+	* @return the layout revision that was removed
 	* @throws PortalException if a layout revision with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteLayoutRevision(long layoutRevisionId)
+	public static com.liferay.portal.model.LayoutRevision deleteLayoutRevision(
+		long layoutRevisionId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteLayoutRevision(layoutRevisionId);
+		return getService().deleteLayoutRevision(layoutRevisionId);
 	}
 
 	/**
 	* Deletes the layout revision from the database. Also notifies the appropriate model listeners.
 	*
 	* @param layoutRevision the layout revision
+	* @return the layout revision that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteLayoutRevision(
+	public static com.liferay.portal.model.LayoutRevision deleteLayoutRevision(
 		com.liferay.portal.model.LayoutRevision layoutRevision)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteLayoutRevision(layoutRevision);
+		return getService().deleteLayoutRevision(layoutRevision);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -438,20 +444,15 @@ public class LayoutRevisionLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(LayoutRevisionLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(LayoutRevisionLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(LayoutRevisionLocalService service) {
-		MethodCache.remove(LayoutRevisionLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(LayoutRevisionLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(LayoutRevisionLocalService.class);
 	}
 
 	private static LayoutRevisionLocalService _service;

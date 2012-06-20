@@ -35,8 +35,10 @@ import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SchemaViolationException;
 import javax.naming.ldap.LdapContext;
 
 /**
@@ -110,9 +112,6 @@ public class PortalLDAPExporterImpl implements PortalLDAPExporter {
 
 			ldapContext.modifyAttributes(name, modificationItems);
 		}
-		catch (Exception e) {
-			throw e;
-		}
 		finally {
 			if (ldapContext != null) {
 				ldapContext.close();
@@ -120,7 +119,10 @@ public class PortalLDAPExporterImpl implements PortalLDAPExporter {
 		}
 	}
 
-	public void exportToLDAP(long userId, long userGroupId) throws Exception {
+	public void exportToLDAP(
+			long userId, long userGroupId, LDAPOperation ldapOperation)
+		throws Exception {
+
 		User user = UserLocalServiceUtil.getUser(userId);
 
 		long companyId = user.getCompanyId();
@@ -138,27 +140,28 @@ public class PortalLDAPExporterImpl implements PortalLDAPExporter {
 		LdapContext ldapContext = PortalLDAPUtil.getContext(
 			ldapServerId, companyId);
 
+		if (ldapContext == null) {
+			return;
+		}
+
+		UserGroup userGroup = UserGroupLocalServiceUtil.getUserGroup(
+			userGroupId);
+
+		Properties groupMappings = LDAPSettingsUtil.getGroupMappings(
+			ldapServerId, companyId);
+		Properties userMappings = LDAPSettingsUtil.getUserMappings(
+			ldapServerId, companyId);
+
+		Binding binding = PortalLDAPUtil.getGroup(
+			ldapServerId, companyId, userGroup.getName());
+
 		try {
-			if (ldapContext == null) {
-				return;
-			}
-
-			UserGroup userGroup = UserGroupLocalServiceUtil.getUserGroup(
-				userGroupId);
-
-			Properties groupMappings = LDAPSettingsUtil.getGroupMappings(
-				ldapServerId, companyId);
-
-			Properties userMappings = LDAPSettingsUtil.getUserMappings(
-				ldapServerId, companyId);
-
-			Binding binding = PortalLDAPUtil.getGroup(
-				ldapServerId, companyId, userGroup.getName());
-
 			if (binding == null) {
-				addGroup(
-					ldapServerId, ldapContext, userGroup, user, groupMappings,
-					userMappings);
+				if (ldapOperation == LDAPOperation.ADD) {
+					addGroup(
+						ldapServerId, ldapContext, userGroup, user,
+						groupMappings, userMappings);
+				}
 
 				return;
 			}
@@ -171,14 +174,26 @@ public class PortalLDAPExporterImpl implements PortalLDAPExporter {
 
 			Modifications modifications =
 				_portalToLDAPConverter.getLDAPGroupModifications(
-					ldapServerId, userGroup, user, groupMappings, userMappings);
+					ldapServerId, userGroup, user, groupMappings, userMappings,
+					ldapOperation);
 
 			ModificationItem[] modificationItems = modifications.getItems();
 
 			ldapContext.modifyAttributes(name, modificationItems);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (SchemaViolationException sve) {
+			String fullGroupDN = PortalLDAPUtil.getNameInNamespace(
+				ldapServerId, companyId, binding);
+
+			Attributes attributes = PortalLDAPUtil.getGroupAttributes(
+				ldapServerId, companyId, ldapContext, fullGroupDN, true);
+
+			Attribute groupMembers = attributes.get(
+				groupMappings.getProperty(GroupConverterKeys.USER));
+
+			if (groupMembers.size() == 1) {
+				ldapContext.unbind(fullGroupDN);
+			}
 		}
 		finally {
 			if (ldapContext != null) {
@@ -252,7 +267,9 @@ public class PortalLDAPExporterImpl implements PortalLDAPExporter {
 				UserGroupLocalServiceUtil.getUserUserGroups(user.getUserId());
 
 			for (UserGroup userGroup : userGroups) {
-				exportToLDAP(user.getUserId(), userGroup.getUserGroupId());
+				exportToLDAP(
+					user.getUserId(), userGroup.getUserGroupId(),
+					LDAPOperation.ADD);
 			}
 
 			Modifications groupModifications =
@@ -274,9 +291,6 @@ public class PortalLDAPExporterImpl implements PortalLDAPExporter {
 			}
 
 			_log.error(nnfe, nnfe);
-		}
-		catch (Exception e) {
-			throw e;
 		}
 		finally {
 			if (ldapContext != null) {

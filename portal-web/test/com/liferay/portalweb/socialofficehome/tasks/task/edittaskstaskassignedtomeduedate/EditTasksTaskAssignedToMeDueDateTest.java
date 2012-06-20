@@ -28,7 +28,7 @@ public class EditTasksTaskAssignedToMeDueDateTest extends BaseTestCase {
 		while (label >= 1) {
 			switch (label) {
 			case 1:
-				selenium.open("/user/joebloggs/home1/");
+				selenium.open("/user/joebloggs/so/dashboard/");
 				loadRequiredJavaScriptModules();
 
 				for (int second = 0;; second++) {
@@ -97,27 +97,6 @@ public class EditTasksTaskAssignedToMeDueDateTest extends BaseTestCase {
 						"//div[@class='task-data due-date']", "3/16/16"));
 				selenium.clickAt("//input[@value='Edit']",
 					RuntimeVariables.replace("Edit"));
-
-				for (int second = 0;; second++) {
-					if (second >= 90) {
-						fail("timeout");
-					}
-
-					try {
-						if (RuntimeVariables.replace("Update Task")
-												.equals(selenium.getText(
-										"//h1[@class='header-title']"))) {
-							break;
-						}
-					}
-					catch (Exception e) {
-					}
-
-					Thread.sleep(1000);
-				}
-
-				assertEquals(RuntimeVariables.replace("Update Task"),
-					selenium.getText("//h1[@class='header-title']"));
 
 				for (int second = 0;; second++) {
 					if (second >= 90) {

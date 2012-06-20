@@ -147,9 +147,7 @@ AUI.add(
 					if (!graphDialog) {
 						graphDialog = new A.Dialog(
 							{
-								align: {
-									points: ['tc', 'tc']
-								},
+								align: Liferay.Util.Window.ALIGN_CENTER,
 								draggable: true,
 								height: 600,
 								modal: true,
@@ -247,6 +245,7 @@ AUI.add(
 								doAsUserId: themeDisplay.getDoAsUserIdEncoded(),
 								layoutRevisionId: layoutRevisionId,
 								layoutSetBranchId: layoutSetBranchId,
+								p_auth: Liferay.authToken,
 								p_l_id: themeDisplay.getPlid(),
 								p_v_g_id: themeDisplay.getParentGroupId()
 							},

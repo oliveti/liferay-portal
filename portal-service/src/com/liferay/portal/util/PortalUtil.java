@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.upload.UploadServletRequest;
@@ -29,7 +30,6 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.Portlet;
-import com.liferay.portal.model.Resource;
 import com.liferay.portal.model.ResourcePermission;
 import com.liferay.portal.model.User;
 import com.liferay.portal.theme.ThemeDisplay;
@@ -219,12 +219,6 @@ public class PortalUtil {
 		return getPortal().getAuthTokenIgnorePortlets();
 	}
 
-	public static BaseModel<?> getBaseModel(Resource resource)
-		throws PortalException, SystemException {
-
-		return getPortal().getBaseModel(resource);
-	}
-
 	public static BaseModel<?> getBaseModel(
 			ResourcePermission resourcePermission)
 		throws PortalException, SystemException {
@@ -253,7 +247,7 @@ public class PortalUtil {
 
 	public static String getCanonicalURL(
 			String completeURL, ThemeDisplay themeDisplay, Layout layout)
-		throws PortalException, SystemException{
+		throws PortalException, SystemException {
 
 		return getPortal().getCanonicalURL(completeURL, themeDisplay, layout);
 	}
@@ -471,7 +465,7 @@ public class PortalUtil {
 	public static Serializable getExpandoValue(
 			PortletRequest portletRequest, String name, int type,
 			String displayType)
-		throws PortalException, SystemException{
+		throws PortalException, SystemException {
 
 		return getPortal().getExpandoValue(
 			portletRequest, name, type, displayType);
@@ -721,15 +715,6 @@ public class PortalUtil {
 	}
 
 	/**
-	 * @deprecated {@link #getBaseModel(Resource)}
-	 */
-	public static BaseModel<?> getModel(Resource resource)
-		throws PortalException, SystemException {
-
-		return getPortal().getBaseModel(resource);
-	}
-
-	/**
 	 * @deprecated {@link #getBaseModel(ResourcePermission)}
 	 */
 	public static BaseModel<?> getModel(ResourcePermission resourcePermission)
@@ -826,6 +811,8 @@ public class PortalUtil {
 	}
 
 	public static Portal getPortal() {
+		PortalRuntimePermission.checkGetBeanProperty(PortalUtil.class);
+
 		return _portal;
 	}
 
@@ -1110,12 +1097,6 @@ public class PortalUtil {
 		return getPortal().getSelectedUser(portletRequest, checkPermission);
 	}
 
-	public static ServletContext getServletContext(
-		Portlet portlet, ServletContext servletContext) {
-
-		return getPortal().getServletContext(portlet, servletContext);
-	}
-
 	public static String getSiteLoginURL(ThemeDisplay themeDisplay)
 		throws PortalException, SystemException {
 
@@ -1166,6 +1147,16 @@ public class PortalUtil {
 
 	public static String[] getSystemSiteRoles() {
 		return getPortal().getSystemSiteRoles();
+	}
+
+	public static String getUniqueElementId(
+		HttpServletRequest request, String id) {
+
+		return getPortal().getUniqueElementId(request, id);
+	}
+
+	public static String getUniqueElementId(PortletRequest request, String id) {
+		return getPortal().getUniqueElementId(request, id);
 	}
 
 	public static UploadPortletRequest getUploadPortletRequest(
@@ -1449,49 +1440,6 @@ public class PortalUtil {
 		return getPortal().isValidResourceId(resourceId);
 	}
 
-	public static String renderPage(
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response, String path, boolean writeOutput)
-		throws IOException, ServletException {
-
-		return getPortal().renderPage(servletContext, request, response, path);
-	}
-
-	public static String renderPortlet(
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response, Portlet portlet, String queryString,
-			boolean writeOutput)
-		throws IOException, ServletException {
-
-		return getPortal().renderPortlet(
-			servletContext, request, response, portlet, queryString,
-			writeOutput);
-	}
-
-	public static String renderPortlet(
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response, Portlet portlet, String queryString,
-			String columnId, Integer columnPos, Integer columnCount,
-			boolean writeOutput)
-		throws IOException, ServletException {
-
-		return getPortal().renderPortlet(
-			servletContext, request, response, portlet, queryString, columnId,
-			columnPos, columnCount, writeOutput);
-	}
-
-	public static String renderPortlet(
-			ServletContext servletContext, HttpServletRequest request,
-			HttpServletResponse response, Portlet portlet, String queryString,
-			String columnId, Integer columnPos, Integer columnCount,
-			String path, boolean writeOutput)
-		throws IOException, ServletException {
-
-		return getPortal().renderPortlet(
-			servletContext, request, response, portlet, queryString, columnId,
-			columnPos, columnCount, path, writeOutput);
-	}
-
 	public static void resetCDNHosts() {
 		getPortal().resetCDNHosts();
 	}
@@ -1632,6 +1580,8 @@ public class PortalUtil {
 	}
 
 	public void setPortal(Portal portal) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_portal = portal;
 	}
 

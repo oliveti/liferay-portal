@@ -23,9 +23,16 @@ String redirectWindowState = ParamUtil.getString(request, "redirectWindowState")
 
 String cmd = ParamUtil.getString(request, Constants.CMD, Constants.EXPORT);
 
-Group group = (Group)request.getAttribute(WebKeys.GROUP);
-
 long groupId = ParamUtil.getLong(request, "groupId");
+
+Group group = null;
+
+if (groupId > 0) {
+	group = GroupLocalServiceUtil.getGroup(groupId);
+}
+else {
+	group = (Group)request.getAttribute(WebKeys.GROUP);
+}
 
 Group liveGroup = group;
 
@@ -33,37 +40,32 @@ if (group.isStagingGroup()) {
 	liveGroup = group.getLiveGroup();
 }
 
-long liveGroupId = ParamUtil.getLong(request, "liveGroupId");
+long liveGroupId = ParamUtil.getLong(request, "liveGroupId", liveGroup.getGroupId());
 
 boolean privateLayout = ParamUtil.getBoolean(request, "privateLayout");
-long[] layoutIds = ParamUtil.getLongValues(request, "layoutIds");
 
 String rootNodeName = ParamUtil.getString(request, "rootNodeName");
 
-List portletsList = new ArrayList();
-Set portletIdsSet = new HashSet();
+List<Portlet> portletsList = new ArrayList<Portlet>();
+Set<String> portletIdsSet = new HashSet<String>();
 
-Iterator itr1 = LayoutLocalServiceUtil.getLayouts(liveGroupId, privateLayout).iterator();
-
-while (itr1.hasNext()) {
-	Layout curLayout = (Layout)itr1.next();
-
+for (Layout curLayout : LayoutLocalServiceUtil.getLayouts(liveGroupId, privateLayout)) {
 	if (curLayout.isTypePortlet()) {
 		LayoutTypePortlet curLayoutTypePortlet = (LayoutTypePortlet)curLayout.getLayoutType();
 
-		Iterator itr2 = curLayoutTypePortlet.getPortletIds().iterator();
+		for (String portletId : curLayoutTypePortlet.getPortletIds()) {
+			Portlet portlet = PortletLocalServiceUtil.getPortletById(company.getCompanyId(), portletId);
 
-		while (itr2.hasNext()) {
-			Portlet curPortlet = PortletLocalServiceUtil.getPortletById(company.getCompanyId(), (String)itr2.next());
+			if (portlet == null) {
+				continue;
+			}
 
-			if (curPortlet != null) {
-				PortletDataHandler portletDataHandler = curPortlet.getPortletDataHandlerInstance();
+			PortletDataHandler portletDataHandler = portlet.getPortletDataHandlerInstance();
 
-				if ((portletDataHandler != null) && !portletIdsSet.contains(curPortlet.getRootPortletId())) {
-					portletIdsSet.add(curPortlet.getRootPortletId());
+			if ((portletDataHandler != null) && !portletIdsSet.contains(portlet.getRootPortletId())) {
+				portletIdsSet.add(portlet.getRootPortletId());
 
-					portletsList.add(curPortlet);
-				}
+				portletsList.add(portlet);
 			}
 		}
 	}
@@ -98,6 +100,36 @@ portletsList = ListUtil.sort(portletsList, new PortletTitleComparator(applicatio
 			<liferay-ui:error exception="<%= LARTypeException.class %>" message="please-import-a-lar-file-of-the-correct-type" />
 			<liferay-ui:error exception="<%= LayoutImportException.class %>" message="an-unexpected-error-occurred-while-importing-your-file" />
 
+			<liferay-ui:error exception="<%= LayoutPrototypeException.class %>">
+
+				<%
+				LayoutPrototypeException lpe = (LayoutPrototypeException)errorException;
+				%>
+
+				<liferay-ui:message key="the-lar-file-could-not-be-imported-because-it-requires-page-templates-or-site-templates-that-could-not-be-found.-please-import-the-following-templates-manually" />
+
+				<ul>
+
+					<%
+					List<Tuple> missingLayoutPrototypes = lpe.getMissingLayoutPrototypes();
+
+					for (Tuple missingLayoutPrototype : missingLayoutPrototypes) {
+						String layoutPrototypeClassName = (String)missingLayoutPrototype.getObject(0);
+						String layoutPrototypeUuid = (String)missingLayoutPrototype.getObject(1);
+						String layoutPrototypeName = (String)missingLayoutPrototype.getObject(2);
+					%>
+
+						<li>
+							<%= ResourceActionsUtil.getModelResource(locale, layoutPrototypeClassName) %>: <strong><%= layoutPrototypeName %></strong> (<%= layoutPrototypeUuid %>)
+						</li>
+
+					<%
+					}
+					%>
+
+				</ul>
+			</liferay-ui:error>
+
 			<c:choose>
 				<c:when test="<%= (layout.getGroupId() != groupId) || (layout.isPrivateLayout() != privateLayout) %>">
 					<%@ include file="/html/portlet/layouts_admin/export_import_options.jspf" %>
@@ -126,12 +158,12 @@ portletsList = ListUtil.sort(portletsList, new PortletTitleComparator(applicatio
 				}
 			);
 
-			opener.<portlet:namespace />saveLayoutset();
+			opener.<portlet:namespace />saveLayoutset('view');
 		}
 	</aui:script>
 </c:if>
 
-<aui:script use="aui-base,aui-loading-mask,selector-css3">
+<aui:script use="aui-base,aui-loading-mask,json-stringify">
 	var form = A.one('#<portlet:namespace />fm1');
 
 	form.on(
@@ -141,14 +173,50 @@ portletsList = ListUtil.sort(portletsList, new PortletTitleComparator(applicatio
 
 			<c:choose>
 				<c:when test="<%= cmd.equals(Constants.EXPORT) %>">
+					<c:if test="<%= !group.isLayoutPrototype() %>">
+						var layoutsExportTreeOutput = A.one('#<portlet:namespace />layoutsExportTreeOutput');
+
+						if (layoutsExportTreeOutput) {
+							var treeView = layoutsExportTreeOutput.getData('treeInstance');
+
+							var layoutIds = [];
+
+							var regexLayoutId = /layoutId_(\d+)/;
+
+							treeView.eachChildren(
+								function(item, index, collection) {
+									if (item.isChecked()) {
+										var match = regexLayoutId.exec(item.get('id'));
+
+										if (match) {
+											layoutIds.push(
+												{
+													includeChildren: !item.hasChildNodes(),
+													layoutId: match[1]
+												}
+											);
+										}
+									}
+								},
+								true
+							);
+
+							var layoutIdsInput = A.one('#<portlet:namespace />layoutIds');
+
+							if (layoutIdsInput) {
+								layoutIdsInput.val(A.JSON.stringify(layoutIds));
+							}
+						}
+					</c:if>
+
 					<portlet:actionURL var="exportPagesURL">
 						<portlet:param name="struts_action" value="/layouts_admin/export_layouts" />
 						<portlet:param name="groupId" value="<%= String.valueOf(liveGroupId) %>" />
 						<portlet:param name="privateLayout" value="<%= String.valueOf(privateLayout) %>" />
-						<portlet:param name="layoutIds" value="<%= StringUtil.merge(layoutIds) %>" />
+						<portlet:param name="exportLAR" value="<%= Boolean.TRUE.toString() %>" />
 					</portlet:actionURL>
 
-					submitForm(form, '<%= exportPagesURL + "&etag=0" %>', false);
+					submitForm(form, '<%= exportPagesURL + "&etag=0&strip=0" %>', false);
 				</c:when>
 				<c:otherwise>
 					<portlet:actionURL var="importPagesURL">

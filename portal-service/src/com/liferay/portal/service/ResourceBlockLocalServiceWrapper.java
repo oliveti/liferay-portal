@@ -59,25 +59,32 @@ public class ResourceBlockLocalServiceWrapper
 	* Deletes the resource block with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param resourceBlockId the primary key of the resource block
+	* @return the resource block that was removed
 	* @throws PortalException if a resource block with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteResourceBlock(long resourceBlockId)
+	public com.liferay.portal.model.ResourceBlock deleteResourceBlock(
+		long resourceBlockId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_resourceBlockLocalService.deleteResourceBlock(resourceBlockId);
+		return _resourceBlockLocalService.deleteResourceBlock(resourceBlockId);
 	}
 
 	/**
 	* Deletes the resource block from the database. Also notifies the appropriate model listeners.
 	*
 	* @param resourceBlock the resource block
+	* @return the resource block that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteResourceBlock(
+	public com.liferay.portal.model.ResourceBlock deleteResourceBlock(
 		com.liferay.portal.model.ResourceBlock resourceBlock)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		_resourceBlockLocalService.deleteResourceBlock(resourceBlock);
+		return _resourceBlockLocalService.deleteResourceBlock(resourceBlock);
+	}
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return _resourceBlockLocalService.dynamicQuery();
 	}
 
 	/**
@@ -327,6 +334,10 @@ public class ResourceBlockLocalServiceWrapper
 	*
 	* @param companyId the primary key of the resource block's company
 	* @param groupId the primary key of the resource block's group
+	* @param name the resource block's name
+	* @param permissionsHash the resource block's permission hash
+	* @param resourceBlockPermissionsContainer the resource block's
+	permissions container
 	* @return the new resource block
 	* @throws SystemException if a system exception occurred
 	*/
@@ -461,6 +472,8 @@ public class ResourceBlockLocalServiceWrapper
 	* zero.
 	*
 	* @param resourceBlockId the primary key of the resource block
+	* @throws PortalException if a resource block with the primary key could
+	not be found
 	* @throws SystemException if a system exception occurred
 	*/
 	public void releaseResourceBlock(long resourceBlockId)
@@ -569,6 +582,8 @@ public class ResourceBlockLocalServiceWrapper
 	* the database.
 	*
 	* @param resourceBlockId the primary key of the resource block
+	* @throws PortalException if a resource block with the primary key could
+	not be found
 	* @throws SystemException if a system exception occurred
 	*/
 	public void retainResourceBlock(long resourceBlockId)

@@ -16,8 +16,10 @@ package com.liferay.portal.jsonwebservice;
 
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceAction;
+import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceActionMapping;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MethodParameter;
 import com.liferay.portal.service.ServiceContext;
@@ -32,6 +34,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import jodd.bean.BeanUtil;
+
+import jodd.typeconverter.TypeConverterManager;
 
 import jodd.util.KeyValue;
 import jodd.util.ReflectUtil;
@@ -49,11 +53,15 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 		_jsonWebServiceActionParameters = jsonWebServiceActionParameters;
 	}
 
+	public JSONWebServiceActionMapping getJSONWebServiceActionMapping() {
+		return _jsonWebServiceActionConfig;
+	}
+
 	public Object invoke() throws Exception {
-		JSONRPCRequest jsonRpcRequest =
+		JSONRPCRequest jsonRPCRequest =
 			_jsonWebServiceActionParameters.getJSONRPCRequest();
 
-		if (jsonRpcRequest == null) {
+		if (jsonRPCRequest == null) {
 			return _invokeActionMethod();
 		}
 
@@ -69,7 +77,7 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 			_log.error(e, e);
 		}
 
-		return new JSONRPCResponse(jsonRpcRequest, result, exception);
+		return new JSONRPCResponse(jsonRPCRequest, result, exception);
 	}
 
 	private Object _createDefaultParameterValue(
@@ -80,6 +88,13 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 			parameterType.equals(ServiceContext.class)) {
 
 			return new ServiceContext();
+		}
+
+		String className = parameterType.getName();
+
+		if (className.contains("com.liferay") && className.contains("Util")) {
+			throw new IllegalArgumentException(
+				"Not instantiating " + className);
 		}
 
 		return parameterType.newInstance();
@@ -98,7 +113,7 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 
 		for (Object entry : list) {
 			if (entry != null) {
-				entry = ReflectUtil.castType(entry, types[0]);
+				entry = TypeConverterManager.convertType(entry, types[0]);
 			}
 
 			newList.add(entry);
@@ -119,18 +134,50 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 		Map<Object, Object> newMap = new HashMap<Object, Object>(map.size());
 
 		for (Map.Entry<?, ?> entry : map.entrySet()) {
-			Object key = ReflectUtil.castType(entry.getKey(), types[0]);
+			Object key = TypeConverterManager.convertType(
+				entry.getKey(), types[0]);
 
 			Object value = entry.getValue();
 
 			if (value != null) {
-				value = ReflectUtil.castType(value, types[1]);
+				value = TypeConverterManager.convertType(value, types[1]);
 			}
 
 			newMap.put(key, value);
 		}
 
 		return newMap;
+	}
+
+	private void _injectInnerParametersIntoValue(
+		String parameterName, Object parameterValue) {
+
+		if (parameterValue == null) {
+			return;
+		}
+
+		List<KeyValue<String, Object>> innerParameters =
+			_jsonWebServiceActionParameters.getInnerParameters(parameterName);
+
+		if (innerParameters == null) {
+			return;
+		}
+
+		for (KeyValue<String, Object> innerParameter : innerParameters) {
+			try {
+				BeanUtil.setProperty(
+					parameterValue, innerParameter.getKey(),
+					innerParameter.getValue());
+			}
+			catch (Exception e) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Unable to set inner parameter " + parameterName + "." +
+							innerParameter.getKey(),
+						e);
+				}
+			}
+		}
 	}
 
 	private Object _invokeActionMethod() throws Exception {
@@ -174,6 +221,15 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 							parameterTypeName);
 					}
 
+					if (!ReflectUtil.isSubclass(
+							parameterType, methodParameters[i].getType())) {
+
+						throw new IllegalArgumentException(
+							"Unmatched argument type " +
+								parameterType.getName() +
+									" for method argument " + i);
+					}
+
 					parameterValue = _createDefaultParameterValue(
 						parameterName, parameterType);
 				}
@@ -181,12 +237,13 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 					Calendar calendar = Calendar.getInstance();
 
 					calendar.setLenient(false);
-					calendar.setTimeInMillis(Long.parseLong(value.toString()));
+					calendar.setTimeInMillis(
+						GetterUtil.getLong(value.toString()));
 
 					parameterValue = calendar;
 				}
 				else if (parameterType.equals(List.class)) {
-					List<?> list = JSONFactoryUtil.looseDeserialize(
+					List<?> list = JSONFactoryUtil.looseDeserializeSafe(
 						value.toString(), ArrayList.class);
 
 					list = _generifyList(
@@ -199,7 +256,7 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 						value.toString());
 				}
 				else if (parameterType.equals(Map.class)) {
-					Map<?, ?> map = JSONFactoryUtil.looseDeserialize(
+					Map<?, ?> map = JSONFactoryUtil.looseDeserializeSafe(
 						value.toString(), HashMap.class);
 
 					map = _generifyMap(
@@ -208,25 +265,12 @@ public class JSONWebServiceActionImpl implements JSONWebServiceAction {
 					parameterValue = map;
 				}
 				else {
-					parameterValue = ReflectUtil.castType(value, parameterType);
+					parameterValue = TypeConverterManager.convertType(
+						value, parameterType);
 				}
 			}
 
-			if (parameterValue != null) {
-				List<KeyValue<String, Object>> innerParameters =
-					_jsonWebServiceActionParameters.getInnerParameters(
-						parameterName);
-
-				if (innerParameters != null) {
-					for (KeyValue<String, Object> innerParameter :
-							innerParameters) {
-
-						BeanUtil.setPropertySilent(
-							parameterValue, innerParameter.getKey(),
-							innerParameter.getValue());
-					}
-				}
-			}
+			_injectInnerParametersIntoValue(parameterName, parameterValue);
 
 			parameters[i] = parameterValue;
 		}

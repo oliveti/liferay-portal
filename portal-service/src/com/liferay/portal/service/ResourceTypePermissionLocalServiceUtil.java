@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -67,26 +66,33 @@ public class ResourceTypePermissionLocalServiceUtil {
 	* Deletes the resource type permission with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param resourceTypePermissionId the primary key of the resource type permission
+	* @return the resource type permission that was removed
 	* @throws PortalException if a resource type permission with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteResourceTypePermission(
+	public static com.liferay.portal.model.ResourceTypePermission deleteResourceTypePermission(
 		long resourceTypePermissionId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteResourceTypePermission(resourceTypePermissionId);
+		return getService()
+				   .deleteResourceTypePermission(resourceTypePermissionId);
 	}
 
 	/**
 	* Deletes the resource type permission from the database. Also notifies the appropriate model listeners.
 	*
 	* @param resourceTypePermission the resource type permission
+	* @return the resource type permission that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteResourceTypePermission(
+	public static com.liferay.portal.model.ResourceTypePermission deleteResourceTypePermission(
 		com.liferay.portal.model.ResourceTypePermission resourceTypePermission)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteResourceTypePermission(resourceTypePermission);
+		return getService().deleteResourceTypePermission(resourceTypePermission);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -346,20 +352,15 @@ public class ResourceTypePermissionLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(ResourceTypePermissionLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(ResourceTypePermissionLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(ResourceTypePermissionLocalService service) {
-		MethodCache.remove(ResourceTypePermissionLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(ResourceTypePermissionLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(ResourceTypePermissionLocalService.class);
 	}
 
 	private static ResourceTypePermissionLocalService _service;

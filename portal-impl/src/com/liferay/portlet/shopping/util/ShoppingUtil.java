@@ -58,7 +58,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -121,12 +120,7 @@ public class ShoppingUtil {
 
 		ShoppingPreferences preferences = null;
 
-		Iterator<Map.Entry<ShoppingCartItem, Integer>> itr =
-			items.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
-
+		for (Map.Entry<ShoppingCartItem, Integer> entry : items.entrySet()) {
 			ShoppingCartItem cartItem = entry.getKey();
 
 			ShoppingItem item = cartItem.getItem();
@@ -145,7 +139,7 @@ public class ShoppingUtil {
 		// alternative shipping and shipping price is greater than 0
 
 		if ((preferences != null) &&
-			(preferences.useAlternativeShipping()) && (shipping > 0)) {
+			preferences.useAlternativeShipping() && (shipping > 0)) {
 
 			double altShippingDelta = 0.0;
 
@@ -204,11 +198,8 @@ public class ShoppingUtil {
 			Map<ShoppingCartItem, Integer> newItems =
 				new HashMap<ShoppingCartItem, Integer>();
 
-			Iterator<Map.Entry<ShoppingCartItem, Integer>> itr =
-				items.entrySet().iterator();
-
-			while (itr.hasNext()) {
-				Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
+			for (Map.Entry<ShoppingCartItem, Integer> entry :
+					items.entrySet()) {
 
 				ShoppingCartItem cartItem = entry.getKey();
 				Integer count = entry.getValue();
@@ -216,10 +207,9 @@ public class ShoppingUtil {
 				ShoppingItem item = cartItem.getItem();
 
 				if (((categoryIdsSet.size() > 0) &&
-					 (categoryIdsSet.contains(
-						String.valueOf(item.getCategoryId())))) ||
-					((skusSet.size() > 0) &&
-					 (skusSet.contains(item.getSku())))) {
+					 categoryIdsSet.contains(
+						 String.valueOf(item.getCategoryId()))) ||
+					((skusSet.size() > 0) && skusSet.contains(item.getSku()))) {
 
 					newItems.put(cartItem, count);
 				}
@@ -294,12 +284,7 @@ public class ShoppingUtil {
 
 		double subtotal = 0.0;
 
-		Iterator<Map.Entry<ShoppingCartItem, Integer>> itr =
-			items.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
-
+		for (Map.Entry<ShoppingCartItem, Integer> entry : items.entrySet()) {
 			ShoppingCartItem cartItem = entry.getKey();
 			Integer count = entry.getValue();
 
@@ -320,12 +305,7 @@ public class ShoppingUtil {
 
 		ShoppingPreferences preferences = null;
 
-		Iterator<Map.Entry<ShoppingCartItem, Integer>> itr =
-			items.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
-
+		for (Map.Entry<ShoppingCartItem, Integer> entry : items.entrySet()) {
 			ShoppingCartItem cartItem = entry.getKey();
 			Integer count = entry.getValue();
 
@@ -349,7 +329,7 @@ public class ShoppingUtil {
 			double[] range = ShoppingPreferences.INSURANCE_RANGE;
 
 			for (int i = 0; i < range.length - 1; i++) {
-				if (subtotal > range[i] && subtotal <= range[i + 1]) {
+				if ((subtotal > range[i]) && (subtotal <= range[i + 1])) {
 					int rangeId = i / 2;
 					if (MathUtil.isOdd(i)) {
 						rangeId = (i + 1) / 2;
@@ -389,12 +369,7 @@ public class ShoppingUtil {
 
 		ShoppingPreferences preferences = null;
 
-		Iterator<Map.Entry<ShoppingCartItem, Integer>> itr =
-			items.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
-
+		for (Map.Entry<ShoppingCartItem, Integer> entry : items.entrySet()) {
 			ShoppingCartItem cartItem = entry.getKey();
 			Integer count = entry.getValue();
 
@@ -427,7 +402,7 @@ public class ShoppingUtil {
 			double[] range = ShoppingPreferences.SHIPPING_RANGE;
 
 			for (int i = 0; i < range.length - 1; i++) {
-				if (subtotal > range[i] && subtotal <= range[i + 1]) {
+				if ((subtotal > range[i]) && (subtotal <= range[i + 1])) {
 					int rangeId = i / 2;
 					if (MathUtil.isOdd(i)) {
 						rangeId = (i + 1) / 2;
@@ -456,12 +431,7 @@ public class ShoppingUtil {
 
 		double subtotal = 0.0;
 
-		Iterator<Map.Entry<ShoppingCartItem, Integer>> itr =
-			items.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
-
+		for (Map.Entry<ShoppingCartItem, Integer> entry : items.entrySet()) {
 			ShoppingCartItem cartItem = entry.getKey();
 			Integer count = entry.getValue();
 
@@ -481,12 +451,7 @@ public class ShoppingUtil {
 
 		ShoppingPreferences preferences = null;
 
-		Iterator<Map.Entry<ShoppingCartItem, Integer>> itr =
-			items.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
-
+		for (Map.Entry<ShoppingCartItem, Integer> entry : items.entrySet()) {
 			ShoppingCartItem cartItem = entry.getKey();
 
 			ShoppingItem item = cartItem.getItem();
@@ -502,14 +467,12 @@ public class ShoppingUtil {
 		}
 
 		if ((preferences != null) &&
-			(preferences.getTaxState().equals(stateId))) {
+			preferences.getTaxState().equals(stateId)) {
 
 			double subtotal = 0.0;
 
-			itr = items.entrySet().iterator();
-
-			while (itr.hasNext()) {
-				Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
+			for (Map.Entry<ShoppingCartItem, Integer> entry :
+					items.entrySet()) {
 
 				ShoppingCartItem cartItem = entry.getKey();
 				Integer count = entry.getValue();
@@ -818,7 +781,7 @@ public class ShoppingUtil {
 			return StringPool.BLANK;
 		}
 		else {
-			return itemId.substring(pos + 1, itemId.length());
+			return itemId.substring(pos + 1);
 		}
 	}
 
@@ -960,13 +923,13 @@ public class ShoppingUtil {
 
 	public static String getPpPaymentStatus(String ppPaymentStatus) {
 		if ((ppPaymentStatus == null) || (ppPaymentStatus.length() < 2) ||
-			(ppPaymentStatus.equals("checkout"))) {
+			ppPaymentStatus.equals("checkout")) {
 
 			return ShoppingOrderConstants.STATUS_CHECKOUT;
 		}
 		else {
 			return Character.toUpperCase(ppPaymentStatus.charAt(0)) +
-				ppPaymentStatus.substring(1, ppPaymentStatus.length());
+				ppPaymentStatus.substring(1);
 		}
 	}
 
@@ -1060,8 +1023,8 @@ public class ShoppingUtil {
 			int minQty = temp.getMinQuantity();
 			int maxQty = temp.getMaxQuantity();
 
-			if ((temp.getStatus() !=
-					ShoppingItemPriceConstants.STATUS_INACTIVE)) {
+			if (temp.getStatus() !=
+					ShoppingItemPriceConstants.STATUS_INACTIVE) {
 
 				if ((count >= minQty) && ((count <= maxQty) || (maxQty == 0))) {
 					return temp;

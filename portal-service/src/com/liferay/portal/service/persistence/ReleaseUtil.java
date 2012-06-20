@@ -283,13 +283,14 @@ public class ReleaseUtil {
 	* Removes the release where servletContextName = &#63; from the database.
 	*
 	* @param servletContextName the servlet context name
+	* @return the release that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByServletContextName(
+	public static com.liferay.portal.model.Release removeByServletContextName(
 		java.lang.String servletContextName)
 		throws com.liferay.portal.NoSuchReleaseException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getPersistence().removeByServletContextName(servletContextName);
+		return getPersistence().removeByServletContextName(servletContextName);
 	}
 
 	/**
@@ -337,10 +338,10 @@ public class ReleaseUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(ReleasePersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(ReleaseUtil.class, "_persistence");
 	}
 
 	private static ReleasePersistence _persistence;

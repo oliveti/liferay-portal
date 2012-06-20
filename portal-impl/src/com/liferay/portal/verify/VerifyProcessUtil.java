@@ -41,7 +41,7 @@ public class VerifyProcessUtil {
 
 		if ((verifyFrequency == VerifyProcess.ALWAYS) ||
 			((verifyFrequency == VerifyProcess.ONCE) && !verified) ||
-			(ranUpgradeProcess)) {
+			ranUpgradeProcess) {
 
 			return _verifyProcess(ranUpgradeProcess);
 		}
@@ -53,8 +53,6 @@ public class VerifyProcessUtil {
 		throws VerifyException {
 
 		boolean ranVerifyProcess = false;
-
-		boolean tempIndexOnStartUp = PropsValues.INDEX_ON_STARTUP;
 
 		if (ranUpgradeProcess && PropsValues.INDEX_ON_UPGRADE) {
 			PropsUtil.set(PropsKeys.INDEX_ON_STARTUP, Boolean.TRUE.toString());
@@ -84,11 +82,6 @@ public class VerifyProcessUtil {
 			}
 		}
 		finally {
-			PropsUtil.set(
-				PropsKeys.INDEX_ON_STARTUP, String.valueOf(tempIndexOnStartUp));
-
-			PropsValues.INDEX_ON_STARTUP = tempIndexOnStartUp;
-
 			SearchEngineUtil.setIndexReadOnly(tempIndexReadOnly);
 
 			BatchSessionUtil.setEnabled(false);

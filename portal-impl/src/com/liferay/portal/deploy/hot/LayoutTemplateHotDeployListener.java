@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.service.LayoutTemplateLocalServiceUtil;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -82,7 +81,9 @@ public class LayoutTemplateHotDeployListener extends BaseHotDeployListener {
 			return;
 		}
 
-		logRegistration(servletContextName);
+		if (_log.isInfoEnabled()) {
+			_log.info("Registering layout templates for " + servletContextName);
+		}
 
 		List<ObjectValuePair<String, Boolean>> layoutTemplateIds =
 			LayoutTemplateLocalServiceUtil.init(
@@ -128,12 +129,7 @@ public class LayoutTemplateHotDeployListener extends BaseHotDeployListener {
 				"Unregistering layout templates for " + servletContextName);
 		}
 
-		Iterator<ObjectValuePair<String, Boolean>> itr =
-			layoutTemplateIds.iterator();
-
-		while (itr.hasNext()) {
-			ObjectValuePair<String, Boolean> ovp = itr.next();
-
+		for (ObjectValuePair<String, Boolean> ovp : layoutTemplateIds) {
 			String layoutTemplateId = ovp.getKey();
 			Boolean standard = ovp.getValue();
 
@@ -157,12 +153,6 @@ public class LayoutTemplateHotDeployListener extends BaseHotDeployListener {
 					layoutTemplateIds.size() + " layout templates for " +
 						servletContextName + " was unregistered");
 			}
-		}
-	}
-
-	protected void logRegistration(String servletContextName) {
-		if (_log.isInfoEnabled()) {
-			_log.info("Registering layout templates for " + servletContextName);
 		}
 	}
 

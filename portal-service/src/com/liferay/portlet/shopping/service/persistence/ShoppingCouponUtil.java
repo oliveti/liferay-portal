@@ -417,12 +417,14 @@ public class ShoppingCouponUtil {
 	* Removes the shopping coupon where code = &#63; from the database.
 	*
 	* @param code the code
+	* @return the shopping coupon that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByCode(java.lang.String code)
+	public static com.liferay.portlet.shopping.model.ShoppingCoupon removeByCode(
+		java.lang.String code)
 		throws com.liferay.portal.kernel.exception.SystemException,
 			com.liferay.portlet.shopping.NoSuchCouponException {
-		getPersistence().removeByCode(code);
+		return getPersistence().removeByCode(code);
 	}
 
 	/**
@@ -481,11 +483,10 @@ public class ShoppingCouponUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(ShoppingCouponPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(ShoppingCouponUtil.class,
-			"_persistence");
 	}
 
 	private static ShoppingCouponPersistence _persistence;

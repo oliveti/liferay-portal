@@ -219,7 +219,14 @@
 					return "<%= themeDisplay.getURLHome() %>";
 				},
 				getSessionId: function() {
-					return "<%= session.getId() %>";
+					<c:choose>
+						<c:when test="<%= PropsValues.SESSION_ENABLE_URL_WITH_SESSION_ID %>">
+							return "<%= session.getId() %>";
+						</c:when>
+						<c:otherwise>
+							return "";
+						</c:otherwise>
+					</c:choose>
 				},
 				getPortletSetupShowBordersDefault: function() {
 					return <%= GetterUtil.getString(themeDisplay.getThemeSetting("portlet-setup-show-borders-default"), StringUtil.valueOf(PropsValues.THEME_PORTLET_DECORATE_DEFAULT)) %>;
@@ -293,6 +300,8 @@
 			useBrowserConsole: false
 		};
 
+		Liferay.authToken = '<%= AuthTokenUtil.getToken(request) %>';
+
 		<%
 		String currentURL = PortalUtil.getCurrentURL(request);
 		%>
@@ -337,10 +346,6 @@
 	</c:otherwise>
 </c:choose>
 
-<c:if test="<%= themeDisplay.isIncludeServiceJs() %>">
-	<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNHost() + themeDisplay.getPathJavaScript() + "/liferay/service.js", javaScriptLastModified)) %>" type="text/javascript"></script>
-</c:if>
-
 <script type="text/javascript">
 	// <![CDATA[
 		<c:if test="<%= (layoutTypePortlet != null) %>">
@@ -378,7 +383,7 @@
 					Liferay._editControlsState = 'visible';
 				</c:when>
 				<c:otherwise>
-					Liferay._editControlsState = '<%= GetterUtil.getString(SessionClicks.get(request, "liferay_toggle_controls", null), "visible") %>';
+					Liferay._editControlsState = '<%= HtmlUtil.escapeJS(GetterUtil.getString(SessionClicks.get(request, "liferay_toggle_controls", null), "visible")) %>';
 				</c:otherwise>
 			</c:choose>
 		</c:if>

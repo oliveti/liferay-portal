@@ -22,7 +22,6 @@ import com.liferay.portal.service.base.UserTrackerLocalServiceBaseImpl;
 import com.liferay.portal.util.PropsValues;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -54,11 +53,7 @@ public class UserTrackerLocalServiceImpl
 
 			userTrackerPersistence.update(userTracker, false);
 
-			Iterator<UserTrackerPath> itr = userTrackerPaths.iterator();
-
-			while (itr.hasNext()) {
-				UserTrackerPath userTrackerPath = itr.next();
-
+			for (UserTrackerPath userTrackerPath : userTrackerPaths) {
 				long pathId = counterLocalService.increment(
 					UserTrackerPath.class.getName());
 
@@ -76,17 +71,17 @@ public class UserTrackerLocalServiceImpl
 	}
 
 	@Override
-	public void deleteUserTracker(long userTrackerId)
+	public UserTracker deleteUserTracker(long userTrackerId)
 		throws PortalException, SystemException {
 
 		UserTracker userTracker = userTrackerPersistence.findByPrimaryKey(
 			userTrackerId);
 
-		deleteUserTracker(userTracker);
+		return deleteUserTracker(userTracker);
 	}
 
 	@Override
-	public void deleteUserTracker(UserTracker userTracker)
+	public UserTracker deleteUserTracker(UserTracker userTracker)
 		throws SystemException {
 
 		// Paths
@@ -96,7 +91,7 @@ public class UserTrackerLocalServiceImpl
 
 		// User tracker
 
-		userTrackerPersistence.remove(userTracker);
+		return userTrackerPersistence.remove(userTracker);
 	}
 
 	public List<UserTracker> getUserTrackers(long companyId, int start, int end)

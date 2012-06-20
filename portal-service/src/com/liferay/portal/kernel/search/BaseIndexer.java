@@ -17,9 +17,11 @@ package com.liferay.portal.kernel.search;
 import com.liferay.portal.NoSuchCountryException;
 import com.liferay.portal.NoSuchModelException;
 import com.liferay.portal.NoSuchRegionException;
+import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.facet.AssetEntriesFacet;
@@ -28,9 +30,11 @@ import com.liferay.portal.kernel.search.facet.MultiValueFacet;
 import com.liferay.portal.kernel.search.facet.ScopeFacet;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -63,6 +67,7 @@ import com.liferay.portlet.expando.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portlet.expando.util.ExpandoBridgeIndexerUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -83,7 +88,8 @@ public abstract class BaseIndexer implements Indexer {
 
 	public void delete(long companyId, String uid) throws SearchException {
 		try {
-			SearchEngineUtil.deleteDocument(companyId, uid);
+			SearchEngineUtil.deleteDocument(
+				getSearchEngineId(), companyId, uid);
 		}
 		catch (SearchException se) {
 			throw se;
@@ -198,7 +204,36 @@ public abstract class BaseIndexer implements Indexer {
 	}
 
 	public String getSearchEngineId() {
-		return SearchEngineUtil.SYSTEM_ENGINE_ID;
+		if (_searchEngineId != null) {
+			return _searchEngineId;
+		}
+
+		Class<?> clazz = getClass();
+
+		String searchEngineId = GetterUtil.getString(
+			PropsUtil.get(
+				PropsKeys.INDEX_SEARCH_ENGINE_ID, new Filter(clazz.getName())));
+
+		if (Validator.isNotNull(searchEngineId)) {
+			SearchEngine searchEngine = SearchEngineUtil.getSearchEngine(
+				searchEngineId);
+
+			if (searchEngine != null) {
+				_searchEngineId = searchEngineId;
+			}
+		}
+
+		if (_searchEngineId == null) {
+			_searchEngineId = SearchEngineUtil.getDefaultSearchEngineId();
+		}
+
+		if (_log.isDebugEnabled()) {
+			_log.debug(
+				"Search engine ID for " + clazz.getName() + " is " +
+					searchEngineId);
+		}
+
+		return _searchEngineId;
 	}
 
 	public String getSortField(String orderByCol) {
@@ -238,23 +273,23 @@ public abstract class BaseIndexer implements Indexer {
 	}
 
 	public boolean hasPermission(
-			PermissionChecker permissionChecker, long entryClassPK,
-			String actionId)
+			PermissionChecker permissionChecker, String entryClassName,
+			long entryClassPK, String actionId)
 		throws Exception {
 
 		return true;
 	}
 
 	public boolean isFilterSearch() {
-		return _FILTER_SEARCH;
+		return _filterSearch;
 	}
 
 	public boolean isIndexerEnabled() {
-		return _INDEXER_ENABLED;
+		return _indexerEnabled;
 	}
 
 	public boolean isPermissionAware() {
-		return _PERMISSION_AWARE;
+		return _permissionAware;
 	}
 
 	public boolean isStagingAware() {
@@ -338,6 +373,8 @@ public abstract class BaseIndexer implements Indexer {
 
 	public Hits search(SearchContext searchContext) throws SearchException {
 		try {
+			searchContext.setSearchEngineId(getSearchEngineId());
+
 			BooleanQuery fullQuery = getFullQuery(searchContext);
 
 			fullQuery.setQueryConfig(searchContext.getQueryConfig());
@@ -345,18 +382,18 @@ public abstract class BaseIndexer implements Indexer {
 			PermissionChecker permissionChecker =
 				PermissionThreadLocal.getPermissionChecker();
 
-			int start = searchContext.getStart();
 			int end = searchContext.getEnd();
+			int start = searchContext.getStart();
 
 			if (isFilterSearch() && (permissionChecker != null)) {
-				searchContext.setStart(0);
 				searchContext.setEnd(end + INDEX_FILTER_SEARCH_LIMIT);
+				searchContext.setStart(0);
 			}
 
 			Hits hits = SearchEngineUtil.search(searchContext, fullQuery);
 
-			searchContext.setStart(start);
 			searchContext.setEnd(end);
+			searchContext.setStart(start);
 
 			if (isFilterSearch() && (permissionChecker != null)) {
 				hits = filterSearch(hits, permissionChecker, searchContext);
@@ -378,7 +415,7 @@ public abstract class BaseIndexer implements Indexer {
 		List<IndexerPostProcessor> indexerPostProcessorsList =
 			ListUtil.fromArray(_indexerPostProcessors);
 
-		ListUtil.remove(indexerPostProcessorsList, indexerPostProcessor);
+		indexerPostProcessorsList.remove(indexerPostProcessor);
 
 		_indexerPostProcessors = indexerPostProcessorsList.toArray(
 			new IndexerPostProcessor[indexerPostProcessorsList.size()]);
@@ -511,6 +548,55 @@ public abstract class BaseIndexer implements Indexer {
 		multiValueFacet.setStatic(true);
 
 		searchContext.addFacet(multiValueFacet);
+	}
+
+	protected void addSearchAssetCategoryTitles(
+		Document document, String field, List<AssetCategory> assetCategories) {
+
+		Map<Locale, List<String>> assetCategoryTitles =
+			new HashMap<Locale, List<String>>();
+
+		Locale defaultLocale = LocaleUtil.getDefault();
+
+		for (AssetCategory assetCategory : assetCategories) {
+			Map<Locale, String> titleMap = assetCategory.getTitleMap();
+
+			for (Map.Entry<Locale, String> entry : titleMap.entrySet()) {
+				Locale locale = entry.getKey();
+				String title = entry.getValue();
+
+				if (Validator.isNull(title)) {
+					continue;
+				}
+
+				List<String> titles = assetCategoryTitles.get(locale);
+
+				if (titles == null) {
+					titles = new ArrayList<String>();
+
+					assetCategoryTitles.put(locale, titles);
+				}
+
+				titles.add(title);
+			}
+		}
+
+		for (Map.Entry<Locale, List<String>> entry :
+				assetCategoryTitles.entrySet()) {
+
+			Locale locale = entry.getKey();
+			List<String> titles = entry.getValue();
+
+			String[] titlesArray = titles.toArray(new String[0]);
+
+			if (locale.equals(defaultLocale)) {
+				document.addKeyword(field, titlesArray);
+			}
+
+			document.addKeyword(
+				field.concat(StringPool.UNDERLINE).concat(locale.toString()),
+				titlesArray);
+		}
 	}
 
 	protected void addSearchAssetTagNames(
@@ -749,7 +835,8 @@ public abstract class BaseIndexer implements Indexer {
 
 		document.addUID(getPortletId(), field1);
 
-		SearchEngineUtil.deleteDocument(companyId, document.get(Field.UID));
+		SearchEngineUtil.deleteDocument(
+			getSearchEngineId(), companyId, document.get(Field.UID));
 	}
 
 	protected void deleteDocument(long companyId, String field1, String field2)
@@ -759,7 +846,8 @@ public abstract class BaseIndexer implements Indexer {
 
 		document.addUID(getPortletId(), field1, field2);
 
-		SearchEngineUtil.deleteDocument(companyId, document.get(Field.UID));
+		SearchEngineUtil.deleteDocument(
+			getSearchEngineId(), companyId, document.get(Field.UID));
 	}
 
 	protected abstract void doDelete(Object obj) throws Exception;
@@ -810,8 +898,10 @@ public abstract class BaseIndexer implements Indexer {
 				Indexer indexer = IndexerRegistryUtil.getIndexer(
 					entryClassName);
 
-				if ((indexer.isFilterSearch() && indexer.hasPermission(
-						permissionChecker, entryClassPK, ActionKeys.VIEW)) ||
+				if ((indexer.isFilterSearch() &&
+					 indexer.hasPermission(
+						 permissionChecker, entryClassName, entryClassPK,
+						 ActionKeys.VIEW)) ||
 					!indexer.isFilterSearch() ||
 					!indexer.isPermissionAware()) {
 
@@ -859,6 +949,14 @@ public abstract class BaseIndexer implements Indexer {
 			String portletId, BaseModel<?> baseModel)
 		throws SystemException {
 
+		return getBaseModelDocument(portletId, baseModel, baseModel);
+	}
+
+	protected Document getBaseModelDocument(
+			String portletId, BaseModel<?> baseModel,
+			BaseModel<?> workflowedBaseModel)
+		throws SystemException {
+
 		Document document = new DocumentImpl();
 
 		String className = baseModel.getModelClassName();
@@ -888,10 +986,8 @@ public abstract class BaseIndexer implements Indexer {
 
 		document.addKeyword(Field.ASSET_CATEGORY_IDS, assetCategoryIds);
 
-		String[] assetCategoryNames = StringUtil.split(
-			ListUtil.toString(assetCategories, AssetCategory.NAME_ACCESSOR));
-
-		document.addText(Field.ASSET_CATEGORY_NAMES, assetCategoryNames);
+		addSearchAssetCategoryTitles(
+			document, Field.ASSET_CATEGORY_TITLES, assetCategories);
 
 		String[] assetTagNames = AssetTagLocalServiceUtil.getTagNames(
 			className, classPK);
@@ -938,8 +1034,9 @@ public abstract class BaseIndexer implements Indexer {
 				Field.SCOPE_GROUP_ID, groupedModel.getGroupId());
 		}
 
-		if (baseModel instanceof WorkflowedModel) {
-			WorkflowedModel workflowedModel = (WorkflowedModel)baseModel;
+		if (workflowedBaseModel instanceof WorkflowedModel) {
+			WorkflowedModel workflowedModel =
+				(WorkflowedModel)workflowedBaseModel;
 
 			document.addKeyword(Field.STATUS, workflowedModel.getStatus());
 		}
@@ -960,6 +1057,24 @@ public abstract class BaseIndexer implements Indexer {
 		}
 
 		return classNames[0];
+	}
+
+	protected List<String> getLocalizedCountryNames(Country country) {
+		List<String> countryNames = new ArrayList<String>();
+
+		Locale[] locales = LanguageUtil.getAvailableLocales();
+
+		for (Locale locale : locales) {
+			String countryName = country.getName(locale);
+
+			countryName = countryName.toLowerCase();
+
+			if (!countryNames.contains(countryName)) {
+				countryNames.add(countryName);
+			}
+		}
+
+		return countryNames;
 	}
 
 	protected long getParentGroupId(long groupId) {
@@ -993,7 +1108,7 @@ public abstract class BaseIndexer implements Indexer {
 			try {
 				Country country = CountryServiceUtil.getCountry(countryId);
 
-				countries.add(country.getName().toLowerCase());
+				countries.addAll(getLocalizedCountryNames(country));
 			}
 			catch (NoSuchCountryException nsce) {
 				if (_log.isWarnEnabled()) {
@@ -1022,7 +1137,7 @@ public abstract class BaseIndexer implements Indexer {
 
 		for (Address address : addresses) {
 			cities.add(address.getCity().toLowerCase());
-			countries.add(address.getCountry().getName().toLowerCase());
+			countries.addAll(getLocalizedCountryNames(address.getCountry()));
 			regions.add(address.getRegion().getName().toLowerCase());
 			streets.add(address.getStreet1().toLowerCase());
 			streets.add(address.getStreet2().toLowerCase());
@@ -1043,20 +1158,30 @@ public abstract class BaseIndexer implements Indexer {
 		throws Exception {
 	}
 
+	protected void setFilterSearch(boolean filterSearch) {
+		_filterSearch = filterSearch;
+	}
+
+	protected void setIndexerEnabled(boolean indexerEnabled) {
+		_indexerEnabled = indexerEnabled;
+	}
+
+	protected void setPermissionAware(boolean permissionAware) {
+		_permissionAware = permissionAware;
+	}
+
 	protected void setStagingAware(boolean stagingAware) {
 		_stagingAware = stagingAware;
 	}
 
-	private static final boolean _FILTER_SEARCH = false;
-
-	private static final boolean _INDEXER_ENABLED = true;
-
-	private static final boolean _PERMISSION_AWARE = false;
-
 	private static Log _log = LogFactoryUtil.getLog(BaseIndexer.class);
 
+	private boolean _filterSearch;
+	private boolean _indexerEnabled = true;
 	private IndexerPostProcessor[] _indexerPostProcessors =
 		new IndexerPostProcessor[0];
+	private boolean _permissionAware;
+	private String _searchEngineId;
 	private boolean _stagingAware = true;
 
 }

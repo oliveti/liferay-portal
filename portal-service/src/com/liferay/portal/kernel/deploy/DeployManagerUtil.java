@@ -14,11 +14,12 @@
 
 package com.liferay.portal.kernel.deploy;
 
+import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.plugin.PluginPackage;
-
-import java.io.File;
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Jonathan Potter
@@ -27,12 +28,10 @@ import java.util.List;
  */
 public class DeployManagerUtil {
 
-	public static void deploy(File file) throws Exception {
-		getDeployManager().deploy(file);
-	}
+	public static void deploy(AutoDeploymentContext autoDeploymentContext)
+		throws Exception {
 
-	public static void deploy(File file, String context) throws Exception {
-		getDeployManager().deploy(file, context);
+		getDeployManager().deploy(autoDeploymentContext);
 	}
 
 	public static String getDeployDir() throws Exception {
@@ -40,6 +39,8 @@ public class DeployManagerUtil {
 	}
 
 	public static DeployManager getDeployManager() {
+		PortalRuntimePermission.checkGetBeanProperty(DeployManagerUtil.class);
+
 		return _deployManager;
 	}
 
@@ -59,6 +60,19 @@ public class DeployManagerUtil {
 		return getDeployManager().isDeployed(context);
 	}
 
+	public static PluginPackage readPluginPackageProperties(
+		String displayName, Properties properties) {
+
+		return getDeployManager().readPluginPackageProperties(
+			displayName, properties);
+	}
+
+	public static PluginPackage readPluginPackageXml(String xml)
+		throws Exception {
+
+		return getDeployManager().readPluginPackageXml(xml);
+	}
+
 	public static void redeploy(String context) throws Exception {
 		getDeployManager().redeploy(context);
 	}
@@ -68,6 +82,8 @@ public class DeployManagerUtil {
 	}
 
 	public void setDeployManager(DeployManager deployManager) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_deployManager = deployManager;
 	}
 

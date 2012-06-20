@@ -21,63 +21,94 @@ String backURL = ParamUtil.getString(request, "backURL");
 
 String toolbarItem = ParamUtil.getString(request, "toolbarItem", "view-all");
 
-long structureId = ParamUtil.getLong(request, "structureId");
+long classNameId = ParamUtil.getLong(request, "classNameId");
+long classPK = ParamUtil.getLong(request, "classPK");
 %>
 
 <div class="lfr-portlet-toolbar">
-	<portlet:renderURL var="viewEntriesURL">
+	<portlet:renderURL var="viewTemplatesURL">
 		<portlet:param name="struts_action" value="/dynamic_data_mapping/view_template" />
 		<portlet:param name="backURL" value="<%= backURL %>" />
-		<portlet:param name="structureId" value="<%= String.valueOf(structureId) %>" />
+		<portlet:param name="classNameId" value="<%= String.valueOf(classNameId) %>" />
+		<portlet:param name="classPK" value="<%= String.valueOf(classPK) %>" />
 	</portlet:renderURL>
 
 	<span class="lfr-toolbar-button view-button <%= toolbarItem.equals("view-all") ? "current" : StringPool.BLANK %>">
-		<a href="<%= viewEntriesURL %>"><liferay-ui:message key="view-all" /></a>
+		<a href="<%= viewTemplatesURL %>"><liferay-ui:message key="view-all" /></a>
 	</span>
 
 	<%
 	String message = "add";
 	%>
 
-	<c:if test="<%= DDMPermission.contains(permissionChecker, scopeGroupId, ddmResource, ActionKeys.ADD_TEMPLATE) && (Validator.isNull(templateTypeValue) || templateTypeValue.equals(DDMTemplateConstants.TEMPLATE_TYPE_DETAIL)) %>">
-		<portlet:renderURL var="addEntryURL">
-			<portlet:param name="struts_action" value="/dynamic_data_mapping/edit_template" />
-			<portlet:param name="redirect" value="<%= currentURL %>" />
-			<portlet:param name="backURL" value="<%= currentURL %>" />
-			<portlet:param name="groupId" value="<%= String.valueOf(scopeGroupId) %>" />
-			<portlet:param name="structureId" value="<%= String.valueOf(structureId) %>" />
-			<portlet:param name="structureAvailableFields" value='<%= renderResponse.getNamespace() + "structureAvailableFields" %>' />
-		</portlet:renderURL>
+	<c:choose>
+		<c:when test="<%= classNameId == PortalUtil.getClassNameId(DDMStructure.class) %>">
+			<c:if test="<%= DDMPermission.contains(permissionChecker, scopeGroupId, ddmResource, ActionKeys.ADD_TEMPLATE) && (Validator.isNull(templateTypeValue) || templateTypeValue.equals(DDMTemplateConstants.TEMPLATE_TYPE_DETAIL)) %>">
+				<portlet:renderURL var="addTemplateURL">
+					<portlet:param name="struts_action" value="/dynamic_data_mapping/edit_template" />
+					<portlet:param name="redirect" value="<%= viewTemplatesURL %>" />
+					<portlet:param name="backURL" value="<%= viewTemplatesURL %>" />
+					<portlet:param name="groupId" value="<%= String.valueOf(scopeGroupId) %>" />
+					<portlet:param name="classNameId" value="<%= String.valueOf(classNameId) %>" />
+					<portlet:param name="classPK" value="<%= String.valueOf(classPK) %>" />
+					<portlet:param name="structureAvailableFields" value='<%= renderResponse.getNamespace() + "structureAvailableFields" %>' />
+				</portlet:renderURL>
 
-		<%
-		if (Validator.isNull(templateTypeValue)) {
-			message = "add-detail-template";
-		}
-		%>
+				<%
+				if (Validator.isNull(templateTypeValue)) {
+					message = "add-detail-template";
+				}
+				%>
 
-		<span class="lfr-toolbar-button add-template <%= toolbarItem.equals("add-detail-template") ? "current" : StringPool.BLANK %>">
-			<a href="<%= addEntryURL %>"><liferay-ui:message key="<%= message %>" /></a>
-		</span>
-	</c:if>
+				<span class="lfr-toolbar-button add-template <%= toolbarItem.equals("add-detail-template") ? "current" : StringPool.BLANK %>">
+					<a href="<%= addTemplateURL %>"><liferay-ui:message key="<%= message %>" /></a>
+				</span>
+			</c:if>
 
-	<c:if test="<%= DDMPermission.contains(permissionChecker, scopeGroupId, ddmResource, ActionKeys.ADD_TEMPLATE) && (Validator.isNull(templateTypeValue) || templateTypeValue.equals(DDMTemplateConstants.TEMPLATE_TYPE_LIST)) %>">
-		<portlet:renderURL var="addEntryURL">
-			<portlet:param name="struts_action" value="/dynamic_data_mapping/edit_template" />
-			<portlet:param name="redirect" value="<%= currentURL %>" />
-			<portlet:param name="backURL" value="<%= currentURL %>" />
-			<portlet:param name="groupId" value="<%= String.valueOf(scopeGroupId) %>" />
-			<portlet:param name="structureId" value="<%= String.valueOf(structureId) %>" />
-			<portlet:param name="type" value="list" />
-		</portlet:renderURL>
+			<c:if test="<%= DDMPermission.contains(permissionChecker, scopeGroupId, ddmResource, ActionKeys.ADD_TEMPLATE) && (Validator.isNull(templateTypeValue) || templateTypeValue.equals(DDMTemplateConstants.TEMPLATE_TYPE_LIST)) %>">
+				<portlet:renderURL var="addTemplateURL">
+					<portlet:param name="struts_action" value="/dynamic_data_mapping/edit_template" />
+					<portlet:param name="redirect" value="<%= viewTemplatesURL %>" />
+					<portlet:param name="backURL" value="<%= viewTemplatesURL %>" />
+					<portlet:param name="groupId" value="<%= String.valueOf(scopeGroupId) %>" />
+					<portlet:param name="classNameId" value="<%= String.valueOf(classNameId) %>" />
+					<portlet:param name="classPK" value="<%= String.valueOf(classPK) %>" />
+					<portlet:param name="type" value="list" />
+				</portlet:renderURL>
 
-		<%
-		if (Validator.isNull(templateTypeValue)) {
-			message = "add-list-template";
-		}
-		%>
+				<%
+				if (Validator.isNull(templateTypeValue)) {
+					message = "add-list-template";
+				}
+				%>
 
-		<span class="lfr-toolbar-button view-templates <%= toolbarItem.equals("add-list-template") ? "current" : StringPool.BLANK %>">
-			<a href="<%= addEntryURL %>"><liferay-ui:message key="<%= message %>" /></a>
-		</span>
-	</c:if>
+				<span class="lfr-toolbar-button view-templates <%= toolbarItem.equals("add-list-template") ? "current" : StringPool.BLANK %>">
+					<a href="<%= addTemplateURL %>"><liferay-ui:message key="<%= message %>" /></a>
+				</span>
+			</c:if>
+		</c:when>
+		<c:otherwise>
+			<c:if test="<%= DDMPermission.contains(permissionChecker, scopeGroupId, ddmResource, ddmResourceActionId) %>">
+				<portlet:renderURL var="addTemplateURL">
+					<portlet:param name="struts_action" value="/dynamic_data_mapping/edit_template" />
+					<portlet:param name="redirect" value="<%= viewTemplatesURL %>" />
+					<portlet:param name="backURL" value="<%= viewTemplatesURL %>" />
+					<portlet:param name="groupId" value="<%= String.valueOf(scopeGroupId) %>" />
+					<portlet:param name="classNameId" value="<%= String.valueOf(classNameId) %>" />
+					<portlet:param name="classPK" value="<%= String.valueOf(classPK) %>" />
+					<portlet:param name="type" value="list" />
+				</portlet:renderURL>
+
+				<%
+				if (Validator.isNull(templateTypeValue)) {
+					message = "add-display-style";
+				}
+				%>
+
+				<span class="lfr-toolbar-button view-templates <%= toolbarItem.equals("add-display-style") ? "current" : StringPool.BLANK %>">
+					<a href="<%= addTemplateURL %>"><liferay-ui:message key="<%= message %>" /></a>
+				</span>
+			</c:if>
+		</c:otherwise>
+	</c:choose>
 </div>

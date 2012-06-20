@@ -14,7 +14,6 @@
 
 package com.liferay.portal.model.impl;
 
-import com.liferay.portal.freemarker.FreeMarkerTemplateLoader;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -31,16 +30,15 @@ import com.liferay.portal.model.Plugin;
 import com.liferay.portal.model.SpriteImage;
 import com.liferay.portal.model.Theme;
 import com.liferay.portal.model.ThemeSetting;
+import com.liferay.portal.template.TemplateResourceParser;
 import com.liferay.portal.theme.ThemeCompanyId;
 import com.liferay.portal.theme.ThemeCompanyLimit;
 import com.liferay.portal.theme.ThemeGroupLimit;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portal.velocity.VelocityResourceListener;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -200,10 +198,10 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 
 	public String getFreeMarkerTemplateLoader() {
 		if (_loadFromServletContext) {
-			return FreeMarkerTemplateLoader.SERVLET_SEPARATOR;
+			return TemplateResourceParser.SERVLET_SEPARATOR;
 		}
 		else {
-			return FreeMarkerTemplateLoader.THEME_LOADER_SEPARATOR;
+			return TemplateResourceParser.THEME_LOADER_SEPARATOR;
 		}
 	}
 
@@ -357,10 +355,10 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 
 	public String getVelocityResourceListener() {
 		if (_loadFromServletContext) {
-			return VelocityResourceListener.SERVLET_SEPARATOR;
+			return TemplateResourceParser.SERVLET_SEPARATOR;
 		}
 		else {
-			return VelocityResourceListener.THEME_LOADER_SEPARATOR;
+			return TemplateResourceParser.THEME_LOADER_SEPARATOR;
 		}
 	}
 
@@ -492,12 +490,7 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 	public void setSpriteImages(
 		String spriteFileName, Properties spriteProperties) {
 
-		Iterator<Map.Entry<Object, Object>> itr =
-			spriteProperties.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<Object, Object> entry = itr.next();
-
+		for (Map.Entry<Object, Object> entry : spriteProperties.entrySet()) {
 			String key = (String)entry.getKey();
 			String value = (String)entry.getValue();
 

@@ -93,7 +93,6 @@ boolean useAssetEntryQuery = false;
 		searchContainer.setTotal(total);
 
 		List results = new ArrayList(hits.getDocs().length);
-		List scores = new ArrayList(hits.getDocs().length);
 
 		for (int i = 0; i < hits.getDocs().length; i++) {
 			Document doc = hits.doc(i);
@@ -104,29 +103,36 @@ boolean useAssetEntryQuery = false;
 				FileEntry fileEntry = DLAppLocalServiceUtil.getFileEntry(fileEntryId);
 
 				results.add(fileEntry);
-				scores.add(new Double(hits.score(i)));
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Document library search index is stale and contains document " + fileEntryId);
+					_log.warn("Documents and Media search index is stale and contains document " + fileEntryId);
 				}
 			}
 		}
 	%>
 
-		<span class="aui-search-bar">
-			<aui:input inlineField="<%= true %>" label="" name="keywords" size="30" title="search-images" type="text" value="<%= keywords %>" />
+	<div id="<portlet:namespace />imageGalleryAssetInfo">
+			<span class="aui-search-bar">
+				<aui:input inlineField="<%= true %>" label="" name="keywords" size="30" title="search-images" type="text" value="<%= keywords %>" />
 
-			<aui:button type="submit" value="search" />
-		</span>
+				<aui:button type="submit" value="search" />
+			</span>
 
 		<br /><br />
 
 		<%
+		Folder folder = (Folder)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FOLDER);
+
+		long defaultFolderId = GetterUtil.getLong(preferences.getValue("rootFolderId", StringPool.BLANK), DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+		long folderId = BeanParamUtil.getLong(folder, request, "folderId", defaultFolderId);
+
 		String[] mediaGalleryMimeTypes = null;
 		%>
 
 		<%@ include file="/html/portlet/image_gallery_display/view_images.jspf" %>
+	</div>
 
 	<%
 	}

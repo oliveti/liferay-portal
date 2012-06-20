@@ -17,6 +17,7 @@ package com.liferay.portlet.layoutsadmin.action;
 import com.liferay.portal.LARFileException;
 import com.liferay.portal.LARTypeException;
 import com.liferay.portal.LayoutImportException;
+import com.liferay.portal.LayoutPrototypeException;
 import com.liferay.portal.NoSuchGroupException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -79,7 +80,12 @@ public class ImportLayoutsAction extends PortletAction {
 			if ((e instanceof LARFileException) ||
 				(e instanceof LARTypeException)) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
+			}
+			else if (e instanceof LayoutPrototypeException) {
+				LayoutPrototypeException lpe = (LayoutPrototypeException)e;
+
+				SessionErrors.add(actionRequest, e.getClass(), lpe);
 			}
 			else {
 				_log.error(e, e);
@@ -103,7 +109,7 @@ public class ImportLayoutsAction extends PortletAction {
 			if (e instanceof NoSuchGroupException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass().getName());
+				SessionErrors.add(renderRequest, e.getClass());
 
 				return mapping.findForward("portlet.layouts_admin.error");
 			}

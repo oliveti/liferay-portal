@@ -20,16 +20,22 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.trash.TrashRenderer;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
+import com.liferay.portlet.asset.model.AssetRendererFactory;
 import com.liferay.portlet.asset.model.BaseAssetRenderer;
 import com.liferay.portlet.documentlibrary.model.DLFileEntryConstants;
 import com.liferay.portlet.documentlibrary.service.permission.DLFileEntryPermission;
+import com.liferay.portlet.documentlibrary.util.DLUtil;
 
 import java.util.Locale;
 
@@ -42,20 +48,27 @@ import javax.portlet.RenderResponse;
  * @author Julio Camarero
  * @author Juan Fernández
  * @author Sergio González
+ * @author Zsolt Berentey
  */
-public class DLFileEntryAssetRenderer extends BaseAssetRenderer {
+public class DLFileEntryAssetRenderer
+	extends BaseAssetRenderer implements TrashRenderer {
 
 	public DLFileEntryAssetRenderer(
-		FileEntry fileEntry, FileVersion fileVersion) {
+		FileEntry fileEntry, FileVersion fileVersion, int type) {
 
 		_fileEntry = fileEntry;
 		_fileVersion = fileVersion;
+		_type = type;
+	}
+
+	public String getAssetRendererFactoryClassName() {
+		return DLFileEntryAssetRendererFactory.CLASS_NAME;
 	}
 
 	public long getClassPK() {
 		if (!_fileVersion.isApproved() &&
-			(!_fileVersion.getVersion().equals(
-				DLFileEntryConstants.VERSION_DEFAULT))) {
+			!_fileVersion.getVersion().equals(
+				DLFileEntryConstants.VERSION_DEFAULT)) {
 
 			return _fileVersion.getFileVersionId();
 		}
@@ -78,12 +91,34 @@ public class DLFileEntryAssetRenderer extends BaseAssetRenderer {
 		return _fileEntry.getGroupId();
 	}
 
+	@Override
+	public String getIconPath(ThemeDisplay themeDisplay) {
+		return themeDisplay.getPathThemeImages() + "/file_system/small/" +
+			_fileEntry.getIcon() + ".png";
+	}
+
+	public String getPortletId() {
+		AssetRendererFactory assetRendererFactory = getAssetRendererFactory();
+
+		return assetRendererFactory.getPortletId();
+	}
+
 	public String getSummary(Locale locale) {
 		return HtmlUtil.stripHtml(_fileEntry.getDescription());
 	}
 
 	public String getTitle(Locale locale) {
 		return _fileVersion.getTitle();
+	}
+
+	public String getType() {
+		return DLFileEntryAssetRendererFactory.TYPE;
+	}
+
+	@Override
+	public String getURLDownload(ThemeDisplay themeDisplay) {
+		return DLUtil.getPreviewURL(
+			_fileEntry, _fileVersion, themeDisplay, StringPool.BLANK);
 	}
 
 	@Override
@@ -137,8 +172,19 @@ public class DLFileEntryAssetRenderer extends BaseAssetRenderer {
 		return _fileEntry.getUserId();
 	}
 
+	public String getUserName() {
+		return _fileEntry.getUserName();
+	}
+
 	public String getUuid() {
 		return _fileEntry.getUuid();
+	}
+
+	public boolean hasDeletePermission(PermissionChecker permissionChecker)
+		throws PortalException, SystemException {
+
+		return DLFileEntryPermission.contains(
+			permissionChecker, _fileEntry.getFileEntryId(), ActionKeys.DELETE);
 	}
 
 	@Override
@@ -177,8 +223,15 @@ public class DLFileEntryAssetRenderer extends BaseAssetRenderer {
 
 			renderRequest.setAttribute(
 				WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY, _fileEntry);
-			renderRequest.setAttribute(
-				WebKeys.DOCUMENT_LIBRARY_FILE_VERSION, _fileVersion);
+
+			String version = ParamUtil.getString(renderRequest, "version");
+
+			if ((_type == AssetRendererFactory.TYPE_LATEST) ||
+				Validator.isNotNull(version)) {
+
+				renderRequest.setAttribute(
+					WebKeys.DOCUMENT_LIBRARY_FILE_VERSION, _fileVersion);
+			}
 
 			return "/html/portlet/document_library/asset/" + template + ".jsp";
 		}
@@ -187,13 +240,8 @@ public class DLFileEntryAssetRenderer extends BaseAssetRenderer {
 		}
 	}
 
-	@Override
-	protected String getIconPath(ThemeDisplay themeDisplay) {
-		return themeDisplay.getPathThemeImages() + "/file_system/small/" +
-			_fileEntry.getIcon() + ".png";
-	}
-
 	private FileEntry _fileEntry;
 	private FileVersion _fileVersion;
+	private int _type;
 
 }

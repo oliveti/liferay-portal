@@ -27,19 +27,14 @@ JournalStructure structure= null;
 
 if (Validator.isNotNull(structureId)) {
 	try {
-		structure = JournalStructureLocalServiceUtil.getStructure(groupId, structureId);
+		structure = JournalStructureLocalServiceUtil.getStructure(groupId, structureId, true);
 	}
-	catch (NoSuchStructureException nsse1) {
-		try {
-			structure = JournalStructureLocalServiceUtil.getStructure(themeDisplay.getCompanyGroupId(), structureId);
-		}
-		catch (NoSuchStructureException nsse2) {
-			structureId = StringPool.BLANK;
+	catch (NoSuchStructureException nsse) {
+		structureId = StringPool.BLANK;
 
-			preferences.setValue("structure-id", structureId);
+		preferences.setValue("structure-id", structureId);
 
-			preferences.store();
-		}
+		preferences.store();
 	}
 }
 %>
@@ -136,12 +131,10 @@ if (Validator.isNotNull(structureId)) {
 				<aui:select label="display-per-page" name="preferences--pageDelta--">
 
 					<%
-					String[] pageDeltaValues = PropsUtil.getArray(PropsKeys.JOURNAL_ARTICLES_PAGE_DELTA_VALUES);
-
-					for (int i = 0; i < pageDeltaValues.length; i++) {
+					for (int pageDeltaValue : PropsValues.JOURNAL_ARTICLES_PAGE_DELTA_VALUES) {
 					%>
 
-						<aui:option label="<%= pageDeltaValues[i] %>" selected="<%= pageDelta == GetterUtil.getInteger(pageDeltaValues[i]) %>" />
+						<aui:option label="<%= pageDeltaValue %>" selected="<%= pageDelta == pageDeltaValue %>" />
 
 					<%
 					}
@@ -182,6 +175,7 @@ if (Validator.isNotNull(structureId)) {
 					dialog: {
 						width: 680
 					},
+					id: '<portlet:namespace />structureSelector',
 					title: '<%= UnicodeLanguageUtil.get(pageContext, "structure") %>',
 					uri: '<liferay-portlet:renderURL portletName="<%= PortletKeys.JOURNAL %>" windowState="<%= LiferayWindowState.POP_UP.toString() %>"><portlet:param name="struts_action" value="/journal/select_structure" /><portlet:param name="structureId" value="<%= structureId %>" /></liferay-portlet:renderURL>'
 				}

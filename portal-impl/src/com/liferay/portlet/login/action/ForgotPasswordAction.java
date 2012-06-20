@@ -90,7 +90,7 @@ public class ForgotPasswordAction extends PortletAction {
 				e instanceof UserEmailAddressException ||
 				e instanceof UserReminderQueryException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else {
 				PortalUtil.sendError(e, actionRequest, actionResponse);
@@ -152,9 +152,8 @@ public class ForgotPasswordAction extends PortletAction {
 		actionRequest.setAttribute(WebKeys.FORGOT_PASSWORD_REMINDER_USER, user);
 
 		if (step == 2) {
-			Integer reminderAttempts =
-				(Integer)portletSession.getAttribute(
-					WebKeys.FORGOT_PASSWORD_REMINDER_ATTEMPTS);
+			Integer reminderAttempts = (Integer)portletSession.getAttribute(
+				WebKeys.FORGOT_PASSWORD_REMINDER_ATTEMPTS);
 
 			if (reminderAttempts == null) {
 				reminderAttempts = 0;
@@ -172,9 +171,7 @@ public class ForgotPasswordAction extends PortletAction {
 		}
 	}
 
-	protected User getUser(ActionRequest actionRequest)
-		throws Exception {
-
+	protected User getUser(ActionRequest actionRequest) throws Exception {
 		PortletSession portletSession = actionRequest.getPortletSession();
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(

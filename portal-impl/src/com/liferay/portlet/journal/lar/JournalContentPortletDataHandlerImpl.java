@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.lar.DLPortletDataHandlerImpl;
 import com.liferay.portlet.journal.NoSuchArticleException;
 import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.portlet.journal.model.JournalTemplate;
@@ -62,9 +63,9 @@ import javax.portlet.PortletPreferences;
  * @author Joel Kozikowski
  * @author Raymond Augé
  * @author Bruno Farache
- * @see    com.liferay.portal.kernel.lar.PortletDataHandler
- * @see    com.liferay.portlet.journal.lar.JournalCreationStrategy
- * @see    com.liferay.portlet.journal.lar.JournalPortletDataHandlerImpl
+ * @see	com.liferay.portal.kernel.lar.PortletDataHandler
+ * @see	com.liferay.portlet.journal.lar.JournalCreationStrategy
+ * @see	com.liferay.portlet.journal.lar.JournalPortletDataHandlerImpl
  */
 public class JournalContentPortletDataHandlerImpl
 	extends BasePortletDataHandler {
@@ -72,15 +73,40 @@ public class JournalContentPortletDataHandlerImpl
 	@Override
 	public PortletDataHandlerControl[] getExportControls() {
 		return new PortletDataHandlerControl[] {
-			_selectedArticles, _embeddedAssets, _images, _comments, _ratings,
-			_tags
+			_selectedArticles, _embeddedAssets
+		};
+	}
+
+	@Override
+	public PortletDataHandlerControl[] getExportMetadataControls() {
+		return new PortletDataHandlerControl[] {
+			 new PortletDataHandlerBoolean(
+				_NAMESPACE, "web-content", true,
+				JournalPortletDataHandlerImpl.getMetadataControls()),
+			new PortletDataHandlerBoolean(
+				_NAMESPACE, "folders-and-documents", true,
+				DLPortletDataHandlerImpl.getMetadataControls()
+			)
 		};
 	}
 
 	@Override
 	public PortletDataHandlerControl[] getImportControls() {
 		return new PortletDataHandlerControl[] {
-			_selectedArticles, _images, _comments, _ratings, _tags
+			_selectedArticles
+		};
+	}
+
+	@Override
+	public PortletDataHandlerControl[] getImportMetadataControls() {
+		return new PortletDataHandlerControl[] {
+			 new PortletDataHandlerBoolean(
+				_NAMESPACE, "web-content", true,
+				JournalPortletDataHandlerImpl.getMetadataControls()),
+			new PortletDataHandlerBoolean(
+				_NAMESPACE, "folders-and-documents", true,
+				DLPortletDataHandlerImpl.getMetadataControls()
+			)
 		};
 	}
 
@@ -192,11 +218,19 @@ public class JournalContentPortletDataHandlerImpl
 		Element dlFoldersElement = rootElement.addElement("dl-folders");
 		Element dlFilesElement = rootElement.addElement("dl-file-entries");
 		Element dlFileRanksElement = rootElement.addElement("dl-file-ranks");
+		Element dlRepositoriesElement = rootElement.addElement(
+			"dl-repositories");
+		Element dlRepositoryEntriesElement = rootElement.addElement(
+			"dl-repository-entries");
+
+		String preferenceTemplateId = portletPreferences.getValue(
+			"templateId", null);
 
 		JournalPortletDataHandlerImpl.exportArticle(
 			portletDataContext, rootElement, rootElement, rootElement,
 			dlFileEntryTypesElement, dlFoldersElement, dlFilesElement,
-			dlFileRanksElement, article, false);
+			dlFileRanksElement, dlRepositoriesElement,
+			dlRepositoryEntriesElement, article, preferenceTemplateId, false);
 
 		portletDataContext.setScopeGroupId(previousScopeGroupId);
 
@@ -319,23 +353,11 @@ public class JournalContentPortletDataHandlerImpl
 	private static Log _log = LogFactoryUtil.getLog(
 		JournalContentPortletDataHandlerImpl.class);
 
-	private static PortletDataHandlerBoolean _comments =
-		new PortletDataHandlerBoolean(_NAMESPACE, "comments");
-
 	private static PortletDataHandlerBoolean _embeddedAssets =
 		new PortletDataHandlerBoolean(_NAMESPACE, "embedded-assets");
-
-	private static PortletDataHandlerBoolean _images =
-		new PortletDataHandlerBoolean(_NAMESPACE, "images");
-
-	private static PortletDataHandlerBoolean _ratings =
-		new PortletDataHandlerBoolean(_NAMESPACE, "ratings");
 
 	private static PortletDataHandlerBoolean _selectedArticles =
 		new PortletDataHandlerBoolean(
 			_NAMESPACE, "selected-web-content", true, true);
-
-	private static PortletDataHandlerBoolean _tags =
-		new PortletDataHandlerBoolean(_NAMESPACE, "tags");
 
 }

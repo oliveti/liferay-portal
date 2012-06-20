@@ -80,7 +80,7 @@ public class CheckOutOrderTest extends BaseTestCase {
 				}
 
 				selenium.clickAt("//input[@id='_34_shipToBillingCheckbox']",
-					RuntimeVariables.replace(""));
+					RuntimeVariables.replace("Same as Billing"));
 
 			case 2:
 				assertTrue(selenium.isChecked(
@@ -90,7 +90,7 @@ public class CheckOutOrderTest extends BaseTestCase {
 				selenium.type("//input[@id='_34_ccNumber']",
 					RuntimeVariables.replace("4111111111111111"));
 				selenium.select("//select[@id='_34_ccExpYear']",
-					RuntimeVariables.replace("label=2012"));
+					RuntimeVariables.replace("label=2017"));
 				selenium.type("//textarea[@id='_34_comments']",
 					RuntimeVariables.replace("Please take care of my order."));
 				selenium.clickAt("//input[@value='Continue']",

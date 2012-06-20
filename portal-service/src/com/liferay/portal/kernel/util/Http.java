@@ -91,6 +91,8 @@ public interface Http {
 
 	public Map<String, String[]> getParameterMap(String queryString);
 
+	public String getPath(String url);
+
 	public String getProtocol(ActionRequest actionRequest);
 
 	public String getProtocol(boolean secure);
@@ -167,8 +169,10 @@ public interface Http {
 	 * represent a file or some JNDI resource. In that case, the default Java
 	 * implementation is used.
 	 *
+	 * @param  url the URL
 	 * @return A string representation of the resource referenced by the URL
 	 *         object
+	 * @throws IOException if an IO exception occurred
 	 */
 	public String URLtoString(URL url) throws IOException;
 

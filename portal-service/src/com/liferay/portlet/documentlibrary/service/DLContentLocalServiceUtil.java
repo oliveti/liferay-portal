@@ -15,7 +15,6 @@
 package com.liferay.portlet.documentlibrary.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class DLContentLocalServiceUtil {
 	* Deletes the document library content with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param contentId the primary key of the document library content
+	* @return the document library content that was removed
 	* @throws PortalException if a document library content with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteDLContent(long contentId)
+	public static com.liferay.portlet.documentlibrary.model.DLContent deleteDLContent(
+		long contentId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteDLContent(contentId);
+		return getService().deleteDLContent(contentId);
 	}
 
 	/**
 	* Deletes the document library content from the database. Also notifies the appropriate model listeners.
 	*
 	* @param dlContent the document library content
+	* @return the document library content that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteDLContent(
+	public static com.liferay.portlet.documentlibrary.model.DLContent deleteDLContent(
 		com.liferay.portlet.documentlibrary.model.DLContent dlContent)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteDLContent(dlContent);
+		return getService().deleteDLContent(dlContent);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -357,20 +363,15 @@ public class DLContentLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(DLContentLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(DLContentLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(DLContentLocalService service) {
-		MethodCache.remove(DLContentLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(DLContentLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(DLContentLocalService.class);
 	}
 
 	private static DLContentLocalService _service;

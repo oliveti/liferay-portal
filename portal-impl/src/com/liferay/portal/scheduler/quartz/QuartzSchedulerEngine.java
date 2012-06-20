@@ -15,27 +15,39 @@
 package com.liferay.portal.scheduler.quartz;
 
 import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBFactoryUtil;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.messaging.Destination;
+import com.liferay.portal.kernel.messaging.InvokerMessageListener;
 import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBus;
+import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.messaging.MessageListener;
+import com.liferay.portal.kernel.portlet.PortletClassLoaderUtil;
 import com.liferay.portal.kernel.scheduler.IntervalTrigger;
 import com.liferay.portal.kernel.scheduler.JobState;
 import com.liferay.portal.kernel.scheduler.JobStateSerializeUtil;
 import com.liferay.portal.kernel.scheduler.SchedulerEngine;
+import com.liferay.portal.kernel.scheduler.SchedulerEngineUtil;
 import com.liferay.portal.kernel.scheduler.SchedulerException;
 import com.liferay.portal.kernel.scheduler.StorageType;
 import com.liferay.portal.kernel.scheduler.TriggerFactoryUtil;
 import com.liferay.portal.kernel.scheduler.TriggerState;
 import com.liferay.portal.kernel.scheduler.TriggerType;
+import com.liferay.portal.kernel.scheduler.messaging.SchedulerEventMessageListenerWrapper;
 import com.liferay.portal.kernel.scheduler.messaging.SchedulerResponse;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.scheduler.job.MessageSenderJob;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.QuartzLocalService;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
@@ -109,6 +121,8 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 				GroupMatcher.jobGroupEquals(groupName));
 
 			for (JobKey jobKey : jobKeys) {
+				unregisterMessageListener(scheduler, jobKey);
+
 				scheduler.deleteJob(jobKey);
 			}
 		}
@@ -133,6 +147,8 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 				getOriginalGroupName(groupName), GROUP_NAME_MAX_LENGTH);
 
 			JobKey jobKey = new JobKey(jobName, groupName);
+
+			unregisterMessageListener(scheduler, jobKey);
 
 			scheduler.deleteJob(jobKey);
 		}
@@ -374,11 +390,9 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 				message = message.clone();
 			}
 
-			TriggerKey triggerKey = quartzTrigger.getKey();
-
-			message.put(
-				RECEIVER_KEY,
-				getFullName(triggerKey.getName(), triggerKey.getGroup()));
+			registerMessageListeners(
+				trigger.getJobName(), trigger.getGroupName(), destination,
+				message);
 
 			schedule(
 				scheduler, storageType, quartzTrigger, description, destination,
@@ -557,6 +571,35 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		String messageJSON = (String)jobDataMap.get(MESSAGE);
 
 		return (Message)JSONFactoryUtil.deserialize(messageJSON);
+	}
+
+	protected MessageListener getMessageListener(
+			String messageListenerClassName, ClassLoader classLoader)
+		throws SchedulerException {
+
+		MessageListener schedulerEventListener = null;
+
+		try {
+			Class<? extends MessageListener> clazz =
+				(Class<? extends MessageListener>)classLoader.loadClass(
+					messageListenerClassName);
+
+			schedulerEventListener = clazz.newInstance();
+
+			schedulerEventListener =
+				(MessageListener)ProxyUtil.newProxyInstance(
+					classLoader, new Class<?>[] {MessageListener.class},
+					new ClassLoaderBeanHandler(
+						schedulerEventListener, classLoader));
+		}
+		catch (Exception e) {
+			throw new SchedulerException(
+				"Unable to register message listener with name " +
+					messageListenerClassName,
+				e);
+		}
+
+		return schedulerEventListener;
 	}
 
 	protected String getOriginalGroupName(String groupName) {
@@ -838,16 +881,68 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 
 				JobDataMap jobDataMap = jobDetail.getJobDataMap();
 
-				JobState jobState = getJobState(jobDataMap);
+				Message message = getMessage(jobDataMap);
 
-				jobState.setTriggerState(TriggerState.COMPLETE);
+				message.put(JOB_NAME, jobKey.getName());
+				message.put(GROUP_NAME, jobKey.getGroup());
 
-				jobDataMap.put(
-					JOB_STATE, JobStateSerializeUtil.serialize(jobState));
+				SchedulerEngineUtil.auditSchedulerJobs(
+					message, TriggerState.EXPIRED);
 
-				_persistedScheduler.addJob(jobDetail, true);
+				_persistedScheduler.deleteJob(jobKey);
 			}
 		}
+	}
+
+	protected void registerMessageListeners(
+			String jobName, String groupName, String destinationName,
+			Message message)
+		throws SchedulerException {
+
+		String messageListenerClassName = message.getString(
+			MESSAGE_LISTENER_CLASS_NAME);
+
+		if (Validator.isNull(messageListenerClassName)) {
+			return;
+		}
+
+		String portletId = message.getString(PORTLET_ID);
+
+		ClassLoader classLoader = null;
+
+		if (Validator.isNull(portletId)) {
+			classLoader = PACLClassLoaderUtil.getPortalClassLoader();
+		}
+		else {
+			classLoader = PortletClassLoaderUtil.getClassLoader(portletId);
+		}
+
+		if (classLoader == null) {
+			throw new SchedulerException(
+				"Unable to find class loader for portlet " + portletId);
+		}
+
+		MessageListener schedulerEventListener = getMessageListener(
+			messageListenerClassName, classLoader);
+
+		SchedulerEventMessageListenerWrapper schedulerEventListenerWrapper =
+			new SchedulerEventMessageListenerWrapper();
+
+		schedulerEventListenerWrapper.setGroupName(groupName);
+		schedulerEventListenerWrapper.setJobName(jobName);
+		schedulerEventListenerWrapper.setMessageListener(
+			schedulerEventListener);
+
+		schedulerEventListenerWrapper.afterPropertiesSet();
+
+		MessageBusUtil.registerMessageListener(
+			destinationName, schedulerEventListenerWrapper);
+
+		message.put(
+			MESSAGE_LISTENER_UUID,
+			schedulerEventListenerWrapper.getMessageListenerUUID());
+
+		message.put(RECEIVER_KEY, getFullName(jobName, groupName));
 	}
 
 	protected void schedule(
@@ -856,14 +951,11 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		throws Exception {
 
 		try {
-			JobDetail jobDetail = null;
-
 			JobBuilder jobBuilder = JobBuilder.newJob(MessageSenderJob.class);
 
-			jobBuilder.storeDurably(scheduler == _persistedScheduler);
 			jobBuilder.withIdentity(trigger.getJobKey());
 
-			jobDetail = jobBuilder.build();
+			JobDetail jobDetail = jobBuilder.build();
 
 			JobDataMap jobDataMap = jobDetail.getJobDataMap();
 
@@ -876,16 +968,80 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 				TriggerState.NORMAL, message.getInteger(EXCEPTIONS_MAX_SIZE));
 
 			jobDataMap.put(
-			JOB_STATE, JobStateSerializeUtil.serialize(jobState));
+				JOB_STATE, JobStateSerializeUtil.serialize(jobState));
+
+			unregisterMessageListener(scheduler, trigger.getJobKey());
 
 			synchronized (this) {
 				scheduler.deleteJob(trigger.getJobKey());
 				scheduler.scheduleJob(jobDetail, trigger);
 			}
 		}
-		catch (ObjectAlreadyExistsException oare) {
+		catch (ObjectAlreadyExistsException oaee) {
 			if (_log.isInfoEnabled()) {
 				_log.info("Message is already scheduled");
+			}
+		}
+	}
+
+	protected void unregisterMessageListener(Scheduler scheduler, JobKey jobKey)
+		throws Exception {
+
+		JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+
+		if (jobDetail == null) {
+			return;
+		}
+
+		JobDataMap jobDataMap = jobDetail.getJobDataMap();
+
+		if (jobDataMap == null) {
+			return;
+		}
+
+		Message message = getMessage(jobDataMap);
+
+		String messageListenerUUID = message.getString(MESSAGE_LISTENER_UUID);
+
+		if (messageListenerUUID == null) {
+			return;
+		}
+
+		String destinationName = jobDataMap.getString(DESTINATION_NAME);
+
+		MessageBus messageBus = MessageBusUtil.getMessageBus();
+
+		Destination destination = messageBus.getDestination(destinationName);
+
+		Set<MessageListener> messageListeners =
+			destination.getMessageListeners();
+
+		for (MessageListener messageListener : messageListeners) {
+			if (!(messageListener instanceof InvokerMessageListener)) {
+				continue;
+			}
+
+			InvokerMessageListener invokerMessageListener =
+				(InvokerMessageListener)messageListener;
+
+			messageListener = invokerMessageListener.getMessageListener();
+
+			if (!(messageListener instanceof
+					SchedulerEventMessageListenerWrapper)) {
+
+				continue;
+			}
+
+			SchedulerEventMessageListenerWrapper schedulerMessageListener =
+				(SchedulerEventMessageListenerWrapper)messageListener;
+
+			if (messageListenerUUID.equals(
+					schedulerMessageListener.getMessageListenerUUID())) {
+
+				messageBus.unregisterMessageListener(
+					destinationName, schedulerMessageListener);
+
+				return;
 			}
 		}
 	}
@@ -901,6 +1057,8 @@ public class QuartzSchedulerEngine implements SchedulerEngine {
 		if (jobDetail == null) {
 			return;
 		}
+
+		unregisterMessageListener(scheduler, jobKey);
 
 		if (scheduler == _memoryScheduler) {
 			scheduler.unscheduleJob(triggerKey);

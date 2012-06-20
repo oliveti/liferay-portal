@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -39,10 +38,29 @@ public class UserServiceUtil {
 	 */
 
 	/**
+	* Returns the Spring bean ID for this bean.
+	*
+	* @return the Spring bean ID for this bean
+	*/
+	public static java.lang.String getBeanIdentifier() {
+		return getService().getBeanIdentifier();
+	}
+
+	/**
+	* Sets the Spring bean ID for this bean.
+	*
+	* @param beanIdentifier the Spring bean ID for this bean
+	*/
+	public static void setBeanIdentifier(java.lang.String beanIdentifier) {
+		getService().setBeanIdentifier(beanIdentifier);
+	}
+
+	/**
 	* Adds the users to the group.
 	*
 	* @param groupId the primary key of the group
 	* @param userIds the primary keys of the users
+	* @param serviceContext the service context (optionally <code>null</code>)
 	* @throws PortalException if a group or user with the primary key could not
 	be found, or if the user did not have permission to assign group
 	members
@@ -489,21 +507,6 @@ public class UserServiceUtil {
 	}
 
 	/**
-	* Returns the primary key of the default user for the company.
-	*
-	* @param companyId the primary key of the company
-	* @return the primary key of the default user for the company
-	* @throws PortalException if a default user for the company could not be
-	found
-	* @throws SystemException if a system exception occurred
-	*/
-	public static long getDefaultUserId(long companyId)
-		throws com.liferay.portal.kernel.exception.PortalException,
-			com.liferay.portal.kernel.exception.SystemException {
-		return getService().getDefaultUserId(companyId);
-	}
-
-	/**
 	* Returns the primary keys of all the users belonging to the group.
 	*
 	* @param groupId the primary key of the group
@@ -641,7 +644,8 @@ public class UserServiceUtil {
 	* @throws SystemException if a system exception occurred
 	*/
 	public static boolean hasGroupUser(long groupId, long userId)
-		throws com.liferay.portal.kernel.exception.SystemException {
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
 		return getService().hasGroupUser(groupId, userId);
 	}
 
@@ -655,7 +659,8 @@ public class UserServiceUtil {
 	* @throws SystemException if a system exception occurred
 	*/
 	public static boolean hasRoleUser(long roleId, long userId)
-		throws com.liferay.portal.kernel.exception.SystemException {
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
 		return getService().hasRoleUser(roleId, userId);
 	}
 
@@ -718,6 +723,7 @@ public class UserServiceUtil {
 	*
 	* @param groupId the primary key of the group
 	* @param userIds the primary keys of the users
+	* @param serviceContext the service context (optionally <code>null</code>)
 	* @throws PortalException if the current user did not have permission to
 	modify group assignments
 	* @throws SystemException if a system exception occurred
@@ -830,6 +836,9 @@ public class UserServiceUtil {
 	* @param password the user's password
 	* @param emailAddress1 the user's new email address
 	* @param emailAddress2 the user's new email address confirmation
+	* @param serviceContext the service context. Must set the portal URL, main
+	path, primary key of the layout, remote address, remote host, and
+	agent for the user.
 	* @return the user
 	* @throws PortalException if a user with the primary key could not be found
 	or if the current user did not have permission to update the user
@@ -946,6 +955,8 @@ public class UserServiceUtil {
 	*
 	* @param userId the primary key of the user
 	* @param organizationIds the primary keys of the organizations
+	* @param serviceContext the service context. Must set whether user
+	indexing is enabled.
 	* @throws PortalException if a user with the primary key could not be found
 	or if the current user did not have permission to update the user
 	* @throws SystemException if a system exception occurred
@@ -1042,9 +1053,10 @@ public class UserServiceUtil {
 	* @return the user
 	* @throws PortalException if a user with the primary key could not be
 	found, if the current user was updating her own status to
-	anything but {@link WorkflowConstants.STATUS_APPROVED}, or if the
-	current user did not have permission to update the user's
-	workflow status.
+	anything but {@link
+	com.liferay.portal.kernel.workflow.WorkflowConstants#STATUS_APPROVED},
+	or if the current user did not have permission to update the
+	user's workflow status.
 	* @throws SystemException if a system exception occurred
 	*/
 	public static com.liferay.portal.model.User updateStatus(long userId,
@@ -1253,19 +1265,15 @@ public class UserServiceUtil {
 
 			ReferenceRegistry.registerReference(UserServiceUtil.class,
 				"_service");
-			MethodCache.remove(UserService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(UserService service) {
-		MethodCache.remove(UserService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(UserServiceUtil.class, "_service");
-		MethodCache.remove(UserService.class);
 	}
 
 	private static UserService _service;

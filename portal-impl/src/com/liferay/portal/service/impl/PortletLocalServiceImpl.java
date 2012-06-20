@@ -156,20 +156,13 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			for (String roleName : roleNames) {
 				Role role = roleLocalService.getRole(companyId, roleName);
 
-				if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) {
-					if (resourceBlockLocalService.isSupported(name)) {
-						resourceBlockLocalService.addCompanyScopePermission(
-							companyId, name, role.getRoleId(), actionId);
-					}
-					else {
-						resourcePermissionLocalService.addResourcePermission(
-							companyId, name, scope, primKey, role.getRoleId(),
-							actionId);
-					}
+				if (resourceBlockLocalService.isSupported(name)) {
+					resourceBlockLocalService.addCompanyScopePermission(
+						companyId, name, role.getRoleId(), actionId);
 				}
 				else {
-					permissionLocalService.setRolePermission(
-						role.getRoleId(), companyId, name, scope, primKey,
+					resourcePermissionLocalService.addResourcePermission(
+						companyId, name, scope, primKey, role.getRoleId(),
 						actionId);
 				}
 			}
@@ -323,7 +316,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 				portlet.getCustomAttributesDisplayInstances();
 
 			if ((portletCustomAttributesDisplays != null) &&
-				(!portletCustomAttributesDisplays.isEmpty())) {
+				!portletCustomAttributesDisplays.isEmpty()) {
 
 				customAttributesDisplays.addAll(
 					portletCustomAttributesDisplays);
@@ -468,7 +461,7 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			portlet.setPortletInfo(
 				new PortletInfo(portletId, portletId, portletId, portletId));
 
-			if (PortletConstants.getInstanceId(portletId) != null) {
+			if (PortletConstants.hasInstanceId(portletId)) {
 				portlet.setInstanceable(true);
 			}
 
@@ -1063,19 +1056,19 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 
 			PortletApp portletApp = portlet.getPortletApp();
 
-			if ((servletContextName != null) && (portletApp.isWARFile()) &&
+			if ((servletContextName != null) && portletApp.isWARFile() &&
 				(portletId.endsWith(
 					PortletConstants.WAR_SEPARATOR +
 						PortalUtil.getJsSafePortletId(servletContextName)) &&
-				 (!portletIds.contains(portletId)))) {
+				 !portletIds.contains(portletId))) {
 
 				undefinedPortletIds.add(portletId);
 			}
 			else if ((servletContextName == null) &&
-					 (!portletApp.isWARFile()) &&
+					 !portletApp.isWARFile() &&
 					 (portletId.indexOf(
 						PortletConstants.WAR_SEPARATOR) == -1) &&
-					 (!portletIds.contains(portletId))) {
+					 !portletIds.contains(portletId)) {
 
 				undefinedPortletIds.add(portletId);
 			}
@@ -1363,6 +1356,15 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			GetterUtil.getString(
 				portletElement.elementText("permission-propagator"),
 				portletModel.getPermissionPropagatorClass()));
+
+		List<String> trashHandlerClasses =
+			portletModel.getTrashHandlerClasses();
+
+		for (Element trashHandlerClassElement :
+				portletElement.elements("trash-handler")) {
+
+			trashHandlerClasses.add(trashHandlerClassElement.getText());
+		}
 
 		List<String> workflowHandlerClasses =
 			portletModel.getWorkflowHandlerClasses();

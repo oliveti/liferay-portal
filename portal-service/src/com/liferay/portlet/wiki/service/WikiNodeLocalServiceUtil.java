@@ -15,7 +15,6 @@
 package com.liferay.portlet.wiki.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class WikiNodeLocalServiceUtil {
 	* Deletes the wiki node with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param nodeId the primary key of the wiki node
+	* @return the wiki node that was removed
 	* @throws PortalException if a wiki node with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteWikiNode(long nodeId)
+	public static com.liferay.portlet.wiki.model.WikiNode deleteWikiNode(
+		long nodeId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteWikiNode(nodeId);
+		return getService().deleteWikiNode(nodeId);
 	}
 
 	/**
 	* Deletes the wiki node from the database. Also notifies the appropriate model listeners.
 	*
 	* @param wikiNode the wiki node
+	* @return the wiki node that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteWikiNode(
+	public static com.liferay.portlet.wiki.model.WikiNode deleteWikiNode(
 		com.liferay.portlet.wiki.model.WikiNode wikiNode)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteWikiNode(wikiNode);
+		return getService().deleteWikiNode(wikiNode);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -417,20 +423,15 @@ public class WikiNodeLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(WikiNodeLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(WikiNodeLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(WikiNodeLocalService service) {
-		MethodCache.remove(WikiNodeLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(WikiNodeLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(WikiNodeLocalService.class);
 	}
 
 	private static WikiNodeLocalService _service;

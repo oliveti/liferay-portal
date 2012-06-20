@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.staging.StagingUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -32,6 +31,7 @@ import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.LayoutStagingHandler;
 import com.liferay.portal.model.User;
 import com.liferay.portal.security.auth.PrincipalThreadLocal;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceContextThreadLocal;
 import com.liferay.portal.service.UserLocalServiceUtil;
@@ -177,8 +177,10 @@ public class LayoutLocalServiceStagingAdvice
 		validateParentLayoutId(
 			groupId, privateLayout, layoutId, parentLayoutId);
 
-		Layout layout = layoutPersistence.findByG_P_L(
+		Layout originalLayout = layoutPersistence.findByG_P_L(
 			groupId, privateLayout, layoutId);
+
+		Layout layout = wrapLayout(originalLayout);
 
 		LayoutRevision layoutRevision = LayoutStagingUtil.getLayoutRevision(
 			layout);
@@ -190,36 +192,44 @@ public class LayoutLocalServiceStagingAdvice
 				friendlyURL, iconImage, iconBytes, serviceContext);
 		}
 
-		if (parentLayoutId != layout.getParentLayoutId()) {
-			layout.setPriority(
-				getNextPriority(groupId, privateLayout, parentLayoutId));
+		if (parentLayoutId != originalLayout.getParentLayoutId()) {
+			int priority = getNextPriority(
+				groupId, privateLayout, parentLayoutId,
+				originalLayout.getSourcePrototypeLayoutUuid(), -1);
+
+			originalLayout.setPriority(priority);
 		}
 
-		layout.setParentLayoutId(parentLayoutId);
+		originalLayout.setParentLayoutId(parentLayoutId);
 		layoutRevision.setNameMap(nameMap);
 		layoutRevision.setTitleMap(titleMap);
 		layoutRevision.setDescriptionMap(descriptionMap);
 		layoutRevision.setKeywordsMap(keywordsMap);
 		layoutRevision.setRobotsMap(robotsMap);
-		layout.setType(type);
-		layout.setHidden(hidden);
-		layout.setFriendlyURL(friendlyURL);
+		originalLayout.setType(type);
+		originalLayout.setHidden(hidden);
+		originalLayout.setFriendlyURL(friendlyURL);
 
 		if (iconImage != null) {
-			layout.setIconImage(iconImage.booleanValue());
+			originalLayout.setIconImage(iconImage.booleanValue());
 
 			if (iconImage.booleanValue()) {
-				long iconImageId = layout.getIconImageId();
+				long iconImageId = originalLayout.getIconImageId();
 
 				if (iconImageId <= 0) {
 					iconImageId = counterLocalService.increment();
 
-					layout.setIconImageId(iconImageId);
+					originalLayout.setIconImageId(iconImageId);
 				}
 			}
 		}
 
-		layoutPersistence.update(layout, false);
+		layoutPersistence.update(originalLayout, false);
+
+		boolean hasWorkflowTask = StagingUtil.hasWorkflowTask(
+			serviceContext.getUserId(), layoutRevision);
+
+		serviceContext.setAttribute("revisionInProgress", hasWorkflowTask);
 
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_SAVE_DRAFT);
 
@@ -239,17 +249,17 @@ public class LayoutLocalServiceStagingAdvice
 		if (iconImage != null) {
 			if ((iconBytes != null) && (iconBytes.length > 0)) {
 				imageLocalService.updateImage(
-					layout.getIconImageId(), iconBytes);
+					originalLayout.getIconImageId(), iconBytes);
 			}
 		}
 
 		// Expando
 
-		ExpandoBridge expandoBridge = layout.getExpandoBridge();
+		ExpandoBridge expandoBridge = originalLayout.getExpandoBridge();
 
 		expandoBridge.setAttributes(serviceContext);
 
-		return wrapLayout(layout);
+		return layout;
 	}
 
 	@Override
@@ -275,6 +285,11 @@ public class LayoutLocalServiceStagingAdvice
 
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
+
+		boolean hasWorkflowTask = StagingUtil.hasWorkflowTask(
+			serviceContext.getUserId(), layoutRevision);
+
+		serviceContext.setAttribute("revisionInProgress", hasWorkflowTask);
 
 		if (!MergeLayoutPrototypesThreadLocal.isInProgress()) {
 			serviceContext.setWorkflowAction(
@@ -328,6 +343,11 @@ public class LayoutLocalServiceStagingAdvice
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
+		boolean hasWorkflowTask = StagingUtil.hasWorkflowTask(
+			serviceContext.getUserId(), layoutRevision);
+
+		serviceContext.setAttribute("revisionInProgress", hasWorkflowTask);
+
 		if (!MergeLayoutPrototypesThreadLocal.isInProgress()) {
 			serviceContext.setWorkflowAction(
 				WorkflowConstants.ACTION_SAVE_DRAFT);
@@ -366,6 +386,11 @@ public class LayoutLocalServiceStagingAdvice
 
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
+
+		boolean hasWorkflowTask = StagingUtil.hasWorkflowTask(
+			serviceContext.getUserId(), layoutRevision);
+
+		serviceContext.setAttribute("revisionInProgress", hasWorkflowTask);
 
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_SAVE_DRAFT);
 
@@ -407,8 +432,8 @@ public class LayoutLocalServiceStagingAdvice
 		}
 
 		return (Layout)ProxyUtil.newProxyInstance(
-			PortalClassLoaderUtil.getClassLoader(), new Class[] {Layout.class},
-			new LayoutStagingHandler(layout));
+			PACLClassLoaderUtil.getPortalClassLoader(),
+			new Class[] {Layout.class}, new LayoutStagingHandler(layout));
 	}
 
 	protected List<Layout> wrapLayouts(

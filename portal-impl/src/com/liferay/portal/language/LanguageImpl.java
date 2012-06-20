@@ -263,7 +263,7 @@ public class LanguageImpl implements Language {
 		Object argument) {
 
 		return format(
-		portletConfig, locale, pattern, new Object[] {argument}, true);
+			portletConfig, locale, pattern, new Object[] {argument}, true);
 	}
 
 	public String format(
@@ -441,6 +441,41 @@ public class LanguageImpl implements Language {
 
 	public Locale getLocale(String languageCode) {
 		return _getInstance()._getLocale(languageCode);
+	}
+
+	public String getTimeDescription(Locale locale, long milliseconds) {
+		return getTimeDescription(locale, milliseconds, false);
+	}
+
+	public String getTimeDescription(
+		Locale locale, long milliseconds, boolean approximate) {
+
+		String description = Time.getDescription(milliseconds, approximate);
+
+		String value = null;
+
+		try {
+			int pos = description.indexOf(CharPool.SPACE);
+
+			String x = description.substring(0, pos);
+
+			value = x.concat(StringPool.SPACE).concat(
+				get(
+					locale,
+					description.substring(
+						pos + 1, description.length()).toLowerCase()));
+		}
+		catch (Exception e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(e, e);
+			}
+		}
+
+		return value;
+	}
+
+	public String getTimeDescription(Locale locale, Long milliseconds) {
+		return getTimeDescription(locale, milliseconds.longValue());
 	}
 
 	public String getTimeDescription(
@@ -637,8 +672,8 @@ public class LanguageImpl implements Language {
 
 			String portletName = portletConfig.getPortletName();
 
-			if (((value == null) || (value.equals(defaultValue))) &&
-				(portletName.equals(PortletKeys.PORTLET_CONFIGURATION))) {
+			if (((value == null) || value.equals(defaultValue)) &&
+				portletName.equals(PortletKeys.PORTLET_CONFIGURATION)) {
 
 				value = _getPortletConfigurationValue(pageContext, locale, key);
 			}

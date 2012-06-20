@@ -15,7 +15,6 @@
 package com.liferay.portlet.mobiledevicerules.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class MDRRuleGroupInstanceLocalServiceUtil {
 	* Deletes the m d r rule group instance with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param ruleGroupInstanceId the primary key of the m d r rule group instance
+	* @return the m d r rule group instance that was removed
 	* @throws PortalException if a m d r rule group instance with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMDRRuleGroupInstance(long ruleGroupInstanceId)
+	public static com.liferay.portlet.mobiledevicerules.model.MDRRuleGroupInstance deleteMDRRuleGroupInstance(
+		long ruleGroupInstanceId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMDRRuleGroupInstance(ruleGroupInstanceId);
+		return getService().deleteMDRRuleGroupInstance(ruleGroupInstanceId);
 	}
 
 	/**
 	* Deletes the m d r rule group instance from the database. Also notifies the appropriate model listeners.
 	*
 	* @param mdrRuleGroupInstance the m d r rule group instance
+	* @return the m d r rule group instance that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteMDRRuleGroupInstance(
+	public static com.liferay.portlet.mobiledevicerules.model.MDRRuleGroupInstance deleteMDRRuleGroupInstance(
 		com.liferay.portlet.mobiledevicerules.model.MDRRuleGroupInstance mdrRuleGroupInstance)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteMDRRuleGroupInstance(mdrRuleGroupInstance);
+		return getService().deleteMDRRuleGroupInstance(mdrRuleGroupInstance);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -301,6 +307,11 @@ public class MDRRuleGroupInstanceLocalServiceUtil {
 			ruleGroupId, serviceContext);
 	}
 
+	public static void deleteGroupRuleGroupInstances(long groupId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteGroupRuleGroupInstances(groupId);
+	}
+
 	public static void deleteRuleGroupInstance(long ruleGroupInstanceId)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		getService().deleteRuleGroupInstance(ruleGroupInstanceId);
@@ -396,20 +407,15 @@ public class MDRRuleGroupInstanceLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(MDRRuleGroupInstanceLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(MDRRuleGroupInstanceLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(MDRRuleGroupInstanceLocalService service) {
-		MethodCache.remove(MDRRuleGroupInstanceLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(MDRRuleGroupInstanceLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(MDRRuleGroupInstanceLocalService.class);
 	}
 
 	private static MDRRuleGroupInstanceLocalService _service;

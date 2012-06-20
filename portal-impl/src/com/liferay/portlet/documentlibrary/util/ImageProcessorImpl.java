@@ -14,29 +14,32 @@
 
 package com.liferay.portlet.documentlibrary.util;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.image.ImageBag;
 import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
-import com.liferay.portal.kernel.messaging.MessageBusException;
-import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.InstancePool;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.documentlibrary.NoSuchFileEntryException;
+import com.liferay.portlet.documentlibrary.store.DLStoreUtil;
 
 import java.awt.image.RenderedImage;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 
 import java.util.List;
@@ -54,31 +57,54 @@ public class ImageProcessorImpl
 		return _instance;
 	}
 
+	@Override
 	public void cleanUp(FileEntry fileEntry) {
 		deleteFiles(fileEntry, null);
 	}
 
+	@Override
 	public void cleanUp(FileVersion fileVersion) {
 		String type = _instance.getThumbnailType(fileVersion);
 
 		deleteFiles(fileVersion, type);
 	}
 
-	public void exportGeneratedFiles(
-			PortletDataContext portletDataContext, FileEntry fileEntry,
-			Element fileEntryElement)
+	public void generateImages(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
 		throws Exception {
 
-		exportThumbnails(
-			portletDataContext, fileEntry, fileEntryElement, "image");
-	}
-
-	public void generateImages(FileVersion fileVersion) {
-		_instance._generateImages(fileVersion);
+		_instance._generateImages(sourceFileVersion, destinationFileVersion);
 	}
 
 	public Set<String> getImageMimeTypes() {
 		return _instance._imageMimeTypes;
+	}
+
+	public InputStream getPreviewAsStream(FileVersion fileVersion)
+		throws Exception {
+
+		if (_previewGenerationRequired(fileVersion)) {
+			String type = getPreviewType(fileVersion);
+
+			return _instance.doGetPreviewAsStream(fileVersion, type);
+		}
+
+		return fileVersion.getContentStream(false);
+	}
+
+	public long getPreviewFileSize(FileVersion fileVersion) throws Exception {
+		if (_previewGenerationRequired(fileVersion)) {
+			String type = getPreviewType(fileVersion);
+
+			return _instance.doGetPreviewFileSize(fileVersion, type);
+		}
+
+		return fileVersion.getSize();
+	}
+
+	@Override
+	public String getPreviewType(FileVersion fileVersion) {
+		return _getType(fileVersion);
 	}
 
 	public InputStream getThumbnailAsStream(FileVersion fileVersion, int index)
@@ -93,18 +119,29 @@ public class ImageProcessorImpl
 		return _instance.doGetThumbnailFileSize(fileVersion, index);
 	}
 
+	@Override
+	public String getThumbnailType(FileVersion fileVersion) {
+		return _getType(fileVersion);
+	}
+
 	public boolean hasImages(FileVersion fileVersion) {
-		if (!PropsValues.DL_FILE_ENTRY_THUMBNAIL_ENABLED) {
+		if (!PropsValues.DL_FILE_ENTRY_PREVIEW_ENABLED &&
+			!PropsValues.DL_FILE_ENTRY_THUMBNAIL_ENABLED) {
+
 			return false;
 		}
 
 		boolean hasImages = false;
 
 		try {
-			hasImages = _instance.hasThumbnails(fileVersion);
+			if (_instance._hasPreview(fileVersion) &&
+				hasThumbnails(fileVersion)) {
+
+				hasImages = true;
+			}
 
 			if (!hasImages && _instance.isSupported(fileVersion)) {
-				_instance._queueGeneration(fileVersion);
+				_instance._queueGeneration(null, fileVersion);
 			}
 		}
 		catch (Exception e) {
@@ -112,16 +149,6 @@ public class ImageProcessorImpl
 		}
 
 		return hasImages;
-	}
-
-	public void importGeneratedFiles(
-			PortletDataContext portletDataContext, FileEntry fileEntry,
-			FileEntry importedFileEntry, Element fileEntryElement)
-		throws Exception {
-
-		importThumbnails(
-			portletDataContext, fileEntry, importedFileEntry, fileEntryElement,
-			"image");
 	}
 
 	public boolean isImageSupported(FileVersion fileVersion) {
@@ -151,36 +178,87 @@ public class ImageProcessorImpl
 			custom2ImageId, is, type);
 	}
 
-	public void trigger(FileVersion fileVersion) {
-		_instance._queueGeneration(fileVersion);
+	public void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
+
+		_instance._queueGeneration(sourceFileVersion, destinationFileVersion);
 	}
 
 	@Override
-	protected String getPreviewType(FileVersion fileVersion) {
-		return null;
+	protected void doExportGeneratedFiles(
+			PortletDataContext portletDataContext, FileEntry fileEntry,
+			Element fileEntryElement)
+		throws Exception {
+
+		exportThumbnails(
+			portletDataContext, fileEntry, fileEntryElement, "image");
+
+		exportPreview(portletDataContext, fileEntry, fileEntryElement);
 	}
 
 	@Override
-	protected String getThumbnailType(FileVersion fileVersion) {
-		String type = fileVersion.getExtension();
+	protected void doImportGeneratedFiles(
+			PortletDataContext portletDataContext, FileEntry fileEntry,
+			FileEntry importedFileEntry, Element fileEntryElement)
+		throws Exception {
 
-		if (type.equals("jpeg")) {
-			type = "jpg";
+		importThumbnails(
+			portletDataContext, fileEntry, importedFileEntry, fileEntryElement,
+			"image");
+
+		FileVersion importedFileVersion = importedFileEntry.getFileVersion();
+
+		if (!_previewGenerationRequired(importedFileVersion)) {
+			return;
 		}
 
-		return type;
+		importPreview(
+			portletDataContext, fileEntry, importedFileEntry, fileEntryElement,
+			"image", getPreviewType(importedFileVersion));
+	}
+
+	protected void exportPreview(
+			PortletDataContext portletDataContext, FileEntry fileEntry,
+			Element fileEntryElement)
+		throws Exception {
+
+		FileVersion fileVersion = fileEntry.getFileVersion();
+
+		if (!isSupported(fileVersion) ||
+			!_previewGenerationRequired(fileVersion) ||
+			!_hasPreview(fileVersion)) {
+
+			return;
+		}
+
+		exportPreview(
+			portletDataContext, fileEntry, fileEntryElement, "image",
+			getPreviewType(fileVersion));
 	}
 
 	private ImageProcessorImpl() {
 	}
 
-	private void _generateImages(FileVersion fileVersion) {
+	private void _generateImages(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
+		throws Exception {
+
+		InputStream inputStream = null;
+
 		try {
-			if (!PropsValues.DL_FILE_ENTRY_THUMBNAIL_ENABLED) {
+			if (sourceFileVersion != null) {
+				copy(sourceFileVersion, destinationFileVersion);
+
 				return;
 			}
 
-			InputStream inputStream = fileVersion.getContentStream(false);
+			if (!PropsValues.DL_FILE_ENTRY_THUMBNAIL_ENABLED &&
+				!PropsValues.DL_FILE_ENTRY_PREVIEW_ENABLED) {
+
+				return;
+			}
+
+			inputStream = destinationFileVersion.getContentStream(false);
 
 			byte[] bytes = FileUtil.getBytes(inputStream);
 
@@ -192,40 +270,129 @@ public class ImageProcessorImpl
 				return;
 			}
 
-			storeThumbnailImages(fileVersion, renderedImage);
+			if (renderedImage.getColorModel().getNumComponents() == 4) {
+				RenderedImage convertedRenderedImage =
+					ImageToolUtil.convertCMYKtoRGB(
+						bytes, imageBag.getType(),
+						PropsValues.DL_FILE_ENTRY_PREVIEW_FORK_PROCESS_ENABLED);
+
+				if (convertedRenderedImage != null) {
+					renderedImage = convertedRenderedImage;
+				}
+			}
+
+			if (!_hasPreview(destinationFileVersion)) {
+				_storePreviewImage(destinationFileVersion, renderedImage);
+			}
+
+			if (!hasThumbnails(destinationFileVersion)) {
+				storeThumbnailImages(destinationFileVersion, renderedImage);
+			}
 		}
 		catch (NoSuchFileEntryException nsfee) {
 		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
 		finally {
-			_fileVersionIds.remove(fileVersion.getFileVersionId());
+			StreamUtil.cleanUp(inputStream);
+
+			_fileVersionIds.remove(destinationFileVersion.getFileVersionId());
 		}
 	}
 
-	private void _queueGeneration(FileVersion fileVersion) {
-		if (!_fileVersionIds.contains(fileVersion.getFileVersionId()) &&
-			isSupported(fileVersion) && !hasThumbnails(fileVersion)) {
-			_fileVersionIds.add(fileVersion.getFileVersionId());
+	private String _getType(FileVersion fileVersion) {
+		String type = "png";
 
-			if (PropsValues.DL_FILE_ENTRY_PROCESSORS_TRIGGER_SYNCHRONOUSLY) {
-				try {
-					MessageBusUtil.sendSynchronousMessage(
-						DestinationNames.DOCUMENT_LIBRARY_IMAGE_PROCESSOR,
-						fileVersion);
-				}
-				catch (MessageBusException mbe) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(mbe, mbe);
-					}
-				}
+		if (fileVersion == null) {
+			return type;
+		}
+
+		String extension = fileVersion.getExtension();
+
+		if (extension.equals("jpeg")) {
+			type = "jpg";
+		}
+		else if (!_previewGenerationRequired(fileVersion)) {
+			type = extension;
+		}
+
+		return type;
+	}
+
+	private boolean _hasPreview(FileVersion fileVersion)
+		throws PortalException, SystemException {
+
+		if (PropsValues.DL_FILE_ENTRY_PREVIEW_ENABLED &&
+			_previewGenerationRequired(fileVersion)) {
+
+			String type = getPreviewType(fileVersion);
+
+			String previewFilePath = getPreviewFilePath(fileVersion, type);
+
+			if (!DLStoreUtil.hasFile(
+					fileVersion.getCompanyId(), REPOSITORY_ID,
+					previewFilePath)) {
+
+				return false;
 			}
-			else {
-				MessageBusUtil.sendMessage(
-					DestinationNames.DOCUMENT_LIBRARY_IMAGE_PROCESSOR,
-					fileVersion);
+		}
+
+		return true;
+	}
+
+	private boolean _previewGenerationRequired(FileVersion fileVersion) {
+		String type = fileVersion.getExtension();
+
+		if (type.equals("tiff") || type.equals("tif")) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	private void _queueGeneration(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
+
+		if (_fileVersionIds.contains(
+				destinationFileVersion.getFileVersionId()) ||
+			!isSupported(destinationFileVersion)) {
+
+			return;
+		}
+
+		_fileVersionIds.add(destinationFileVersion.getFileVersionId());
+
+		sendGenerationMessage(
+			DestinationNames.DOCUMENT_LIBRARY_IMAGE_PROCESSOR,
+			PropsValues.DL_FILE_ENTRY_PROCESSORS_TRIGGER_SYNCHRONOUSLY,
+			sourceFileVersion, destinationFileVersion);
+	}
+
+	private void _storePreviewImage(
+			FileVersion fileVersion, RenderedImage renderedImage)
+		throws Exception {
+
+		String type = getPreviewType(fileVersion);
+
+		File file = null;
+
+		try {
+			file = FileUtil.createTempFile(type);
+
+			FileOutputStream fos = new FileOutputStream(file);
+
+			try {
+				ImageToolUtil.write(renderedImage, type, fos);
 			}
+			finally {
+				fos.close();
+			}
+
+			addFileToStore(
+				fileVersion.getCompanyId(), PREVIEW_PATH,
+				getPreviewFilePath(fileVersion, type), file);
+		}
+		finally {
+			FileUtil.delete(file);
 		}
 	}
 

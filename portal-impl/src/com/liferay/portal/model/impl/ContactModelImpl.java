@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.Contact;
 import com.liferay.portal.model.ContactModel;
@@ -37,7 +38,9 @@ import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The base model implementation for the Contact service. Represents a row in the &quot;Contact_&quot; database table, with each column mapped to a property of this class.
@@ -68,8 +71,11 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 			{ "userName", Types.VARCHAR },
 			{ "createDate", Types.TIMESTAMP },
 			{ "modifiedDate", Types.TIMESTAMP },
+			{ "classNameId", Types.BIGINT },
+			{ "classPK", Types.BIGINT },
 			{ "accountId", Types.BIGINT },
 			{ "parentContactId", Types.BIGINT },
+			{ "emailAddress", Types.VARCHAR },
 			{ "firstName", Types.VARCHAR },
 			{ "middleName", Types.VARCHAR },
 			{ "lastName", Types.VARCHAR },
@@ -93,7 +99,7 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 			{ "jobClass", Types.VARCHAR },
 			{ "hoursOfOperation", Types.VARCHAR }
 		};
-	public static final String TABLE_SQL_CREATE = "create table Contact_ (contactId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,accountId LONG,parentContactId LONG,firstName VARCHAR(75) null,middleName VARCHAR(75) null,lastName VARCHAR(75) null,prefixId INTEGER,suffixId INTEGER,male BOOLEAN,birthday DATE null,smsSn VARCHAR(75) null,aimSn VARCHAR(75) null,facebookSn VARCHAR(75) null,icqSn VARCHAR(75) null,jabberSn VARCHAR(75) null,msnSn VARCHAR(75) null,mySpaceSn VARCHAR(75) null,skypeSn VARCHAR(75) null,twitterSn VARCHAR(75) null,ymSn VARCHAR(75) null,employeeStatusId VARCHAR(75) null,employeeNumber VARCHAR(75) null,jobTitle VARCHAR(100) null,jobClass VARCHAR(75) null,hoursOfOperation VARCHAR(75) null)";
+	public static final String TABLE_SQL_CREATE = "create table Contact_ (contactId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,accountId LONG,parentContactId LONG,emailAddress VARCHAR(75) null,firstName VARCHAR(75) null,middleName VARCHAR(75) null,lastName VARCHAR(75) null,prefixId INTEGER,suffixId INTEGER,male BOOLEAN,birthday DATE null,smsSn VARCHAR(75) null,aimSn VARCHAR(75) null,facebookSn VARCHAR(75) null,icqSn VARCHAR(75) null,jabberSn VARCHAR(75) null,msnSn VARCHAR(75) null,mySpaceSn VARCHAR(75) null,skypeSn VARCHAR(75) null,twitterSn VARCHAR(75) null,ymSn VARCHAR(75) null,employeeStatusId VARCHAR(75) null,employeeNumber VARCHAR(75) null,jobTitle VARCHAR(100) null,jobClass VARCHAR(75) null,hoursOfOperation VARCHAR(75) null)";
 	public static final String TABLE_SQL_DROP = "drop table Contact_";
 	public static final String DATA_SOURCE = "liferayDataSource";
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
@@ -107,7 +113,10 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
 				"value.object.column.bitmask.enabled.com.liferay.portal.model.Contact"),
 			true);
-	public static long COMPANYID_COLUMN_BITMASK = 1L;
+	public static long ACCOUNTID_COLUMN_BITMASK = 1L;
+	public static long CLASSNAMEID_COLUMN_BITMASK = 2L;
+	public static long CLASSPK_COLUMN_BITMASK = 4L;
+	public static long COMPANYID_COLUMN_BITMASK = 8L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -124,8 +133,11 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 		model.setUserName(soapModel.getUserName());
 		model.setCreateDate(soapModel.getCreateDate());
 		model.setModifiedDate(soapModel.getModifiedDate());
+		model.setClassNameId(soapModel.getClassNameId());
+		model.setClassPK(soapModel.getClassPK());
 		model.setAccountId(soapModel.getAccountId());
 		model.setParentContactId(soapModel.getParentContactId());
+		model.setEmailAddress(soapModel.getEmailAddress());
 		model.setFirstName(soapModel.getFirstName());
 		model.setMiddleName(soapModel.getMiddleName());
 		model.setLastName(soapModel.getLastName());
@@ -196,6 +208,248 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 
 	public String getModelClassName() {
 		return Contact.class.getName();
+	}
+
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("contactId", getContactId());
+		attributes.put("companyId", getCompanyId());
+		attributes.put("userId", getUserId());
+		attributes.put("userName", getUserName());
+		attributes.put("createDate", getCreateDate());
+		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("classNameId", getClassNameId());
+		attributes.put("classPK", getClassPK());
+		attributes.put("accountId", getAccountId());
+		attributes.put("parentContactId", getParentContactId());
+		attributes.put("emailAddress", getEmailAddress());
+		attributes.put("firstName", getFirstName());
+		attributes.put("middleName", getMiddleName());
+		attributes.put("lastName", getLastName());
+		attributes.put("prefixId", getPrefixId());
+		attributes.put("suffixId", getSuffixId());
+		attributes.put("male", getMale());
+		attributes.put("birthday", getBirthday());
+		attributes.put("smsSn", getSmsSn());
+		attributes.put("aimSn", getAimSn());
+		attributes.put("facebookSn", getFacebookSn());
+		attributes.put("icqSn", getIcqSn());
+		attributes.put("jabberSn", getJabberSn());
+		attributes.put("msnSn", getMsnSn());
+		attributes.put("mySpaceSn", getMySpaceSn());
+		attributes.put("skypeSn", getSkypeSn());
+		attributes.put("twitterSn", getTwitterSn());
+		attributes.put("ymSn", getYmSn());
+		attributes.put("employeeStatusId", getEmployeeStatusId());
+		attributes.put("employeeNumber", getEmployeeNumber());
+		attributes.put("jobTitle", getJobTitle());
+		attributes.put("jobClass", getJobClass());
+		attributes.put("hoursOfOperation", getHoursOfOperation());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		Long contactId = (Long)attributes.get("contactId");
+
+		if (contactId != null) {
+			setContactId(contactId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
+		}
+
+		Long userId = (Long)attributes.get("userId");
+
+		if (userId != null) {
+			setUserId(userId);
+		}
+
+		String userName = (String)attributes.get("userName");
+
+		if (userName != null) {
+			setUserName(userName);
+		}
+
+		Date createDate = (Date)attributes.get("createDate");
+
+		if (createDate != null) {
+			setCreateDate(createDate);
+		}
+
+		Date modifiedDate = (Date)attributes.get("modifiedDate");
+
+		if (modifiedDate != null) {
+			setModifiedDate(modifiedDate);
+		}
+
+		Long classNameId = (Long)attributes.get("classNameId");
+
+		if (classNameId != null) {
+			setClassNameId(classNameId);
+		}
+
+		Long classPK = (Long)attributes.get("classPK");
+
+		if (classPK != null) {
+			setClassPK(classPK);
+		}
+
+		Long accountId = (Long)attributes.get("accountId");
+
+		if (accountId != null) {
+			setAccountId(accountId);
+		}
+
+		Long parentContactId = (Long)attributes.get("parentContactId");
+
+		if (parentContactId != null) {
+			setParentContactId(parentContactId);
+		}
+
+		String emailAddress = (String)attributes.get("emailAddress");
+
+		if (emailAddress != null) {
+			setEmailAddress(emailAddress);
+		}
+
+		String firstName = (String)attributes.get("firstName");
+
+		if (firstName != null) {
+			setFirstName(firstName);
+		}
+
+		String middleName = (String)attributes.get("middleName");
+
+		if (middleName != null) {
+			setMiddleName(middleName);
+		}
+
+		String lastName = (String)attributes.get("lastName");
+
+		if (lastName != null) {
+			setLastName(lastName);
+		}
+
+		Integer prefixId = (Integer)attributes.get("prefixId");
+
+		if (prefixId != null) {
+			setPrefixId(prefixId);
+		}
+
+		Integer suffixId = (Integer)attributes.get("suffixId");
+
+		if (suffixId != null) {
+			setSuffixId(suffixId);
+		}
+
+		Boolean male = (Boolean)attributes.get("male");
+
+		if (male != null) {
+			setMale(male);
+		}
+
+		Date birthday = (Date)attributes.get("birthday");
+
+		if (birthday != null) {
+			setBirthday(birthday);
+		}
+
+		String smsSn = (String)attributes.get("smsSn");
+
+		if (smsSn != null) {
+			setSmsSn(smsSn);
+		}
+
+		String aimSn = (String)attributes.get("aimSn");
+
+		if (aimSn != null) {
+			setAimSn(aimSn);
+		}
+
+		String facebookSn = (String)attributes.get("facebookSn");
+
+		if (facebookSn != null) {
+			setFacebookSn(facebookSn);
+		}
+
+		String icqSn = (String)attributes.get("icqSn");
+
+		if (icqSn != null) {
+			setIcqSn(icqSn);
+		}
+
+		String jabberSn = (String)attributes.get("jabberSn");
+
+		if (jabberSn != null) {
+			setJabberSn(jabberSn);
+		}
+
+		String msnSn = (String)attributes.get("msnSn");
+
+		if (msnSn != null) {
+			setMsnSn(msnSn);
+		}
+
+		String mySpaceSn = (String)attributes.get("mySpaceSn");
+
+		if (mySpaceSn != null) {
+			setMySpaceSn(mySpaceSn);
+		}
+
+		String skypeSn = (String)attributes.get("skypeSn");
+
+		if (skypeSn != null) {
+			setSkypeSn(skypeSn);
+		}
+
+		String twitterSn = (String)attributes.get("twitterSn");
+
+		if (twitterSn != null) {
+			setTwitterSn(twitterSn);
+		}
+
+		String ymSn = (String)attributes.get("ymSn");
+
+		if (ymSn != null) {
+			setYmSn(ymSn);
+		}
+
+		String employeeStatusId = (String)attributes.get("employeeStatusId");
+
+		if (employeeStatusId != null) {
+			setEmployeeStatusId(employeeStatusId);
+		}
+
+		String employeeNumber = (String)attributes.get("employeeNumber");
+
+		if (employeeNumber != null) {
+			setEmployeeNumber(employeeNumber);
+		}
+
+		String jobTitle = (String)attributes.get("jobTitle");
+
+		if (jobTitle != null) {
+			setJobTitle(jobTitle);
+		}
+
+		String jobClass = (String)attributes.get("jobClass");
+
+		if (jobClass != null) {
+			setJobClass(jobClass);
+		}
+
+		String hoursOfOperation = (String)attributes.get("hoursOfOperation");
+
+		if (hoursOfOperation != null) {
+			setHoursOfOperation(hoursOfOperation);
+		}
 	}
 
 	@JSON
@@ -277,13 +531,85 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 		_modifiedDate = modifiedDate;
 	}
 
+	public String getClassName() {
+		if (getClassNameId() <= 0) {
+			return StringPool.BLANK;
+		}
+
+		return PortalUtil.getClassName(getClassNameId());
+	}
+
+	public void setClassName(String className) {
+		long classNameId = 0;
+
+		if (Validator.isNotNull(className)) {
+			classNameId = PortalUtil.getClassNameId(className);
+		}
+
+		setClassNameId(classNameId);
+	}
+
+	@JSON
+	public long getClassNameId() {
+		return _classNameId;
+	}
+
+	public void setClassNameId(long classNameId) {
+		_columnBitmask |= CLASSNAMEID_COLUMN_BITMASK;
+
+		if (!_setOriginalClassNameId) {
+			_setOriginalClassNameId = true;
+
+			_originalClassNameId = _classNameId;
+		}
+
+		_classNameId = classNameId;
+	}
+
+	public long getOriginalClassNameId() {
+		return _originalClassNameId;
+	}
+
+	@JSON
+	public long getClassPK() {
+		return _classPK;
+	}
+
+	public void setClassPK(long classPK) {
+		_columnBitmask |= CLASSPK_COLUMN_BITMASK;
+
+		if (!_setOriginalClassPK) {
+			_setOriginalClassPK = true;
+
+			_originalClassPK = _classPK;
+		}
+
+		_classPK = classPK;
+	}
+
+	public long getOriginalClassPK() {
+		return _originalClassPK;
+	}
+
 	@JSON
 	public long getAccountId() {
 		return _accountId;
 	}
 
 	public void setAccountId(long accountId) {
+		_columnBitmask |= ACCOUNTID_COLUMN_BITMASK;
+
+		if (!_setOriginalAccountId) {
+			_setOriginalAccountId = true;
+
+			_originalAccountId = _accountId;
+		}
+
 		_accountId = accountId;
+	}
+
+	public long getOriginalAccountId() {
+		return _originalAccountId;
 	}
 
 	@JSON
@@ -293,6 +619,20 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 
 	public void setParentContactId(long parentContactId) {
 		_parentContactId = parentContactId;
+	}
+
+	@JSON
+	public String getEmailAddress() {
+		if (_emailAddress == null) {
+			return StringPool.BLANK;
+		}
+		else {
+			return _emailAddress;
+		}
+	}
+
+	public void setEmailAddress(String emailAddress) {
+		_emailAddress = emailAddress;
 	}
 
 	@JSON
@@ -604,17 +944,15 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(getCompanyId(),
-					Contact.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(getCompanyId(),
+			Contact.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -627,8 +965,11 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 		contactImpl.setUserName(getUserName());
 		contactImpl.setCreateDate(getCreateDate());
 		contactImpl.setModifiedDate(getModifiedDate());
+		contactImpl.setClassNameId(getClassNameId());
+		contactImpl.setClassPK(getClassPK());
 		contactImpl.setAccountId(getAccountId());
 		contactImpl.setParentContactId(getParentContactId());
+		contactImpl.setEmailAddress(getEmailAddress());
 		contactImpl.setFirstName(getFirstName());
 		contactImpl.setMiddleName(getMiddleName());
 		contactImpl.setLastName(getLastName());
@@ -709,6 +1050,18 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 
 		contactModelImpl._setOriginalCompanyId = false;
 
+		contactModelImpl._originalClassNameId = contactModelImpl._classNameId;
+
+		contactModelImpl._setOriginalClassNameId = false;
+
+		contactModelImpl._originalClassPK = contactModelImpl._classPK;
+
+		contactModelImpl._setOriginalClassPK = false;
+
+		contactModelImpl._originalAccountId = contactModelImpl._accountId;
+
+		contactModelImpl._setOriginalAccountId = false;
+
 		contactModelImpl._columnBitmask = 0;
 	}
 
@@ -748,9 +1101,21 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 			contactCacheModel.modifiedDate = Long.MIN_VALUE;
 		}
 
+		contactCacheModel.classNameId = getClassNameId();
+
+		contactCacheModel.classPK = getClassPK();
+
 		contactCacheModel.accountId = getAccountId();
 
 		contactCacheModel.parentContactId = getParentContactId();
+
+		contactCacheModel.emailAddress = getEmailAddress();
+
+		String emailAddress = contactCacheModel.emailAddress;
+
+		if ((emailAddress != null) && (emailAddress.length() == 0)) {
+			contactCacheModel.emailAddress = null;
+		}
 
 		contactCacheModel.firstName = getFirstName();
 
@@ -916,7 +1281,7 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(61);
+		StringBundler sb = new StringBundler(67);
 
 		sb.append("{contactId=");
 		sb.append(getContactId());
@@ -930,10 +1295,16 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 		sb.append(getCreateDate());
 		sb.append(", modifiedDate=");
 		sb.append(getModifiedDate());
+		sb.append(", classNameId=");
+		sb.append(getClassNameId());
+		sb.append(", classPK=");
+		sb.append(getClassPK());
 		sb.append(", accountId=");
 		sb.append(getAccountId());
 		sb.append(", parentContactId=");
 		sb.append(getParentContactId());
+		sb.append(", emailAddress=");
+		sb.append(getEmailAddress());
 		sb.append(", firstName=");
 		sb.append(getFirstName());
 		sb.append(", middleName=");
@@ -984,7 +1355,7 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 	}
 
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(94);
+		StringBundler sb = new StringBundler(103);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.portal.model.Contact");
@@ -1015,12 +1386,24 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 		sb.append(getModifiedDate());
 		sb.append("]]></column-value></column>");
 		sb.append(
+			"<column><column-name>classNameId</column-name><column-value><![CDATA[");
+		sb.append(getClassNameId());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>classPK</column-name><column-value><![CDATA[");
+		sb.append(getClassPK());
+		sb.append("]]></column-value></column>");
+		sb.append(
 			"<column><column-name>accountId</column-name><column-value><![CDATA[");
 		sb.append(getAccountId());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>parentContactId</column-name><column-value><![CDATA[");
 		sb.append(getParentContactId());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>emailAddress</column-name><column-value><![CDATA[");
+		sb.append(getEmailAddress());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>firstName</column-name><column-value><![CDATA[");
@@ -1129,8 +1512,17 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 	private String _userName;
 	private Date _createDate;
 	private Date _modifiedDate;
+	private long _classNameId;
+	private long _originalClassNameId;
+	private boolean _setOriginalClassNameId;
+	private long _classPK;
+	private long _originalClassPK;
+	private boolean _setOriginalClassPK;
 	private long _accountId;
+	private long _originalAccountId;
+	private boolean _setOriginalAccountId;
 	private long _parentContactId;
+	private String _emailAddress;
 	private String _firstName;
 	private String _middleName;
 	private String _lastName;
@@ -1153,7 +1545,6 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 	private String _jobTitle;
 	private String _jobClass;
 	private String _hoursOfOperation;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private Contact _escapedModelProxy;
 }

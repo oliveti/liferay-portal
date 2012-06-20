@@ -73,24 +73,15 @@ public class ThemeDeployer extends BaseDeployer {
 	}
 
 	@Override
-	public String getExtraContent(
-			double webXmlVersion, File srcFile, String displayName)
+	public String getExtraFiltersContent(double webXmlVersion, File srcFile)
 		throws Exception {
 
-		StringBundler sb = new StringBundler(7);
+		StringBundler sb = new StringBundler(3);
 
-		String extraContent = super.getExtraContent(
-			webXmlVersion, srcFile, displayName);
+		String extraFiltersContent = super.getExtraFiltersContent(
+			webXmlVersion, srcFile);
 
-		sb.append(extraContent);
-
-		// ThemeContextListener
-
-		sb.append("<listener>");
-		sb.append("<listener-class>");
-		sb.append("com.liferay.portal.kernel.servlet.ThemeContextListener");
-		sb.append("</listener-class>");
-		sb.append("</listener>");
+		sb.append(extraFiltersContent);
 
 		// Ignore filters
 

@@ -15,7 +15,6 @@
 package com.liferay.portlet.ratings.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class RatingsEntryLocalServiceUtil {
 	* Deletes the ratings entry with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param entryId the primary key of the ratings entry
+	* @return the ratings entry that was removed
 	* @throws PortalException if a ratings entry with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteRatingsEntry(long entryId)
+	public static com.liferay.portlet.ratings.model.RatingsEntry deleteRatingsEntry(
+		long entryId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteRatingsEntry(entryId);
+		return getService().deleteRatingsEntry(entryId);
 	}
 
 	/**
 	* Deletes the ratings entry from the database. Also notifies the appropriate model listeners.
 	*
 	* @param ratingsEntry the ratings entry
+	* @return the ratings entry that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteRatingsEntry(
+	public static com.liferay.portlet.ratings.model.RatingsEntry deleteRatingsEntry(
 		com.liferay.portlet.ratings.model.RatingsEntry ratingsEntry)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteRatingsEntry(ratingsEntry);
+		return getService().deleteRatingsEntry(ratingsEntry);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -322,20 +328,15 @@ public class RatingsEntryLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(RatingsEntryLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(RatingsEntryLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(RatingsEntryLocalService service) {
-		MethodCache.remove(RatingsEntryLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(RatingsEntryLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(RatingsEntryLocalService.class);
 	}
 
 	private static RatingsEntryLocalService _service;

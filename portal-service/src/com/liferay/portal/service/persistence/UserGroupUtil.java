@@ -717,12 +717,14 @@ public class UserGroupUtil {
 	*
 	* @param companyId the company ID
 	* @param name the name
+	* @return the user group that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void removeByC_N(long companyId, java.lang.String name)
+	public static com.liferay.portal.model.UserGroup removeByC_N(
+		long companyId, java.lang.String name)
 		throws com.liferay.portal.NoSuchUserGroupException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getPersistence().removeByC_N(companyId, name);
+		return getPersistence().removeByC_N(companyId, name);
 	}
 
 	/**
@@ -1489,10 +1491,10 @@ public class UserGroupUtil {
 		return _persistence;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setPersistence(UserGroupPersistence persistence) {
-		_persistence = persistence;
-
-		ReferenceRegistry.registerReference(UserGroupUtil.class, "_persistence");
 	}
 
 	private static UserGroupPersistence _persistence;

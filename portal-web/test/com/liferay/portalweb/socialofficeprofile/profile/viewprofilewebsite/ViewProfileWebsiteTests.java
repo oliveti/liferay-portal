@@ -15,6 +15,10 @@
 package com.liferay.portalweb.socialofficeprofile.profile.viewprofilewebsite;
 
 import com.liferay.portalweb.portal.BaseTestSuite;
+import com.liferay.portalweb.socialoffice.users.user.addsouser.AddSOUserTest;
+import com.liferay.portalweb.socialoffice.users.user.addsouser.TearDownSOUserTest;
+import com.liferay.portalweb.socialoffice.users.user.editsouserpassword.EditSOUserPasswordTest;
+import com.liferay.portalweb.socialoffice.users.user.selectregularrolessouser.SelectRegularRolesSOUserTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -25,7 +29,9 @@ import junit.framework.TestSuite;
 public class ViewProfileWebsiteTests extends BaseTestSuite {
 	public static Test suite() {
 		TestSuite testSuite = new TestSuite();
-		testSuite.addTestSuite(AddUserSOFriendTest.class);
+		testSuite.addTestSuite(AddSOUserTest.class);
+		testSuite.addTestSuite(SelectRegularRolesSOUserTest.class);
+		testSuite.addTestSuite(EditSOUserPasswordTest.class);
 		testSuite.addTestSuite(AddUserSOWebsiteTest.class);
 		testSuite.addTestSuite(ViewProfileWebsiteTest.class);
 		testSuite.addTestSuite(TearDownSOUserTest.class);

@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.xml.Attribute;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.Element;
@@ -64,7 +65,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -113,11 +113,11 @@ public class MediaWikiImporter implements WikiImporter {
 		catch (DocumentException de) {
 			throw new ImportFilesException("Invalid XML file provided");
 		}
-		catch (IOException de) {
+		catch (IOException ioe) {
 			throw new ImportFilesException("Error reading the files provided");
 		}
-		catch (PortalException e) {
-			throw e;
+		catch (PortalException pe) {
+			throw pe;
 		}
 		catch (Exception e) {
 			throw new PortalException(e);
@@ -204,7 +204,7 @@ public class MediaWikiImporter implements WikiImporter {
 	protected boolean isSpecialMediaWikiPage(
 		String title, List<String> specialNamespaces) {
 
-		for (String namespace: specialNamespaces) {
+		for (String namespace : specialNamespaces) {
 			if (title.startsWith(namespace + StringPool.COLON)) {
 				return true;
 			}
@@ -380,7 +380,7 @@ public class MediaWikiImporter implements WikiImporter {
 
 					percentage = Math.min(50 + (i * 50) / total, 99);
 
-					progressTracker.updateProgress(percentage);
+					progressTracker.setPercent(percentage);
 				}
 			}
 
@@ -443,7 +443,7 @@ public class MediaWikiImporter implements WikiImporter {
 				10 + (i * (maxPercentage - percentage)) / pageElements.size(),
 				maxPercentage);
 
-			progressTracker.updateProgress(percentage);
+			progressTracker.setPercent(percentage);
 
 			if (isSpecialMediaWikiPage(title, specialNamespaces)) {
 				continue;
@@ -554,7 +554,7 @@ public class MediaWikiImporter implements WikiImporter {
 			}
 
 			if ((i % 5) == 0) {
-				progressTracker.updateProgress((i * 10) / pageElements.size());
+				progressTracker.setPercent((i * 10) / pageElements.size());
 			}
 		}
 	}
@@ -614,6 +614,7 @@ public class MediaWikiImporter implements WikiImporter {
 
 		return redirectTitle;
 	}
+
 	protected String readRedirectTitle(String content) {
 		Matcher matcher = _redirectPattern.matcher(content);
 
@@ -627,25 +628,30 @@ public class MediaWikiImporter implements WikiImporter {
 
 		return redirectTitle;
 	}
+
 	protected List<String> readSpecialNamespaces(Element root)
 		throws ImportFilesException {
 
 		List<String> namespaces = new ArrayList<String>();
 
-		Element siteinfoEl = root.element("siteinfo");
+		Element siteinfoElement = root.element("siteinfo");
 
-		if (siteinfoEl == null) {
+		if (siteinfoElement == null) {
 			throw new ImportFilesException("Invalid pages XML file");
 		}
 
-		Iterator<Element> itr = siteinfoEl.element(
-			"namespaces").elements("namespace").iterator();
+		Element namespacesElement = siteinfoElement.element("namespaces");
 
-		while (itr.hasNext()) {
-			Element namespace = itr.next();
+		List<Element> namespaceElements = namespacesElement.elements(
+			"namespace");
 
-			if (!namespace.attribute("key").getData().equals("0")) {
-				namespaces.add(namespace.getText());
+		for (Element namespaceElement : namespaceElements) {
+			Attribute attribute = namespaceElement.attribute("key");
+
+			String value = attribute.getValue();
+
+			if (!value.equals("0")) {
+				namespaces.add(namespaceElement.getText());
 			}
 		}
 
@@ -669,8 +675,8 @@ public class MediaWikiImporter implements WikiImporter {
 		while (line != null) {
 			String[] array = StringUtil.split(line);
 
-			if ((array.length == 2) && (Validator.isNotNull(array[0])) &&
-				(Validator.isNotNull(array[1]))) {
+			if ((array.length == 2) && Validator.isNotNull(array[0]) &&
+				Validator.isNotNull(array[1])) {
 
 				usersMap.put(array[0], array[1]);
 			}

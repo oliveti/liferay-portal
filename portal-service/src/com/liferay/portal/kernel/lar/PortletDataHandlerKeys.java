@@ -74,6 +74,8 @@ public class PortletDataHandlerKeys {
 	public static final String PORTLET_DATA_CONTROL_DEFAULT =
 		"PORTLET_DATA_CONTROL_DEFAULT";
 
+	public static final String PORTLET_METADATA_ALL = "PORTLET_METADATA_ALL";
+
 	public static final String PORTLET_SETUP = "PORTLET_SETUP";
 
 	public static final String PORTLET_SETUP_ALL = "PORTLET_SETUP_ALL";
@@ -105,7 +107,5 @@ public class PortletDataHandlerKeys {
 		"UPDATE_LAST_PUBLISH_DATE";
 
 	public static final String USER_ID_STRATEGY = "USER_ID_STRATEGY";
-
-	public static final String USER_PERMISSIONS = "USER_PERMISSIONS";
 
 }

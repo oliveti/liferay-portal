@@ -159,16 +159,15 @@ public interface PermissionChecker extends Cloneable {
 	 * Initializes this permission checker.
 	 *
 	 * @param user the current user
-	 * @param checkGuest whether to use guest permissions in permission checks
 	 */
-	public void init(User user, boolean checkGuest);
+	public void init(User user);
 
 	/**
-	 * Returns <code>true</code> if guest permissions should be used in
-	 * permission checks.
+	 * Returns <code>true</code> if guest permissions will be used in permission
+	 * checks.
 	 *
-	 * @return <code>true</code> if guest permissions should be used in
-	 *         permission checks; <code>false</code> otherwise
+	 * @return <code>true</code> if guest permissions will be used in permission
+	 *         checks; <code>false</code> otherwise
 	 */
 	public boolean isCheckGuest();
 
@@ -210,6 +209,15 @@ public interface PermissionChecker extends Cloneable {
 	public boolean isGroupAdmin(long groupId);
 
 	/**
+	 * Returns <code>true</code> if the user is a member of the group.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @return <code>true</code> if the user is a member of the group;
+	 *         <code>false</code> otherwise
+	 */
+	public boolean isGroupMember(long groupId);
+
+	/**
 	 * Returns <code>true</code> if the user is the owner of the group.
 	 *
 	 * @param  groupId the primary key of the group
@@ -228,6 +236,16 @@ public interface PermissionChecker extends Cloneable {
 	public boolean isOmniadmin();
 
 	/**
+	 * Returns <code>true</code> if the user is an administrator of the
+	 * organization.
+	 *
+	 * @param  organizationId the primary key of the organization
+	 * @return <code>true</code> if the user is an administrator of the
+	 *         organization; <code>false</code> otherwise
+	 */
+	public boolean isOrganizationAdmin(long organizationId);
+
+	/**
 	 * Returns <code>true</code> if the user is signed in.
 	 *
 	 * @return <code>true</code> if the user is signed in; <code>false</code>
@@ -239,13 +257,6 @@ public interface PermissionChecker extends Cloneable {
 	 * @deprecated Does nothing
 	 */
 	public void resetValues();
-
-	/**
-	 * Sets whether to user guest permissions in permission checks
-	 *
-	 * @param checkGuest whether to use guest permissions in permission checks
-	 */
-	public void setCheckGuest(boolean checkGuest);
 
 	/**
 	 * @deprecated Does nothing

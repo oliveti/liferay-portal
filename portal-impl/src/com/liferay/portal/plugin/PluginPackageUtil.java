@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ReleaseInfo;
@@ -302,7 +303,7 @@ public class PluginPackageUtil {
 
 		for (PluginPackage pluginPackage : pluginPackages) {
 			if ((latestPluginPackage == null) ||
-				(pluginPackage.isLaterVersionThan(latestPluginPackage))) {
+				pluginPackage.isLaterVersionThan(latestPluginPackage)) {
 
 				latestPluginPackage = pluginPackage;
 			}
@@ -423,8 +424,8 @@ public class PluginPackageUtil {
 
 				return repository.findPluginByArtifactURL(url);
 			}
-			catch (PluginPackageException pe) {
-				_log.error("Unable to load repository " + repositoryURL, pe);
+			catch (PluginPackageException ppe) {
+				_log.error("Unable to load repository " + repositoryURL, ppe);
 			}
 		}
 
@@ -715,11 +716,11 @@ public class PluginPackageUtil {
 				throw new PluginPackageException("Download returned 0 bytes");
 			}
 		}
-		catch (MalformedURLException mue) {
+		catch (MalformedURLException murle) {
 			_repositoryCache.remove(repositoryURL);
 
 			throw new PluginPackageException(
-				"Invalid URL " + pluginsXmlURL, mue);
+				"Invalid URL " + pluginsXmlURL, murle);
 		}
 		catch (IOException ioe) {
 			_repositoryCache.remove(repositoryURL);
@@ -987,6 +988,9 @@ public class PluginPackageUtil {
 			properties.getProperty("page-url"));
 		String downloadURL = GetterUtil.getString(
 			properties.getProperty("download-url"));
+		List<String> requiredDeploymentContexts = ListUtil.fromArray(
+			StringUtil.split(
+				properties.getProperty("required-deployment-contexts")));
 
 		PluginPackage pluginPackage = new PluginPackageImpl(moduleId);
 
@@ -1005,6 +1009,7 @@ public class PluginPackageUtil {
 		pluginPackage.setPageURL(pageURL);
 		pluginPackage.setDownloadURL(downloadURL);
 		//pluginPackage.setDeploymentSettings(null);
+		pluginPackage.setRequiredDeploymentContexts(requiredDeploymentContexts);
 
 		return pluginPackage;
 	}
@@ -1292,12 +1297,12 @@ public class PluginPackageUtil {
 
 				repositoryReport.addSuccess(repositoryURL);
 			}
-			catch (PluginPackageException pe) {
-				repositoryReport.addError(repositoryURL, pe);
+			catch (PluginPackageException ppe) {
+				repositoryReport.addError(repositoryURL, ppe);
 
 				_log.error(
 					"Unable to load repository " + repositoryURL + " " +
-						pe.toString());
+						ppe.toString());
 			}
 
 		}

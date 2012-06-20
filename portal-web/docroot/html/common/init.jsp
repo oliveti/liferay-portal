@@ -82,11 +82,14 @@ page import="com.liferay.portal.kernel.portlet.LiferayPortletURL" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 page import="com.liferay.portal.kernel.search.Field" %><%@
 page import="com.liferay.portal.kernel.servlet.BrowserSnifferUtil" %><%@
+page import="com.liferay.portal.kernel.servlet.DynamicServletRequest" %><%@
+page import="com.liferay.portal.kernel.servlet.ServletContextPool" %><%@
 page import="com.liferay.portal.kernel.servlet.ServletContextUtil" %><%@
 page import="com.liferay.portal.kernel.servlet.SessionErrors" %><%@
 page import="com.liferay.portal.kernel.servlet.SessionMessages" %><%@
 page import="com.liferay.portal.kernel.servlet.StringServletResponse" %><%@
 page import="com.liferay.portal.kernel.staging.LayoutStagingUtil" %><%@
+page import="com.liferay.portal.kernel.template.StringTemplateResource" %><%@
 page import="com.liferay.portal.kernel.upload.UploadException" %><%@
 page import="com.liferay.portal.kernel.util.ArrayUtil" %><%@
 page import="com.liferay.portal.kernel.util.BooleanWrapper" %><%@
@@ -184,6 +187,8 @@ page import="com.liferay.portlet.RenderRequestImpl" %><%@
 page import="com.liferay.portlet.RenderResponseFactory" %><%@
 page import="com.liferay.portlet.RenderResponseImpl" %><%@
 page import="com.liferay.portlet.portletconfiguration.util.PortletConfigurationUtil" %><%@
+page import="com.liferay.taglib.portletext.RuntimeTag" %><%@
+page import="com.liferay.taglib.util.OutputTag" %><%@
 page import="com.liferay.util.ContentUtil" %><%@
 page import="com.liferay.util.CreditCard" %><%@
 page import="com.liferay.util.Encryptor" %><%@
@@ -195,12 +200,9 @@ page import="com.liferay.util.StateUtil" %><%@
 page import="com.liferay.util.UniqueList" %><%@
 page import="com.liferay.util.log4j.Levels" %><%@
 page import="com.liferay.util.portlet.PortletRequestUtil" %><%@
-page import="com.liferay.util.servlet.DynamicServletRequest" %><%@
 page import="com.liferay.util.xml.XMLFormatter" %>
 
 <%@ page import="java.io.Serializable" %>
-
-<%@ page import="java.math.BigDecimal" %>
 
 <%@ page import="java.text.DateFormat" %><%@
 page import="java.text.DecimalFormat" %><%@
@@ -246,8 +248,6 @@ page import="javax.portlet.ResourceURL" %><%@
 page import="javax.portlet.UnavailableException" %><%@
 page import="javax.portlet.ValidatorException" %><%@
 page import="javax.portlet.WindowState" %>
-
-<%@ page import="org.apache.commons.math.util.MathUtils" %>
 
 <liferay-theme:defineObjects />
 

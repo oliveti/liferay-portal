@@ -36,10 +36,9 @@ public interface PDFProcessor {
 			Element fileEntryElement)
 		throws Exception;
 
-	public void generateImages(FileVersion fileVersion)
+	public void generateImages(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
 		throws Exception;
-
-	public String getGlobalSearchPath() throws Exception;
 
 	public InputStream getPreviewAsStream(FileVersion fileVersion, int index)
 		throws Exception;
@@ -66,12 +65,9 @@ public interface PDFProcessor {
 
 	public boolean isDocumentSupported(String mimeType);
 
-	public boolean isImageMagickEnabled() throws Exception;
-
 	public boolean isSupported(String mimeType);
 
-	public void reset() throws Exception;
-
-	public void trigger(FileVersion fileVersion);
+	public void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion);
 
 }

@@ -25,6 +25,9 @@ public class AddRecordSpreadsheetViewTest extends BaseTestCase {
 		selenium.selectFrame("relative=top");
 		selenium.open("/web/guest/home/");
 		loadRequiredJavaScriptModules();
+		assertEquals(RuntimeVariables.replace("Go to"),
+			selenium.getText("//li[@id='_145_mySites']/a/span"));
+		selenium.mouseOver("//li[@id='_145_mySites']/a/span");
 
 		for (int second = 0;; second++) {
 			if (second >= 90) {
@@ -32,7 +35,7 @@ public class AddRecordSpreadsheetViewTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isElementPresent("link=Control Panel")) {
+				if (selenium.isVisible("link=Control Panel")) {
 					break;
 				}
 			}
@@ -70,7 +73,7 @@ public class AddRecordSpreadsheetViewTest extends BaseTestCase {
 
 			try {
 				if (selenium.isVisible(
-							"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a")) {
+							"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a")) {
 					break;
 				}
 			}
@@ -82,9 +85,9 @@ public class AddRecordSpreadsheetViewTest extends BaseTestCase {
 
 		assertEquals(RuntimeVariables.replace("Spreadsheet View"),
 			selenium.getText(
-				"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a"));
+				"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a"));
 		selenium.click(RuntimeVariables.replace(
-				"//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a"));
+				"//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
 		assertEquals(RuntimeVariables.replace("Boolean"),
@@ -254,7 +257,7 @@ public class AddRecordSpreadsheetViewTest extends BaseTestCase {
 			Thread.sleep(1000);
 		}
 
-		assertEquals(RuntimeVariables.replace("document.txt"),
+		assertEquals(RuntimeVariables.replace("Document_1.txt"),
 			selenium.getText("//tr[3]/td[1]/a"));
 		selenium.clickAt("//input[@value='Choose']",
 			RuntimeVariables.replace("Choose"));
@@ -289,9 +292,8 @@ public class AddRecordSpreadsheetViewTest extends BaseTestCase {
 
 		selenium.clickAt("//div[contains(@class,'aui-fileupload-cell-editor')]",
 			RuntimeVariables.replace("File Upload Cell Editor"));
-		selenium.type("//div[contains(@class,'aui-fileupload-cell-editor-focused')]/form/div[1]/input",
-			RuntimeVariables.replace(
-				"L:\\portal\\build\\portal-web\\test\\com\\liferay\\portalweb\\portal\\controlpanel\\dynamicdatalists\\dependencies\\document2.txt"));
+		selenium.uploadCommonFile("//div[contains(@class,'aui-fileupload-cell-editor-focused')]/form/div[1]/input",
+			RuntimeVariables.replace("Document_2.txt"));
 		assertEquals(RuntimeVariables.replace("Save"),
 			selenium.getText(
 				"//div[contains(@class,'aui-fileupload-cell-editor-focused')]/form/div[2]/span/span/button[1]"));

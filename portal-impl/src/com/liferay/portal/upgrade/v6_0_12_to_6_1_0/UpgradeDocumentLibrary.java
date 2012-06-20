@@ -15,9 +15,10 @@
 package com.liferay.portal.upgrade.v6_0_12_to_6_1_0;
 
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
-import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileVersion;
@@ -192,8 +193,8 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 			con = DataAccess.getConnection();
 
 			ps = con.prepareStatement(
-				"select fileVersionId, userId, extension, version from " +
-					"DLFileVersion where fileEntryId = " + fileEntryId +
+				"select fileVersionId, userId, extension, mimeType, version " +
+					"from DLFileVersion where fileEntryId = " + fileEntryId +
 						" order by version asc");
 
 			rs = ps.executeQuery();
@@ -202,24 +203,33 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 				long fileVersionId = rs.getLong("fileVersionId");
 				long userId = rs.getLong("userId");
 				String extension = rs.getString("extension");
+				String mimeType = rs.getString("mimeType");
 				String version = rs.getString("version");
 
-				String mimeType = MimeTypesUtil.getContentType(
-					"A." + extension);
-
-				DLFileVersion dlFileVersion = new DLFileVersionImpl();
-
-				dlFileVersion.setFileVersionId(fileVersionId);
-				dlFileVersion.setUserId(userId);
-				dlFileVersion.setFileEntryId(fileEntryId);
-				dlFileVersion.setMimeType(mimeType);
-				dlFileVersion.setVersion(version);
-
 				if (_imageMimeTypes.contains(mimeType)) {
+					DLFileVersion dlFileVersion = new DLFileVersionImpl();
+
+					dlFileVersion.setFileVersionId(fileVersionId);
+					dlFileVersion.setUserId(userId);
+					dlFileVersion.setFileEntryId(fileEntryId);
+					dlFileVersion.setExtension(extension);
+					dlFileVersion.setMimeType(mimeType);
+					dlFileVersion.setVersion(version);
+
 					FileVersion fileVersion = new LiferayFileVersion(
 						dlFileVersion);
 
-					ImageProcessorUtil.generateImages(fileVersion);
+					try {
+						ImageProcessorUtil.generateImages(null, fileVersion);
+					}
+					catch (Exception e) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(
+								"Unable to generate thumbnails for " +
+									fileVersion.getFileVersionId(),
+								e);
+						}
+					}
 				}
 			}
 		}
@@ -227,6 +237,9 @@ public class UpgradeDocumentLibrary extends UpgradeProcess {
 			DataAccess.cleanUp(con, ps, rs);
 		}
 	}
+
+	private static Log _log = LogFactoryUtil.getLog(
+		UpgradeDocumentLibrary.class);
 
 	private static Set<String> _imageMimeTypes = SetUtil.fromArray(
 		PropsValues.DL_FILE_ENTRY_PREVIEW_IMAGE_MIME_TYPES);

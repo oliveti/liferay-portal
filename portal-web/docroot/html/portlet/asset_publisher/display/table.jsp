@@ -76,9 +76,11 @@ request.setAttribute("view.jsp-showIconLabel", false);
 		<%
 		for (int m = 0; m < metadataFields.length; m++) {
 		%>
+
 			<th>
 				<liferay-ui:message key="<%= metadataFields[m] %>" />
 			</th>
+
 		<%
 		}
 		%>
@@ -92,7 +94,7 @@ request.setAttribute("view.jsp-showIconLabel", false);
 <%
 String style = "class=\"portlet-section-body results-row\" onmouseover=\"this.className = 'portlet-section-body-hover results-row hover';\" onmouseout=\"this.className = 'portlet-section-body results-row';\"";
 
-if (assetEntryIndex % 2 == 0) {
+if ((assetEntryIndex % 2) == 0) {
 	style = "class=\"portlet-section-alternate results-row alt\" onmouseover=\"this.className = 'portlet-section-alternate-hover results-row alt hover';\" onmouseout=\"this.className = 'portlet-section-alternate results-row alt';\"";
 }
 %>
@@ -139,7 +141,9 @@ if (assetEntryIndex % 2 == 0) {
 			value = String.valueOf(assetEntry.getPriority());
 		}
 		else if (metadataFields[m].equals("author")) {
-			value = HtmlUtil.escape(PortalUtil.getUserName(assetEntry.getUserId(), assetEntry.getUserName()));
+			String userName = PortalUtil.getUserName(assetRenderer.getUserId(), assetRenderer.getUserName());
+
+			value = HtmlUtil.escape(userName);
 		}
 		else if (metadataFields[m].equals("view-count")) {
 			value = String.valueOf(assetEntry.getViewCount());

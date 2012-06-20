@@ -79,6 +79,7 @@ double version = ParamUtil.getDouble(request, "version");
 		searchTerms.setAdvancedSearch(true);
 
 		List<JournalArticle> results = null;
+		int total = 0;
 		%>
 
 		<c:choose>
@@ -262,6 +263,7 @@ double version = ParamUtil.getDouble(request, "version");
 							cur="<%= articleDisplay.getCurrentPage() %>"
 							curParam='<%= "page" %>'
 							delta="<%= 1 %>"
+							id="articleDisplayPages"
 							maxPages="<%= 25 %>"
 							total="<%= articleDisplay.getNumberOfPages() %>"
 							type="article"

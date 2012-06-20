@@ -14,7 +14,6 @@
 
 package com.liferay.portal.service.permission;
 
-import com.liferay.portal.NoSuchResourceException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.Validator;
@@ -150,12 +149,14 @@ public class LayoutPermissionImpl implements LayoutPermission {
 		return contains(permissionChecker, layout, actionId);
 	}
 
-	protected boolean containsWithoutViewableGroup(
+	public boolean containsWithoutViewableGroup(
 			PermissionChecker permissionChecker, Layout layout,
-			String controlPanelCategory, String actionId)
+			String controlPanelCategory, boolean checkLayoutUpdateable,
+			String actionId)
 		throws PortalException, SystemException {
 
-		if (!actionId.equals(ActionKeys.CUSTOMIZE) &&
+		if (checkLayoutUpdateable &&
+			!actionId.equals(ActionKeys.CUSTOMIZE) &&
 			!actionId.equals(ActionKeys.VIEW) &&
 			(layout instanceof VirtualLayout)) {
 
@@ -178,7 +179,7 @@ public class LayoutPermissionImpl implements LayoutPermission {
 
 		Group group = layout.getGroup();
 
-		if (!group.isLayoutSetPrototype() &&
+		if (checkLayoutUpdateable && !group.isLayoutSetPrototype() &&
 			isAttemptToModifyLockedLayout(layout, actionId)) {
 
 			return false;
@@ -187,8 +188,7 @@ public class LayoutPermissionImpl implements LayoutPermission {
 		User user = UserLocalServiceUtil.getUserById(
 			permissionChecker.getUserId());
 
-		if ((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) &&
-			!user.isDefaultUser() && !group.isUser()) {
+		if (!user.isDefaultUser() && !group.isUser()) {
 
 			// This is new way of doing an ownership check without having to
 			// have a userId field on the model. When the instance model was
@@ -252,25 +252,13 @@ public class LayoutPermissionImpl implements LayoutPermission {
 			}
 		}
 
-		try {
-			if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) {
-				if (ResourcePermissionLocalServiceUtil.
-						getResourcePermissionsCount(
-							layout.getCompanyId(), Layout.class.getName(),
-							ResourceConstants.SCOPE_INDIVIDUAL,
-							String.valueOf(layout.getPlid())) == 0) {
+		int resourcePermissionsCount =
+			ResourcePermissionLocalServiceUtil.getResourcePermissionsCount(
+				layout.getCompanyId(), Layout.class.getName(),
+				ResourceConstants.SCOPE_INDIVIDUAL,
+				String.valueOf(layout.getPlid()));
 
-					throw new NoSuchResourceException();
-				}
-			}
-			else {
-				ResourceLocalServiceUtil.getResource(
-					layout.getCompanyId(), Layout.class.getName(),
-					ResourceConstants.SCOPE_INDIVIDUAL,
-					String.valueOf(layout.getPlid()));
-			}
-		}
-		catch (NoSuchResourceException nsre) {
+		if (resourcePermissionsCount == 0) {
 			boolean addGroupPermission = true;
 			boolean addGuestPermission = true;
 
@@ -287,6 +275,15 @@ public class LayoutPermissionImpl implements LayoutPermission {
 		return permissionChecker.hasPermission(
 			layout.getGroupId(), Layout.class.getName(), layout.getPlid(),
 			actionId);
+	}
+
+	public boolean containsWithoutViewableGroup(
+			PermissionChecker permissionChecker, Layout layout,
+			String controlPanelCategory, String actionId)
+		throws PortalException, SystemException {
+
+		return containsWithoutViewableGroup(
+			permissionChecker, layout, controlPanelCategory, true, actionId);
 	}
 
 	protected boolean containsWithViewableGroup(
@@ -414,6 +411,12 @@ public class LayoutPermissionImpl implements LayoutPermission {
 					permissionChecker, group.getGroupId(), ActionKeys.UPDATE)) {
 
 				return true;
+			}
+
+			if (layout.isPrivateLayout() &&
+				!permissionChecker.isGroupMember(group.getGroupId())) {
+
+				return false;
 			}
 		}
 

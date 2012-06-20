@@ -213,11 +213,27 @@ public interface JournalArticleModel extends AttachedModel,
 	public void setModifiedDate(Date modifiedDate);
 
 	/**
+	 * Returns the folder ID of this journal article.
+	 *
+	 * @return the folder ID of this journal article
+	 */
+	public long getFolderId();
+
+	/**
+	 * Sets the folder ID of this journal article.
+	 *
+	 * @param folderId the folder ID of this journal article
+	 */
+	public void setFolderId(long folderId);
+
+	/**
 	 * Returns the fully qualified class name of this journal article.
 	 *
 	 * @return the fully qualified class name of this journal article
 	 */
 	public String getClassName();
+
+	public void setClassName(String className);
 
 	/**
 	 * Returns the class name ID of this journal article.
@@ -773,6 +789,13 @@ public interface JournalArticleModel extends AttachedModel,
 	 * @return <code>true</code> if this journal article is expired; <code>false</code> otherwise
 	 */
 	public boolean isExpired();
+
+	/**
+	 * Returns <code>true</code> if this journal article is in the Recycle Bin.
+	 *
+	 * @return <code>true</code> if this journal article is in the Recycle Bin; <code>false</code> otherwise
+	 */
+	public boolean isInTrash();
 
 	/**
 	 * Returns <code>true</code> if this journal article is pending.

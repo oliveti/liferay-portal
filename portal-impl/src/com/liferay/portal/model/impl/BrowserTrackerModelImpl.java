@@ -32,6 +32,9 @@ import java.io.Serializable;
 
 import java.sql.Types;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The base model implementation for the BrowserTracker service. Represents a row in the &quot;BrowserTracker&quot; database table, with each column mapped to a property of this class.
  *
@@ -103,6 +106,38 @@ public class BrowserTrackerModelImpl extends BaseModelImpl<BrowserTracker>
 		return BrowserTracker.class.getName();
 	}
 
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("browserTrackerId", getBrowserTrackerId());
+		attributes.put("userId", getUserId());
+		attributes.put("browserKey", getBrowserKey());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		Long browserTrackerId = (Long)attributes.get("browserTrackerId");
+
+		if (browserTrackerId != null) {
+			setBrowserTrackerId(browserTrackerId);
+		}
+
+		Long userId = (Long)attributes.get("userId");
+
+		if (userId != null) {
+			setUserId(userId);
+		}
+
+		Long browserKey = (Long)attributes.get("browserKey");
+
+		if (browserKey != null) {
+			setBrowserKey(browserKey);
+		}
+	}
+
 	public long getBrowserTrackerId() {
 		return _browserTrackerId;
 	}
@@ -164,17 +199,15 @@ public class BrowserTrackerModelImpl extends BaseModelImpl<BrowserTracker>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(0,
-					BrowserTracker.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(0,
+			BrowserTracker.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -308,7 +341,6 @@ public class BrowserTrackerModelImpl extends BaseModelImpl<BrowserTracker>
 	private long _originalUserId;
 	private boolean _setOriginalUserId;
 	private long _browserKey;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private BrowserTracker _escapedModelProxy;
 }

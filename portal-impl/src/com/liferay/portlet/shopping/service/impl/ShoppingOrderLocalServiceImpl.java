@@ -38,7 +38,6 @@ import com.liferay.portlet.shopping.CCNameException;
 import com.liferay.portlet.shopping.CCNumberException;
 import com.liferay.portlet.shopping.CCTypeException;
 import com.liferay.portlet.shopping.CartMinOrderException;
-import com.liferay.portlet.shopping.NoSuchOrderException;
 import com.liferay.portlet.shopping.ShippingCityException;
 import com.liferay.portlet.shopping.ShippingCountryException;
 import com.liferay.portlet.shopping.ShippingEmailAddressException;
@@ -65,7 +64,6 @@ import com.liferay.util.PwdGenerator;
 
 import java.util.Currency;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -241,6 +239,12 @@ public class ShoppingOrderLocalServiceImpl
 
 		shoppingOrderPersistence.remove(order);
 
+		// Subscriptions
+
+		subscriptionLocalService.deleteSubscriptions(
+			order.getCompanyId(), ShoppingOrder.class.getName(),
+			order.getOrderId());
+
 		// Items
 
 		shoppingOrderItemPersistence.removeByOrderId(order.getOrderId());
@@ -322,12 +326,7 @@ public class ShoppingOrderLocalServiceImpl
 
 		boolean requiresShipping = false;
 
-		Iterator<Map.Entry<ShoppingCartItem, Integer>> itr =
-			items.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<ShoppingCartItem, Integer> entry = itr.next();
-
+		for (Map.Entry<ShoppingCartItem, Integer> entry : items.entrySet()) {
 			ShoppingCartItem cartItem = entry.getKey();
 			Integer count = entry.getValue();
 
@@ -648,14 +647,13 @@ public class ShoppingOrderLocalServiceImpl
 		String number = PwdGenerator.getPassword(
 			PwdGenerator.KEY1 + PwdGenerator.KEY2, 12);
 
-		try {
-			shoppingOrderPersistence.findByNumber(number);
+		ShoppingOrder order = shoppingOrderPersistence.fetchByNumber(number);
 
-			return getNumber();
+		if (order != null) {
+			return order.getNumber();
 		}
-		catch (NoSuchOrderException nsoe) {
-			return number;
-		}
+
+		return number;
 	}
 
 	protected void validate(
@@ -729,7 +727,7 @@ public class ShoppingOrderLocalServiceImpl
 			}
 		}
 
-		if ((!shoppingPrefs.usePayPal()) &&
+		if (!shoppingPrefs.usePayPal() &&
 			(shoppingPrefs.getCcTypes().length > 0)) {
 
 			if (Validator.isNull(ccName)) {

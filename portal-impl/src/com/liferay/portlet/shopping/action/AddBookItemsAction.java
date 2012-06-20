@@ -53,7 +53,7 @@ public class AddBookItemsAction extends PortletAction {
 		}
 		catch (Exception e) {
 			if (e instanceof PrincipalException) {
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.shopping.error");
 			}
@@ -87,7 +87,7 @@ public class AddBookItemsAction extends PortletAction {
 			ShoppingItemServiceUtil.addBookItems(groupId, categoryId, isbns);
 		}
 		catch (AmazonException ae) {
-			 SessionErrors.add(actionRequest, ae.getClass().getName());
+			 SessionErrors.add(actionRequest, ae.getClass());
 		}
 	}
 

@@ -91,10 +91,10 @@ public class BaseRepositoryProxyBean
 		return newFolderProxyBean(folder);
 	}
 
-	public void cancelCheckOut(long fileEntryId)
+	public FileVersion cancelCheckOut(long fileEntryId)
 		throws PortalException, SystemException {
 
-		_baseRepository.cancelCheckOut(fileEntryId);
+		return _baseRepository.cancelCheckOut(fileEntryId);
 	}
 
 	public void checkInFileEntry(
@@ -152,6 +152,12 @@ public class BaseRepositoryProxyBean
 		throws PortalException, SystemException {
 
 		_baseRepository.deleteFileEntry(folderId, title);
+	}
+
+	public void deleteFileVersion(long fileEntryId, String version)
+		throws PortalException, SystemException {
+
+		_baseRepository.deleteFileVersion(fileEntryId, version);
 	}
 
 	public void deleteFolder(long folderId)
@@ -223,9 +229,7 @@ public class BaseRepositoryProxyBean
 			folderId, status, mimeTypes);
 	}
 
-	public int getFileEntriesCount(long folderId)
-		throws SystemException {
-
+	public int getFileEntriesCount(long folderId) throws SystemException {
 		return _baseRepository.getFileEntriesCount(folderId);
 	}
 
@@ -300,6 +304,17 @@ public class BaseRepositoryProxyBean
 		return toFolderProxyBeans(folders);
 	}
 
+	public List<Folder> getFolders(
+			long parentFolderId, int status, boolean includeMountfolders,
+			int start, int end, OrderByComparator obc)
+		throws PortalException, SystemException {
+
+		List<Folder> folders = _baseRepository.getFolders(
+			parentFolderId, status, includeMountfolders, start, end, obc);
+
+		return toFolderProxyBeans(folders);
+	}
+
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long folderId, int status, boolean includeMountFolders, int start,
 			int end, OrderByComparator obc)
@@ -348,6 +363,14 @@ public class BaseRepositoryProxyBean
 
 		return _baseRepository.getFoldersCount(
 			parentFolderId, includeMountfolders);
+	}
+
+	public int getFoldersCount(
+			long parentFolderId, int status, boolean includeMountfolders)
+		throws PortalException, SystemException {
+
+		return _baseRepository.getFoldersCount(
+			parentFolderId, status, includeMountfolders);
 	}
 
 	public int getFoldersFileEntriesCount(List<Long> folderIds, int status)
@@ -505,19 +528,22 @@ public class BaseRepositoryProxyBean
 		return newFolderProxyBean(folder);
 	}
 
-	public Lock refreshFileEntryLock(String lockUuid, long expirationTime)
+	public Lock refreshFileEntryLock(
+			String lockUuid, long companyId, long expirationTime)
 		throws PortalException, SystemException {
 
 		Lock lock = _baseRepository.refreshFileEntryLock(
-			lockUuid, expirationTime);
+			lockUuid, companyId, expirationTime);
 
 		return (Lock)newProxyInstance(lock, Lock.class);
 	}
 
-	public Lock refreshFolderLock(String lockUuid, long expirationTime)
+	public Lock refreshFolderLock(
+			String lockUuid, long companyId, long expirationTime)
 		throws PortalException, SystemException {
 
-		Lock lock = _baseRepository.refreshFolderLock(lockUuid, expirationTime);
+		Lock lock = _baseRepository.refreshFolderLock(
+			lockUuid, companyId, expirationTime);
 
 		return (Lock)newProxyInstance(lock, Lock.class);
 	}

@@ -15,6 +15,7 @@
 package com.liferay.portal.spring.hibernate;
 
 import com.liferay.portal.kernel.portlet.PortletClassLoaderUtil;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 
 /**
  * @author Brian Wing Shun Chan
@@ -25,7 +26,16 @@ public class PortletHibernateConfiguration
 
 	@Override
 	protected ClassLoader getConfigurationClassLoader() {
-		return PortletClassLoaderUtil.getClassLoader();
+		ClassLoader classLoader = PortletClassLoaderUtil.getClassLoader();
+
+		if (classLoader == null) {
+
+			// This should not be null except in cases where sharding is enabled
+
+			classLoader = PACLClassLoaderUtil.getContextClassLoader();
+		}
+
+		return classLoader;
 	}
 
 	@Override

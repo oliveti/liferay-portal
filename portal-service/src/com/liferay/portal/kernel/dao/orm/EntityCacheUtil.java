@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.dao.orm;
 
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+
 import java.io.Serializable;
 
 /**
@@ -34,7 +36,9 @@ public class EntityCacheUtil {
 	}
 
 	public static EntityCache getEntityCache() {
-		return _finderCache;
+		PortalRuntimePermission.checkGetBeanProperty(EntityCacheUtil.class);
+
+		return _entityCache;
 	}
 
 	public static Object getResult(
@@ -74,10 +78,12 @@ public class EntityCacheUtil {
 		getEntityCache().removeResult(entityCacheEnabled, clazz, primaryKey);
 	}
 
-	public void setEntityCache(EntityCache finderCache) {
-		_finderCache = finderCache;
+	public void setEntityCache(EntityCache entityCache) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
+		_entityCache = entityCache;
 	}
 
-	private static EntityCache _finderCache;
+	private static EntityCache _entityCache;
 
 }

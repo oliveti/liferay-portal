@@ -54,9 +54,7 @@ public class CompanyWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 		}
 	}
 
-	protected List<Resource> getResources(long userId)
-		throws Exception {
-
+	protected List<Resource> getResources(long userId) throws Exception {
 		User user = UserLocalServiceUtil.getUserById(userId);
 
 		Company company = CompanyLocalServiceUtil.getCompanyById(
@@ -72,7 +70,7 @@ public class CompanyWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 
 			String name = group.getFriendlyURL();
 
-			name = name.substring(1, name.length());
+			name = name.substring(1);
 
 			resources.add(new BaseResourceImpl(parentPath, name, name));
 		}

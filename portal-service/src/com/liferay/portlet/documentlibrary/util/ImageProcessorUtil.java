@@ -16,6 +16,7 @@ package com.liferay.portlet.documentlibrary.util;
 
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.io.InputStream;
 
@@ -34,8 +35,12 @@ public class ImageProcessorUtil {
 		getImageProcessor().cleanUp(fileVersion);
 	}
 
-	public static void generateImages(FileVersion fileVersion) {
-		getImageProcessor().generateImages(fileVersion);
+	public static void generateImages(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
+		throws Exception {
+
+		getImageProcessor().generateImages(
+			sourceFileVersion, destinationFileVersion);
 	}
 
 	public static Set<String> getImageMimeTypes() {
@@ -43,7 +48,25 @@ public class ImageProcessorUtil {
 	}
 
 	public static ImageProcessor getImageProcessor() {
+		PortalRuntimePermission.checkGetBeanProperty(ImageProcessorUtil.class);
+
 		return _imageProcessor;
+	}
+
+	public static InputStream getPreviewAsStream(FileVersion fileVersion)
+		throws Exception {
+
+		return getImageProcessor().getPreviewAsStream(fileVersion);
+	}
+
+	public static long getPreviewFileSize(FileVersion fileVersion)
+		throws Exception {
+
+		return getImageProcessor().getPreviewFileSize(fileVersion);
+	}
+
+	public static String getPreviewType(FileVersion fileVersion) {
+		return getImageProcessor().getPreviewType(fileVersion);
 	}
 
 	public static InputStream getThumbnailAsStream(
@@ -57,6 +80,10 @@ public class ImageProcessorUtil {
 		throws Exception {
 
 		return getImageProcessor().getThumbnailFileSize(fileVersion, index);
+	}
+
+	public static String getThumbnailType(FileVersion fileVersion) {
+		return getImageProcessor().getThumbnailType(fileVersion);
 	}
 
 	public static boolean hasImages(FileVersion fileVersion) {
@@ -86,11 +113,15 @@ public class ImageProcessorUtil {
 			custom2ImageId, is, type);
 	}
 
-	public static void trigger(FileVersion fileVersion) {
-		getImageProcessor().trigger(fileVersion);
+	public static void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
+
+		getImageProcessor().trigger(sourceFileVersion, destinationFileVersion);
 	}
 
 	public void setImageProcessor(ImageProcessor imageProcessor) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_imageProcessor = imageProcessor;
 	}
 

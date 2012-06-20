@@ -21,22 +21,18 @@ import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
-import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.model.PersistedModel;
+import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.service.ResourceLocalService;
-import com.liferay.portal.service.ResourceService;
 import com.liferay.portal.service.UserLocalService;
 import com.liferay.portal.service.UserService;
-import com.liferay.portal.service.persistence.ResourceFinder;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserFinder;
 import com.liferay.portal.service.persistence.UserPersistence;
 
@@ -82,7 +78,8 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class RatingsEntryLocalServiceBaseImpl
-	implements RatingsEntryLocalService, IdentifiableBean {
+	extends BaseLocalServiceImpl implements RatingsEntryLocalService,
+		IdentifiableBean {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
@@ -96,26 +93,12 @@ public abstract class RatingsEntryLocalServiceBaseImpl
 	 * @return the ratings entry that was added
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public RatingsEntry addRatingsEntry(RatingsEntry ratingsEntry)
 		throws SystemException {
 		ratingsEntry.setNew(true);
 
-		ratingsEntry = ratingsEntryPersistence.update(ratingsEntry, false);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(ratingsEntry);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return ratingsEntry;
+		return ratingsEntryPersistence.update(ratingsEntry, false);
 	}
 
 	/**
@@ -132,49 +115,34 @@ public abstract class RatingsEntryLocalServiceBaseImpl
 	 * Deletes the ratings entry with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param entryId the primary key of the ratings entry
+	 * @return the ratings entry that was removed
 	 * @throws PortalException if a ratings entry with the primary key could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteRatingsEntry(long entryId)
+	@Indexable(type = IndexableType.DELETE)
+	public RatingsEntry deleteRatingsEntry(long entryId)
 		throws PortalException, SystemException {
-		RatingsEntry ratingsEntry = ratingsEntryPersistence.remove(entryId);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.delete(ratingsEntry);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return ratingsEntryPersistence.remove(entryId);
 	}
 
 	/**
 	 * Deletes the ratings entry from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param ratingsEntry the ratings entry
+	 * @return the ratings entry that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteRatingsEntry(RatingsEntry ratingsEntry)
+	@Indexable(type = IndexableType.DELETE)
+	public RatingsEntry deleteRatingsEntry(RatingsEntry ratingsEntry)
 		throws SystemException {
-		ratingsEntryPersistence.remove(ratingsEntry);
+		return ratingsEntryPersistence.remove(ratingsEntry);
+	}
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
+	public DynamicQuery dynamicQuery() {
+		Class<?> clazz = getClass();
 
-		if (indexer != null) {
-			try {
-				indexer.delete(ratingsEntry);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return DynamicQueryFactoryUtil.forClass(RatingsEntry.class,
+			clazz.getClassLoader());
 	}
 
 	/**
@@ -300,6 +268,7 @@ public abstract class RatingsEntryLocalServiceBaseImpl
 	 * @return the ratings entry that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public RatingsEntry updateRatingsEntry(RatingsEntry ratingsEntry)
 		throws SystemException {
 		return updateRatingsEntry(ratingsEntry, true);
@@ -313,26 +282,12 @@ public abstract class RatingsEntryLocalServiceBaseImpl
 	 * @return the ratings entry that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public RatingsEntry updateRatingsEntry(RatingsEntry ratingsEntry,
 		boolean merge) throws SystemException {
 		ratingsEntry.setNew(false);
 
-		ratingsEntry = ratingsEntryPersistence.update(ratingsEntry, merge);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(ratingsEntry);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return ratingsEntry;
+		return ratingsEntryPersistence.update(ratingsEntry, merge);
 	}
 
 	/**
@@ -500,60 +455,6 @@ public abstract class RatingsEntryLocalServiceBaseImpl
 	public void setResourceLocalService(
 		ResourceLocalService resourceLocalService) {
 		this.resourceLocalService = resourceLocalService;
-	}
-
-	/**
-	 * Returns the resource remote service.
-	 *
-	 * @return the resource remote service
-	 */
-	public ResourceService getResourceService() {
-		return resourceService;
-	}
-
-	/**
-	 * Sets the resource remote service.
-	 *
-	 * @param resourceService the resource remote service
-	 */
-	public void setResourceService(ResourceService resourceService) {
-		this.resourceService = resourceService;
-	}
-
-	/**
-	 * Returns the resource persistence.
-	 *
-	 * @return the resource persistence
-	 */
-	public ResourcePersistence getResourcePersistence() {
-		return resourcePersistence;
-	}
-
-	/**
-	 * Sets the resource persistence.
-	 *
-	 * @param resourcePersistence the resource persistence
-	 */
-	public void setResourcePersistence(ResourcePersistence resourcePersistence) {
-		this.resourcePersistence = resourcePersistence;
-	}
-
-	/**
-	 * Returns the resource finder.
-	 *
-	 * @return the resource finder
-	 */
-	public ResourceFinder getResourceFinder() {
-		return resourceFinder;
-	}
-
-	/**
-	 * Sets the resource finder.
-	 *
-	 * @param resourceFinder the resource finder
-	 */
-	public void setResourceFinder(ResourceFinder resourceFinder) {
-		this.resourceFinder = resourceFinder;
 	}
 
 	/**
@@ -963,12 +864,6 @@ public abstract class RatingsEntryLocalServiceBaseImpl
 	protected CounterLocalService counterLocalService;
 	@BeanReference(type = ResourceLocalService.class)
 	protected ResourceLocalService resourceLocalService;
-	@BeanReference(type = ResourceService.class)
-	protected ResourceService resourceService;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
-	@BeanReference(type = ResourceFinder.class)
-	protected ResourceFinder resourceFinder;
 	@BeanReference(type = UserLocalService.class)
 	protected UserLocalService userLocalService;
 	@BeanReference(type = UserService.class)
@@ -1007,6 +902,5 @@ public abstract class RatingsEntryLocalServiceBaseImpl
 	protected SocialActivityFinder socialActivityFinder;
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
 	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
-	private static Log _log = LogFactoryUtil.getLog(RatingsEntryLocalServiceBaseImpl.class);
 	private String _beanIdentifier;
 }

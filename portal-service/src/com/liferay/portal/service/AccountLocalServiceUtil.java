@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -65,24 +64,31 @@ public class AccountLocalServiceUtil {
 	* Deletes the account with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param accountId the primary key of the account
+	* @return the account that was removed
 	* @throws PortalException if a account with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteAccount(long accountId)
+	public static com.liferay.portal.model.Account deleteAccount(long accountId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteAccount(accountId);
+		return getService().deleteAccount(accountId);
 	}
 
 	/**
 	* Deletes the account from the database. Also notifies the appropriate model listeners.
 	*
 	* @param account the account
+	* @return the account that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteAccount(com.liferay.portal.model.Account account)
+	public static com.liferay.portal.model.Account deleteAccount(
+		com.liferay.portal.model.Account account)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteAccount(account);
+		return getService().deleteAccount(account);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -269,20 +275,15 @@ public class AccountLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(AccountLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(AccountLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(AccountLocalService service) {
-		MethodCache.remove(AccountLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(AccountLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(AccountLocalService.class);
 	}
 
 	private static AccountLocalService _service;

@@ -23,6 +23,7 @@ import com.liferay.portalweb.portlet.blogs.blogsentry.addblogsentrytitle150chara
 import com.liferay.portalweb.portlet.blogs.blogsentry.addblogsentrytitle151characters.AddBlogsEntryTitle151CharactersTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.addblogsentrytitleescapecharacters.AddBlogsEntryTitleEscapeCharactersTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.addblogsentrytitlenull.AddBlogsEntryTitleNullTests;
+import com.liferay.portalweb.portlet.blogs.blogsentry.addblogsentrytrackback.AddBlogsEntryTrackbackTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.addportletscopelayoutblogsentry.AddPortletScopeLayoutBlogsEntryTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.deleteblogsentry.DeleteBlogsEntryTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.deleteblogsentrytitle150characters.DeleteBlogsEntryTitle150CharactersTests;
@@ -39,7 +40,6 @@ import com.liferay.portalweb.portlet.blogs.blogsentry.rateblogsentry.RateBlogsEn
 import com.liferay.portalweb.portlet.blogs.blogsentry.rateblogsentrydetails.RateBlogsEntryDetailsTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.saveasdraftblogsentrydetails.SaveAsDraftBlogsEntryDetailsTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.userviewsaveasdraftblogsentry.User_ViewSaveAsDraftBlogsEntryTests;
-import com.liferay.portalweb.portlet.blogs.blogsentry.viewblogsentry.ViewBlogsEntryTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.viewblogsentrydetails.ViewBlogsEntryDetailsTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.viewblogsentryrss.ViewBlogsEntryRSSTests;
 import com.liferay.portalweb.portlet.blogs.blogsentry.viewblogsentryviewcountdetails.ViewBlogsEntryViewCountDetailsTests;
@@ -67,6 +67,7 @@ public class BlogsEntryTestPlan extends BaseTestSuite {
 		testSuite.addTest(AddBlogsEntryTitle151CharactersTests.suite());
 		testSuite.addTest(AddBlogsEntryTitleEscapeCharactersTests.suite());
 		testSuite.addTest(AddBlogsEntryTitleNullTests.suite());
+		testSuite.addTest(AddBlogsEntryTrackbackTests.suite());
 		testSuite.addTest(AddPortletScopeLayoutBlogsEntryTests.suite());
 		testSuite.addTest(DeleteBlogsEntryTests.suite());
 		testSuite.addTest(DeleteBlogsEntryTitle150CharactersTests.suite());
@@ -83,7 +84,6 @@ public class BlogsEntryTestPlan extends BaseTestSuite {
 		testSuite.addTest(RateBlogsEntryDetailsTests.suite());
 		testSuite.addTest(SaveAsDraftBlogsEntryDetailsTests.suite());
 		testSuite.addTest(User_ViewSaveAsDraftBlogsEntryTests.suite());
-		testSuite.addTest(ViewBlogsEntryTests.suite());
 		testSuite.addTest(ViewBlogsEntryDetailsTests.suite());
 		testSuite.addTest(ViewBlogsEntryRSSTests.suite());
 		testSuite.addTest(ViewBlogsEntryViewCountDetailsTests.suite());

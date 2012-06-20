@@ -16,19 +16,23 @@ package com.liferay.portal.convert;
 
 import com.liferay.mail.model.CyrusUser;
 import com.liferay.mail.model.CyrusVirtual;
+import com.liferay.portal.events.StartupHelper;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBFactoryUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.dao.jdbc.DataSourceFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.servlet.PortletServlet;
+import com.liferay.portal.kernel.servlet.PluginContextListener;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.model.ModelHintsUtil;
+import com.liferay.portal.model.ServiceComponent;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
+import com.liferay.portal.service.ServiceComponentLocalServiceUtil;
 import com.liferay.portal.spring.hibernate.DialectDetector;
 import com.liferay.portal.upgrade.util.Table;
 import com.liferay.portal.util.MaintenanceUtil;
@@ -38,9 +42,11 @@ import java.lang.reflect.Field;
 
 import java.sql.Connection;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 
@@ -162,6 +168,24 @@ public class ConvertDatabase extends ConvertProcess {
 
 				i++;
 			}
+
+			if (_log.isDebugEnabled()) {
+				_log.debug("Migrating database indexes");
+			}
+
+			StartupHelper.updateIndexes(db, connection, false);
+
+			List<ServiceComponent> serviceComponents =
+				ServiceComponentLocalServiceUtil.getServiceComponents(
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+			Set<String> validIndexNames = new HashSet<String>();
+
+			for (ServiceComponent serviceComponent : serviceComponents) {
+				String indexesSQL = serviceComponent.getIndexesSQL();
+
+				db.addIndexes(connection, indexesSQL, validIndexNames);
+			}
 		}
 		finally {
 			DataAccess.cleanUp(connection);
@@ -187,7 +211,8 @@ public class ConvertDatabase extends ConvertProcess {
 
 	protected Class<?> getImplClass(String implClassName) throws Exception {
 		try {
-			ClassLoader classLoader = PortalClassLoaderUtil.getClassLoader();
+			ClassLoader classLoader =
+				PACLClassLoaderUtil.getPortalClassLoader();
 
 			return classLoader.loadClass(implClassName);
 		}
@@ -201,7 +226,7 @@ public class ConvertDatabase extends ConvertProcess {
 
 				ClassLoader classLoader =
 					(ClassLoader)servletContext.getAttribute(
-						PortletServlet.PORTLET_CLASS_LOADER);
+						PluginContextListener.PLUGIN_CLASS_LOADER);
 
 				return classLoader.loadClass(implClassName);
 			}

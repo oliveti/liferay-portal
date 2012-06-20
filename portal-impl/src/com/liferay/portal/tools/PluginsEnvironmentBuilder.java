@@ -30,7 +30,6 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -90,12 +89,7 @@ public class PluginsEnvironmentBuilder {
 
 		sb.append("\">\n\t\t<attributes>\n");
 
-		Iterator<Map.Entry<String, String>> itr =
-			attributes.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<String, String> entry = itr.next();
-
+		for (Map.Entry<String, String> entry : attributes.entrySet()) {
 			sb.append("\t\t\t<attribute name=\"");
 			sb.append(entry.getKey());
 			sb.append("\" value=\"");
@@ -112,13 +106,6 @@ public class PluginsEnvironmentBuilder {
 		File propertiesFile = new File(dirName + "/" + fileName);
 
 		File libDir = new File(propertiesFile.getParent() + "/lib");
-
-		String libDirPath = StringUtil.replace(
-			libDir.getPath(), StringPool.BACK_SLASH, StringPool.SLASH);
-
-		if (libDirPath.contains("/themes/")) {
-			return;
-		}
 
 		File projectDir = new File(propertiesFile.getParent() + "/../..");
 
@@ -142,6 +129,9 @@ public class PluginsEnvironmentBuilder {
 		Collections.sort(jars);
 
 		writeEclipseFiles(libDir, projectDir, dependencyJars);
+
+		String libDirPath = StringUtil.replace(
+			libDir.getPath(), StringPool.BACK_SLASH, StringPool.SLASH);
 
 		List<String> ignores = ListUtil.fromFile(
 			libDir.getCanonicalPath() + "/../.gitignore");
@@ -270,10 +260,20 @@ public class PluginsEnvironmentBuilder {
 		sb.append("\t<classpathentry kind=\"con\" ");
 		sb.append("path=\"org.eclipse.jdt.launching.JRE_CONTAINER\" />\n");
 
-		if (_fileUtil.exists(projectDirName + "/test")) {
-			sb.append("\t<classpathentry excluding=\"**/.svn/**|.svn/\" ");
-			sb.append("kind=\"src\" path=\"test\" />\n");
+		boolean addJunitJars = false;
 
+		for (String testType :_TEST_TYPES) {
+			String testFolder = "test/" + testType;
+
+			if (_fileUtil.exists(projectDirName + "/" + testFolder)) {
+				addJunitJars = true;
+
+				sb.append("\t<classpathentry excluding=\"**/.svn/**|.svn/\" ");
+				sb.append("kind=\"src\" path=\""+ testFolder + "\" />\n");
+			}
+		}
+
+		if (addJunitJars) {
 			addClasspathEntry(sb, "/portal/lib/development/junit.jar");
 			addClasspathEntry(sb, "/portal/lib/portal/commons-io.jar");
 		}
@@ -462,6 +462,8 @@ public class PluginsEnvironmentBuilder {
 		"docroot/WEB-INF/ext-util-taglib/src", "docroot/WEB-INF/service",
 		"docroot/WEB-INF/src"
 	};
+
+	private static final String[] _TEST_TYPES = {"integration", "unit"};
 
 	private static FileImpl _fileUtil = FileImpl.getInstance();
 

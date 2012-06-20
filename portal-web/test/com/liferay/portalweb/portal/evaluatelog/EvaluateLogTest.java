@@ -17,8 +17,7 @@ package com.liferay.portalweb.portal.evaluatelog;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.FileUtil;
-
-import com.liferay.portal.util.BaseTestCase;
+import com.liferay.portalweb.portal.BaseTestCase;
 
 /**
  * @author Brian Wing Shun Chan
@@ -85,7 +84,17 @@ public class EvaluateLogTest extends BaseTestCase {
 
 			// LPS-17639
 
-			if (line.contains("Table \'lportal.lock_\' doesn't exist")) {
+			if (line.contains("Table 'lportal.lock_' doesn't exist")) {
+				continue;
+			}
+
+			// LPS-22821
+
+			if (line.contains(
+					"Exception sending context destroyed event to listener " +
+						"instance of class com.liferay.portal.spring.context." +
+							"PortalContextLoaderListener")) {
+
 				continue;
 			}
 

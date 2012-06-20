@@ -14,6 +14,7 @@
 
 package com.liferay.portal.security.permission;
 
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.model.User;
 
 /**
@@ -22,18 +23,30 @@ import com.liferay.portal.model.User;
  */
 public class PermissionCheckerFactoryUtil {
 
+	public static PermissionChecker create(User user) throws Exception {
+		return getPermissionCheckerFactory().create(user);
+	}
+
+	/**
+	 * @deprecated {@link #create(User)}
+	 */
 	public static PermissionChecker create(User user, boolean checkGuest)
 		throws Exception {
 
-		return getPermissionCheckerFactory().create(user, checkGuest);
+		return getPermissionCheckerFactory().create(user);
 	}
 
 	public static PermissionCheckerFactory getPermissionCheckerFactory() {
+		PortalRuntimePermission.checkGetBeanProperty(
+			PermissionCheckerFactoryUtil.class);
+
 		return _permissionCheckerFactory;
 	}
 
 	public void setPermissionCheckerFactory(
 		PermissionCheckerFactory permissionCheckerFactory) {
+
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_permissionCheckerFactory = permissionCheckerFactory;
 	}

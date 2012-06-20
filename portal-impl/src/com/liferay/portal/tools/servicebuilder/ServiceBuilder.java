@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ArrayUtil_IW;
+import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ClearThreadLocalUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -84,7 +85,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -130,7 +130,6 @@ public class ServiceBuilder {
 		String springShardDataSourceFileName = arguments.get("service.spring.shard.data.source.file");
 		String apiDir = arguments.get("service.api.dir");
 		String implDir = arguments.get("service.impl.dir");
-		String jsonFileName = arguments.get("service.json.file");
 		String remotingFileName = arguments.get("service.remoting.file");
 		String sqlDir = arguments.get("service.sql.dir");
 		String sqlFileName = arguments.get("service.sql.file");
@@ -141,39 +140,46 @@ public class ServiceBuilder {
 		String beanLocatorUtil = arguments.get("service.bean.locator.util");
 		String propsUtil = arguments.get("service.props.util");
 		String pluginName = arguments.get("service.plugin.name");
+		String targetEntityName = arguments.get("service.target.entity.name");
 		String testDir = arguments.get("service.test.dir");
+		long buildNumber = GetterUtil.getLong(arguments.get("service.build.number"), 1);
+		boolean buildNumberIncrement = GetterUtil.getBoolean(arguments.get("service.build.number.increment"), true);
 
 		try {
 			new ServiceBuilder(
 				fileName, hbmFileName, ormFileName, modelHintsFileName,
-				springFileName,	springBaseFileName, springClusterFileName,
+				springFileName, springBaseFileName, springClusterFileName,
 				springDynamicDataSourceFileName, springHibernateFileName,
 				springInfrastructureFileName, springShardDataSourceFileName,
-				apiDir, implDir, jsonFileName, remotingFileName, sqlDir,
+				apiDir, implDir, remotingFileName, sqlDir,
 				sqlFileName, sqlIndexesFileName, sqlIndexesPropertiesFileName,
 				sqlSequencesFileName, autoNamespaceTables, beanLocatorUtil,
-				propsUtil, pluginName, testDir);
+				propsUtil, pluginName, targetEntityName, testDir, true,
+				buildNumber, buildNumberIncrement);
 		}
 		catch (RuntimeException re) {
 			System.out.println(
 				"Please set these required arguments. Sample values are:\n" +
 				"\n" +
 				"\tservice.input.file=${service.file}\n" +
-				"\tservice.hbm.file=src/META-INF/portal-hbm.xml\n" +
-				"\tservice.orm.file=src/META-INF/portal-orm.xml\n" +
-				"\tservice.model.hints.file=src/META-INF/portal-model-hints.xml\n" +
-				"\tservice.spring.file=src/META-INF/portal-spring.xml\n" +
-				"\tservice.api.dir=${project.dir}/portal-service/src\n" +
-				"\tservice.impl.dir=src\n" +
-				"\tservice.json.file=${project.dir}/portal-web/docroot/html/js/liferay/service_unpacked.js\n" +
-				"\tservice.remoting.file=${project.dir}/portal-web/docroot/WEB-INF/remoting-servlet.xml\n" +
-				"\tservice.sql.dir=../sql\n" +
+				"\tservice.hbm.file=${basedir}/src/META-INF/portal-hbm.xml\n" +
+				"\tservice.orm.file=${basedir}/src/META-INF/portal-orm.xml\n" +
+				"\tservice.model.hints.file=${basedir}/src/META-INF/portal-model-hints.xml\n" +
+				"\tservice.spring.file=${basedir}/src/META-INF/portal-spring.xml\n" +
+				"\tservice.api.dir=${basedir}/../portal-service/src\n" +
+				"\tservice.impl.dir=${basedir}/src\n" +
+				"\tservice.remoting.file=${basedir}/../portal-web/docroot/WEB-INF/remoting-servlet.xml\n" +
+				"\tservice.sql.dir=${basedir}/../sql\n" +
 				"\tservice.sql.file=portal-tables.sql\n" +
 				"\tservice.sql.indexes.file=indexes.sql\n" +
 				"\tservice.sql.indexes.properties.file=indexes.properties\n" +
 				"\tservice.sql.sequences.file=sequences.sql\n" +
-				"\tservice.bean.locator.util.package=com.liferay.portal.kernel.bean\n" +
-				"\tservice.props.util.package=com.liferay.portal.util\n" +
+				"\tservice.bean.locator.util=com.liferay.portal.kernel.bean.PortalBeanLocatorUtil\n" +
+				"\tservice.props.util=com.liferay.portal.util.PropsUtil\n" +
+				"\tservice.target.entity.name=${service.target.entity.name}\n" +
+				"\tservice.test.dir=${basedir}/test/integration\n" +
+				"\tservice.build.number=1\n" +
+				"\tservice.build.number.increment=true\n" +
 				"\n" +
 				"You can also customize the generated code by overriding the default templates with these optional system properties:\n" +
 				"\n" +
@@ -209,6 +215,7 @@ public class ServiceBuilder {
 				"\t-Dservice.tpl.service=" + _TPL_ROOT + "service.ftl\n"+
 				"\t-Dservice.tpl.service_base_impl=" + _TPL_ROOT + "service_base_impl.ftl\n"+
 				"\t-Dservice.tpl.service_clp=" + _TPL_ROOT + "service_clp.ftl\n"+
+				"\t-Dservice.tpl.service_clp_invoker=" + _TPL_ROOT + "service_clp_invoker.ftl\n"+
 				"\t-Dservice.tpl.service_clp_message_listener=" + _TPL_ROOT + "service_clp_message_listener.ftl\n"+
 				"\t-Dservice.tpl.service_clp_serializer=" + _TPL_ROOT + "service_clp_serializer.ftl\n"+
 				"\t-Dservice.tpl.service_http=" + _TPL_ROOT + "service_http.ftl\n"+
@@ -328,7 +335,7 @@ public class ServiceBuilder {
 		try {
 			Jalopy.setConvention(jalopyXmlFile);
 		}
-		catch (FileNotFoundException fnne) {
+		catch (FileNotFoundException fnfe) {
 		}
 
 		if (jalopySettings == null) {
@@ -414,21 +421,21 @@ public class ServiceBuilder {
 		String springDynamicDataSourceFileName, String springHibernateFileName,
 		String springInfrastructureFileName,
 		String springShardDataSourceFileName, String apiDir, String implDir,
-		String jsonFileName, String remotingFileName, String sqlDir,
-		String sqlFileName, String sqlIndexesFileName,
-		String sqlIndexesPropertiesFileName, String sqlSequencesFileName,
-		boolean autoNamespaceTables, String beanLocatorUtil, String propsUtil,
-		String pluginName, String testDir) {
+		String remotingFileName, String sqlDir, String sqlFileName,
+		String sqlIndexesFileName, String sqlIndexesPropertiesFileName,
+		String sqlSequencesFileName, boolean autoNamespaceTables,
+		String beanLocatorUtil, String propsUtil, String pluginName,
+		String targetEntityName, String testDir) {
 
 		this(
 			fileName, hbmFileName, ormFileName, modelHintsFileName,
 			springFileName, springBaseFileName, springClusterFileName,
 			springDynamicDataSourceFileName, springHibernateFileName,
 			springInfrastructureFileName, springShardDataSourceFileName, apiDir,
-			implDir, jsonFileName, remotingFileName, sqlDir, sqlFileName,
-			sqlIndexesFileName, sqlIndexesPropertiesFileName,
-			sqlSequencesFileName, autoNamespaceTables, beanLocatorUtil,
-			propsUtil, pluginName, testDir, true);
+			implDir, remotingFileName, sqlDir, sqlFileName, sqlIndexesFileName,
+			sqlIndexesPropertiesFileName, sqlSequencesFileName,
+			autoNamespaceTables, beanLocatorUtil, propsUtil, pluginName,
+			targetEntityName, testDir, true, 1, true);
 	}
 
 	public ServiceBuilder(
@@ -438,17 +445,17 @@ public class ServiceBuilder {
 		String springDynamicDataSourceFileName, String springHibernateFileName,
 		String springInfrastructureFileName,
 		String springShardDataSourceFileName, String apiDir, String implDir,
-		String jsonFileName, String remotingFileName, String sqlDir,
-		String sqlFileName, String sqlIndexesFileName,
-		String sqlIndexesPropertiesFileName, String sqlSequencesFileName,
-		boolean autoNamespaceTables, String beanLocatorUtil, String propsUtil,
-		String pluginName, String testDir, boolean build) {
+		String remotingFileName, String sqlDir, String sqlFileName,
+		String sqlIndexesFileName, String sqlIndexesPropertiesFileName,
+		String sqlSequencesFileName, boolean autoNamespaceTables,
+		String beanLocatorUtil, String propsUtil, String pluginName,
+		String targetEntityName, String testDir, boolean build,
+		long buildNumber, boolean buildNumberIncrement) {
 
 		_tplBadAliasNames = _getTplProperty(
 			"bad_alias_names", _tplBadAliasNames);
 		_tplBadColumnNames = _getTplProperty(
 			"bad_column_names", _tplBadColumnNames);
-		_tplBadJsonTypes = _getTplProperty("bad_json_types", _tplBadJsonTypes);
 		_tplBadTableNames = _getTplProperty(
 			"bad_table_names", _tplBadTableNames);
 		_tplBlobModel = _getTplProperty("blob_model", _tplBlobModel);
@@ -485,6 +492,8 @@ public class ServiceBuilder {
 		_tplServiceBaseImpl = _getTplProperty(
 			"service_base_impl", _tplServiceBaseImpl);
 		_tplServiceClp = _getTplProperty("service_clp", _tplServiceClp);
+		_tplServiceClpInvoker = _getTplProperty(
+			"service_clp_invoker", _tplServiceClpInvoker);
 		_tplServiceClpMessageListener = _getTplProperty(
 			"service_clp_message_listener", _tplServiceClpMessageListener);
 		_tplServiceClpSerializer = _getTplProperty(
@@ -513,7 +522,6 @@ public class ServiceBuilder {
 			_badTableNames = _readLines(_tplBadTableNames);
 			_badAliasNames = _readLines(_tplBadAliasNames);
 			_badColumnNames = _readLines(_tplBadColumnNames);
-			_badJsonTypes = _readLines(_tplBadJsonTypes);
 			_hbmFileName = hbmFileName;
 			_ormFileName = ormFileName;
 			_modelHintsFileName = modelHintsFileName;
@@ -526,7 +534,6 @@ public class ServiceBuilder {
 			_springShardDataSourceFileName = springShardDataSourceFileName;
 			_apiDir = apiDir;
 			_implDir = implDir;
-			_jsonFileName = jsonFileName;
 			_remotingFileName = remotingFileName;
 			_sqlDir = sqlDir;
 			_sqlFileName = sqlFileName;
@@ -539,8 +546,11 @@ public class ServiceBuilder {
 				_beanLocatorUtil.lastIndexOf(".") + 1);
 			_propsUtil = propsUtil;
 			_pluginName = GetterUtil.getString(pluginName);
+			_targetEntityName = targetEntityName;
 			_testDir = testDir;
 			_build = build;
+			_buildNumber = buildNumber;
+			_buildNumberIncrement = buildNumberIncrement;
 
 			String content = _getContent(fileName);
 
@@ -589,8 +599,8 @@ public class ServiceBuilder {
 
 				_portletShortName = portletElement.attributeValue("short-name");
 
-				_portletPackageName =
-					TextFormatter.format(_portletName, TextFormatter.B);
+				_portletPackageName = TextFormatter.format(
+					_portletName, TextFormatter.B);
 
 				_outputPath += "/" + _portletPackageName;
 
@@ -606,9 +616,11 @@ public class ServiceBuilder {
 
 			_portletShortName = _portletShortName.trim();
 
-			if (!Validator.isChar(_portletShortName)) {
-				throw new RuntimeException(
-					"The namespace element must be a valid keyword");
+			for (char c : _portletShortName.toCharArray()) {
+				if (!Validator.isChar(c) && (c != CharPool.UNDERLINE)) {
+					throw new RuntimeException(
+						"The namespace element must be a valid keyword");
+				}
 			}
 
 			_ejbList = new ArrayList<Entity>();
@@ -637,11 +649,8 @@ public class ServiceBuilder {
 				for (int x = 0; x < _ejbList.size(); x++) {
 					Entity entity = _ejbList.get(x);
 
-					System.out.println("Building " + entity.getName());
-
-					if (true) {/* ||
-						entity.getName().equals("EmailAddress") ||
-						entity.getName().equals("User")) {*/
+					if (_isTargetEntity(entity)) {
+						System.out.println("Building " + entity.getName());
 
 						if (entity.hasColumns()) {
 							_createHbm(entity);
@@ -692,6 +701,8 @@ public class ServiceBuilder {
 							_createServiceUtil(entity, _SESSION_TYPE_LOCAL);
 
 							_createServiceClp(entity, _SESSION_TYPE_LOCAL);
+							_createServiceClpInvoker(
+								entity, _SESSION_TYPE_LOCAL);
 							_createServiceWrapper(entity, _SESSION_TYPE_LOCAL);
 						}
 
@@ -704,6 +715,8 @@ public class ServiceBuilder {
 							_createServiceUtil(entity, _SESSION_TYPE_REMOTE);
 
 							_createServiceClp(entity, _SESSION_TYPE_REMOTE);
+							_createServiceClpInvoker(
+								entity, _SESSION_TYPE_REMOTE);
 							_createServiceWrapper(entity, _SESSION_TYPE_REMOTE);
 
 							if (Validator.isNotNull(_remotingFileName)) {
@@ -719,6 +732,13 @@ public class ServiceBuilder {
 							_createServiceSoap(entity);
 						}
 					}
+					else {
+						if (entity.hasColumns()) {
+							entity.setTransients(_getTransients(entity, false));
+							entity.setParentTransients(
+								_getTransients(entity, true));
+						}
+					}
 				}
 
 				_createHbmXml();
@@ -726,10 +746,10 @@ public class ServiceBuilder {
 				_createModelHintsXml();
 				_createSpringXml();
 
-				_createServiceClpMessageListener();
-				_createServiceClpSerializer();
+				_createExceptions(exceptionList);
 
-				_createJsonJs();
+				_createServiceClpMessageListener();
+				_createServiceClpSerializer(exceptionList);
 
 				if (Validator.isNotNull(_remotingFileName)) {
 					_createRemotingXml();
@@ -738,8 +758,6 @@ public class ServiceBuilder {
 				_createSQLIndexes();
 				_createSQLTables();
 				_createSQLSequences();
-
-				_createExceptions(exceptionList);
 
 				_createProps();
 				_createSpringBaseXml();
@@ -806,7 +824,7 @@ public class ServiceBuilder {
 
 		String createMappingTableSQL = _getCreateMappingTableSQL(entityMapping);
 
-		createMappingTableSQL =  StringUtil.replace(
+		createMappingTableSQL = StringUtil.replace(
 			createMappingTableSQL, "\n", "");
 		createMappingTableSQL = StringUtil.replace(
 			createMappingTableSQL, "\t", "");
@@ -867,7 +885,7 @@ public class ServiceBuilder {
 		}
 		else {
 			String refPackage = name.substring(0, pos);
-			String refEntity = name.substring(pos + 1, name.length());
+			String refEntity = name.substring(pos + 1);
 
 			if (refPackage.equals(_packagePath)) {
 				pos = _ejbList.indexOf(new Entity(refEntity));
@@ -913,11 +931,11 @@ public class ServiceBuilder {
 				_springFileName, _springBaseFileName, _springClusterFileName,
 				_springDynamicDataSourceFileName, _springHibernateFileName,
 				_springInfrastructureFileName, _springShardDataSourceFileName,
-				_apiDir, _implDir, _jsonFileName, _remotingFileName, _sqlDir,
-				_sqlFileName, _sqlIndexesFileName,
-				_sqlIndexesPropertiesFileName, _sqlSequencesFileName,
-				_autoNamespaceTables, _beanLocatorUtil, _propsUtil, _pluginName,
-				_testDir, false);
+				_apiDir, _implDir, _remotingFileName, _sqlDir, _sqlFileName,
+				_sqlIndexesFileName, _sqlIndexesPropertiesFileName,
+				_sqlSequencesFileName, _autoNamespaceTables, _beanLocatorUtil,
+				_propsUtil, _pluginName, _targetEntityName, _testDir, false,
+				_buildNumber, _buildNumberIncrement);
 
 			entity = serviceBuilder.getEntity(refEntity);
 
@@ -1116,7 +1134,7 @@ public class ServiceBuilder {
 		for (JavaMethod method : methods) {
 			JavaParameter[] parameters = method.getParameters();
 
-			if ((method.getName().equals(methodName)) &&
+			if (method.getName().equals(methodName) &&
 				(parameters.length == args.size())) {
 
 				for (int i = 0; i < parameters.length; i++) {
@@ -1326,7 +1344,7 @@ public class ServiceBuilder {
 			JavaParameter[] parameters = method.getParameters();
 
 			if ((parameters.length == 1) &&
-				(parameters[0].getName().equals("primaryKey"))) {
+				parameters[0].getName().equals("primaryKey")) {
 
 				return true;
 			}
@@ -1367,7 +1385,7 @@ public class ServiceBuilder {
 		else if (methodName.equals("getPermissionChecker")) {
 			return false;
 		}
-		else if ((methodName.equals("getUser")) &&
+		else if (methodName.equals("getUser") &&
 				 (method.getParameters().length == 0)) {
 
 			return false;
@@ -1377,19 +1395,19 @@ public class ServiceBuilder {
 
 			return false;
 		}
-		else if ((methodName.endsWith("Finder")) &&
+		else if (methodName.endsWith("Finder") &&
 				 (methodName.startsWith("get") ||
 				  methodName.startsWith("set"))) {
 
 			return false;
 		}
-		else if ((methodName.endsWith("Persistence")) &&
+		else if (methodName.endsWith("Persistence") &&
 				 (methodName.startsWith("get") ||
 				  methodName.startsWith("set"))) {
 
 			return false;
 		}
-		else if ((methodName.endsWith("Service")) &&
+		else if (methodName.endsWith("Service") &&
 				 (methodName.startsWith("get") ||
 				  methodName.startsWith("set"))) {
 
@@ -1488,8 +1506,6 @@ public class ServiceBuilder {
 		String returnValueName = returnType.getValue();
 
 		if (returnTypeGenericsName.contains(
-				"com.liferay.portal.kernel.repository.") ||
-			returnTypeGenericsName.contains(
 				"com.liferay.portal.kernel.search.") ||
 			returnTypeGenericsName.contains("com.liferay.portal.model.Theme") ||
 			returnTypeGenericsName.contains(
@@ -1502,6 +1518,17 @@ public class ServiceBuilder {
 			returnValueName.equals("java.util.Map") ||
 			returnValueName.equals("java.util.Properties") ||
 			returnValueName.startsWith("javax")) {
+
+			return false;
+		}
+
+		if (returnTypeGenericsName.contains(
+				"com.liferay.portal.kernel.repository.model.FileEntry") ||
+			returnTypeGenericsName.contains(
+				"com.liferay.portal.kernel.repository.model.Folder")) {
+		}
+		else if (returnTypeGenericsName.contains(
+					"com.liferay.portal.kernel.repository.")) {
 
 			return false;
 		}
@@ -1570,9 +1597,7 @@ public class ServiceBuilder {
 		return StringUtil.replace(fileName, "/", ".");
 	}
 
-	private void _addElements(
-		Element element, Map<String, Element> elements) {
-
+	private void _addElements(Element element, Map<String, Element> elements) {
 		for (Map.Entry<String, Element> entry : elements.entrySet()) {
 			Element childElement = entry.getValue();
 
@@ -1640,6 +1665,10 @@ public class ServiceBuilder {
 	private void _createExceptions(List<String> exceptions) throws Exception {
 		for (int i = 0; i < _ejbList.size(); i++) {
 			Entity entity = _ejbList.get(i);
+
+			if (!_isTargetEntity(entity)) {
+				continue;
+			}
 
 			if (entity.hasColumns()) {
 				exceptions.add(getNoSuchEntityException(entity));
@@ -1765,7 +1794,7 @@ public class ServiceBuilder {
 
 			content = content.replaceAll(
 				"extends\\s+" + entity.getName() +
-					"ModelImpl\\s+implements\\s+" +	entity.getName(),
+					"ModelImpl\\s+implements\\s+" + entity.getName(),
 				"extends " + entity.getName() + "BaseImpl");
 
 			writeFileRaw(modelFile, content);
@@ -1946,7 +1975,7 @@ public class ServiceBuilder {
 			if (x != -1) {
 				newContent =
 					newContent.substring(0, x) + content +
-						newContent.substring(x, newContent.length());
+						newContent.substring(x);
 			}
 		}
 		else {
@@ -1955,128 +1984,13 @@ public class ServiceBuilder {
 
 			newContent =
 				newContent.substring(0, firstClass) + content +
-					newContent.substring(lastClass, newContent.length());
+					newContent.substring(lastClass);
 		}
 
 		newContent = _formatXml(newContent);
 
 		if (!oldContent.equals(newContent)) {
 			FileUtil.write(xmlFile, newContent);
-		}
-	}
-
-	private void _createJsonJs() throws Exception {
-		if (_packagePath.equals("com.liferay.counter")) {
-			return;
-		}
-
-		if (Validator.isNotNull(_pluginName)) {
-			boolean hasRemoteService = false;
-
-			for (int i = 0; i < _ejbList.size(); i++) {
-				Entity entity = _ejbList.get(i);
-
-				if (entity.hasRemoteService()) {
-					hasRemoteService = true;
-
-					break;
-				}
-			}
-
-			if (!hasRemoteService) {
-				return;
-			}
-		}
-
-		StringBundler sb = new StringBundler();
-
-		if (_ejbList.size() > 0) {
-			sb.append(_processTemplate(_tplJsonJs));
-		}
-
-		for (int i = 0; i < _ejbList.size(); i++) {
-			Entity entity = _ejbList.get(i);
-
-			if (entity.hasRemoteService()) {
-				JavaClass javaClass = _getJavaClass(
-					_serviceOutputPath + "/service/" + entity.getName() +
-						"Service.java");
-
-				JavaMethod[] methods = _getMethods(javaClass);
-
-				Set<String> jsonMethods = new LinkedHashSet<String>();
-
-				for (JavaMethod method : methods) {
-					String methodName = method.getName();
-					String returnValue = getReturnType(method);
-
-					boolean badJsonType = false;
-
-					for (JavaParameter parameter: method.getParameters()) {
-						String parameterType = getParameterType(parameter);
-
-						if (_badJsonTypes.contains(parameterType)) {
-							badJsonType = true;
-						}
-					}
-
-					if (method.isPublic() &&
-						!_badJsonTypes.contains(returnValue) && !badJsonType) {
-
-						jsonMethods.add(methodName);
-					}
-				}
-
-				if (jsonMethods.size() > 0) {
-					Map<String, Object> context = _getContext();
-
-					context.put("entity", entity);
-					context.put("methods", jsonMethods);
-
-					sb.append("\n\n");
-					sb.append(_processTemplate(_tplJsonJsMethod, context));
-				}
-			}
-		}
-
-		File jsonFile = new File(_jsonFileName);
-
-		if (!jsonFile.exists()) {
-			FileUtil.write(jsonFile, "");
-		}
-
-		String oldContent = FileUtil.read(jsonFile);
-		String newContent = oldContent;
-
-		int oldBegin = oldContent.indexOf(
-			"Liferay.Service.register(\"Liferay.Service." + _portletShortName);
-
-		int oldEnd = oldContent.lastIndexOf(
-			"Liferay.Service." + _portletShortName);
-
-		oldEnd = oldContent.indexOf(");", oldEnd);
-
-		int newBegin = newContent.indexOf(
-			"Liferay.Service.register(\"Liferay.Service." + _portletShortName);
-
-		int newEnd = newContent.lastIndexOf(
-			"Liferay.Service." + _portletShortName);
-
-		newEnd = newContent.indexOf(");", newEnd);
-
-		if (newBegin == -1) {
-			newContent = oldContent + "\n\n" + sb.toString().trim();
-		}
-		else {
-			newContent =
-				newContent.substring(0, oldBegin) + sb.toString().trim() +
-					newContent.substring(oldEnd + 2, newContent.length());
-		}
-
-		newContent = newContent.trim();
-
-		if (!oldContent.equals(newContent)) {
-			FileUtil.write(jsonFile, newContent);
 		}
 	}
 
@@ -2138,10 +2052,38 @@ public class ServiceBuilder {
 		JavaClass javaClass = _getJavaClass(
 			_outputPath + "/model/impl/" + entity.getName() + "Impl.java");
 
+		Map<String, JavaMethod> methods = new HashMap<String, JavaMethod>();
+
+		for (JavaMethod method : javaClass.getMethods()) {
+			methods.put(method.getDeclarationSignature(false), method);
+		}
+
+		Type superClass = javaClass.getSuperClass();
+
+		String superClassValue = superClass.getValue();
+
+		while (!superClassValue.endsWith("BaseModelImpl")) {
+			int pos = superClassValue.lastIndexOf(StringPool.PERIOD);
+
+			if (pos > 0) {
+				superClassValue = superClassValue.substring(pos + 1);
+			}
+
+			javaClass = _getJavaClass(
+				_outputPath + "/model/impl/" + superClassValue + ".java");
+
+			for (JavaMethod method : _getMethods(javaClass)) {
+				methods.remove(method.getDeclarationSignature(false));
+			}
+
+			superClass = javaClass.getSuperClass();
+			superClassValue = superClass.getValue();
+		}
+
 		Map<String, Object> context = _getContext();
 
 		context.put("entity", entity);
-		context.put("methods", _getMethods(javaClass));
+		context.put("methods", methods.values());
 
 		// Content
 
@@ -2189,7 +2131,7 @@ public class ServiceBuilder {
 
 			newContent =
 				newContent.substring(0, x) + content +
-					newContent.substring(x, newContent.length());
+					newContent.substring(x);
 		}
 		else {
 			firstModel = newContent.lastIndexOf("<model", firstModel) - 1;
@@ -2197,7 +2139,7 @@ public class ServiceBuilder {
 
 			newContent =
 				newContent.substring(0, firstModel) + content +
-				newContent.substring(lastModel, newContent.length());
+					newContent.substring(lastModel);
 		}
 
 		newContent = _formatXml(newContent);
@@ -2310,7 +2252,7 @@ public class ServiceBuilder {
 			int lastMappedClassEnd = content.indexOf(
 				"</mapped-superclass>", lastMappedClassStart) + 20;
 
-			mappedClasses  = content.substring(0, lastMappedClassEnd);
+			mappedClasses = content.substring(0, lastMappedClassEnd);
 
 			content = content.substring(lastMappedClassEnd + 1);
 		}
@@ -2377,7 +2319,7 @@ public class ServiceBuilder {
 			if (x != -1) {
 				newContent =
 					newContent.substring(0, x) + content +
-						newContent.substring(x, newContent.length());
+						newContent.substring(x);
 			}
 		}
 		else {
@@ -2386,7 +2328,7 @@ public class ServiceBuilder {
 
 			newContent =
 				newContent.substring(0, firstEntity) + content +
-					newContent.substring(lastEntity, newContent.length());
+					newContent.substring(lastEntity);
 		}
 
 		newContent = _formatXml(newContent);
@@ -2535,19 +2477,33 @@ public class ServiceBuilder {
 		File propsFile = new File(_implDir + "/service.properties");
 
 		long buildNumber = 1;
+		long buildDate = System.currentTimeMillis();
 
 		if (propsFile.exists()) {
 			Properties properties = PropertiesUtil.load(
 				FileUtil.read(propsFile));
 
-			buildNumber = GetterUtil.getLong(
-				properties.getProperty("build.number")) + 1;
+			if (!_buildNumberIncrement) {
+				buildDate = GetterUtil.getLong(
+					properties.getProperty("build.date"));
+				buildNumber = GetterUtil.getLong(
+					properties.getProperty("build.number"));
+			}
+			else {
+				buildNumber = GetterUtil.getLong(
+					properties.getProperty("build.number")) + 1;
+			}
+		}
+
+		if (!_buildNumberIncrement && (buildNumber < _buildNumber)) {
+			buildNumber = _buildNumber;
+			buildDate = System.currentTimeMillis();
 		}
 
 		Map<String, Object> context = _getContext();
 
-		context.put("buildNumber", new Long(buildNumber));
-		context.put("currentTimeMillis", new Long(System.currentTimeMillis()));
+		context.put("buildNumber", buildNumber);
+		context.put("currentTimeMillis", buildDate);
 
 		String content = _processTemplate(_tplProps, context);
 
@@ -2616,7 +2572,7 @@ public class ServiceBuilder {
 		if (x != -1) {
 			newContent =
 				content.substring(0, x - 1) + sb.toString() +
-					content.substring(y, content.length());
+					content.substring(y);
 		}
 		else {
 			x = content.indexOf("</beans>");
@@ -2624,7 +2580,7 @@ public class ServiceBuilder {
 			if (x != -1) {
 				newContent =
 					content.substring(0, x) + sb.toString() +
-						content.substring(x, content.length());
+						content.substring(x);
 			}
 			else {
 				x = content.indexOf("<beans/>");
@@ -2632,7 +2588,7 @@ public class ServiceBuilder {
 
 				newContent =
 					content.substring(0, x) + "<beans>" + sb.toString() +
-						"</beans>" + content.substring(y, content.length());
+						"</beans>" + content.substring(y);
 			}
 		}
 
@@ -2648,33 +2604,33 @@ public class ServiceBuilder {
 	private void _createService(Entity entity, int sessionType)
 		throws Exception {
 
-		JavaClass javaClass = _getJavaClass(_outputPath + "/service/impl/" + entity.getName() + (sessionType != _SESSION_TYPE_REMOTE ? "Local" : "") + "ServiceImpl.java");
+		JavaClass javaClass = _getJavaClass(
+			_outputPath + "/service/impl/" + entity.getName() +
+				_getSessionTypeName(sessionType) + "ServiceImpl.java");
 
 		JavaMethod[] methods = _getMethods(javaClass);
 
-		if (sessionType == _SESSION_TYPE_LOCAL) {
-			if (javaClass.getSuperClass().getValue().endsWith(
-					entity.getName() + "LocalServiceBaseImpl")) {
+		Type superClass = javaClass.getSuperClass();
 
-				JavaClass parentJavaClass = _getJavaClass(
-					_outputPath + "/service/base/" + entity.getName() +
-						"LocalServiceBaseImpl.java");
+		String superClassValue = superClass.getValue();
 
-				JavaMethod[] parentMethods = parentJavaClass.getMethods();
+		if (superClassValue.endsWith(
+				entity.getName() + _getSessionTypeName(sessionType) +
+					"ServiceBaseImpl")) {
 
-				JavaMethod[] allMethods = new JavaMethod[parentMethods.length + methods.length];
+			JavaClass parentJavaClass = _getJavaClass(
+				_outputPath + "/service/base/" + entity.getName() +
+					_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
 
-				ArrayUtil.combine(parentMethods, methods, allMethods);
-
-				methods = allMethods;
-			}
+			methods = ArrayUtil.append(
+				parentJavaClass.getMethods(), methods);
 		}
 
 		Map<String, Object> context = _getContext();
 
 		context.put("entity", entity);
 		context.put("methods", methods);
-		context.put("sessionTypeName",_getSessionTypeName(sessionType));
+		context.put("sessionTypeName", _getSessionTypeName(sessionType));
 
 		// Content
 
@@ -2704,7 +2660,10 @@ public class ServiceBuilder {
 	private void _createServiceBaseImpl(Entity entity, int sessionType)
 		throws Exception {
 
-		JavaClass javaClass = _getJavaClass(_outputPath + "/service/impl/" + entity.getName() + (sessionType != _SESSION_TYPE_REMOTE ? "Local" : "") + "ServiceImpl.java");
+		JavaClass javaClass = _getJavaClass(
+			_outputPath + "/service/impl/" + entity.getName() +
+				(sessionType != _SESSION_TYPE_REMOTE ? "Local" : "") +
+					"ServiceImpl.java");
 
 		JavaMethod[] methods = _getMethods(javaClass);
 
@@ -2759,6 +2718,54 @@ public class ServiceBuilder {
 		writeFile(ejbFile, content, _author);
 	}
 
+	private void _createServiceClpInvoker(Entity entity, int sessionType)
+		throws Exception {
+
+		if (Validator.isNull(_pluginName)) {
+			return;
+		}
+
+		JavaClass javaClass = _getJavaClass(
+			_outputPath + "/service/impl/" + entity.getName() +
+				_getSessionTypeName(sessionType) + "ServiceImpl.java");
+
+		JavaMethod[] methods = _getMethods(javaClass);
+
+		Type superClass = javaClass.getSuperClass();
+
+		String superClassValue = superClass.getValue();
+
+		if (superClassValue.endsWith(
+				entity.getName() + _getSessionTypeName(sessionType) +
+					"ServiceBaseImpl")) {
+
+			JavaClass parentJavaClass = _getJavaClass(
+				_outputPath + "/service/base/" + entity.getName() +
+					_getSessionTypeName(sessionType) + "ServiceBaseImpl.java");
+
+			methods = ArrayUtil.append(
+				parentJavaClass.getMethods(), methods);
+		}
+
+		Map<String, Object> context = _getContext();
+
+		context.put("entity", entity);
+		context.put("methods", methods);
+		context.put("sessionTypeName", _getSessionTypeName(sessionType));
+
+		// Content
+
+		String content = _processTemplate(_tplServiceClpInvoker, context);
+
+		// Write file
+
+		File ejbFile = new File(
+			_outputPath + "/service/base/" + entity.getName() +
+				_getSessionTypeName(sessionType) + "ServiceClpInvoker.java");
+
+		writeFile(ejbFile, content);
+	}
+
 	private void _createServiceClpMessageListener() throws Exception {
 		if (Validator.isNull(_pluginName)) {
 			return;
@@ -2781,7 +2788,9 @@ public class ServiceBuilder {
 		writeFile(ejbFile, content);
 	}
 
-	private void _createServiceClpSerializer() throws Exception {
+	private void _createServiceClpSerializer(List<String> exceptions)
+		throws Exception {
+
 		if (Validator.isNull(_pluginName)) {
 			return;
 		}
@@ -2789,6 +2798,7 @@ public class ServiceBuilder {
 		Map<String, Object> context = _getContext();
 
 		context.put("entities", _ejbList);
+		context.put("exceptions", exceptions);
 
 		// Content
 
@@ -3152,8 +3162,7 @@ public class ServiceBuilder {
 			x = newContent.indexOf("</beans>");
 
 			newContent =
-				newContent.substring(0, x) + content +
-					newContent.substring(x, newContent.length());
+				newContent.substring(0, x) + content + newContent.substring(x);
 		}
 		else {
 			firstSession = newContent.lastIndexOf("<bean", firstSession) - 1;
@@ -3169,7 +3178,7 @@ public class ServiceBuilder {
 
 			newContent =
 				newContent.substring(0, firstSession) + content +
-					newContent.substring(lastSession, newContent.length());
+					newContent.substring(lastSession);
 		}
 
 		newContent = _formatXml(newContent);
@@ -3250,6 +3259,10 @@ public class ServiceBuilder {
 		for (int i = 0; i < _ejbList.size(); i++) {
 			Entity entity = _ejbList.get(i);
 
+			if (!_isTargetEntity(entity)) {
+				continue;
+			}
+
 			if (!entity.isDefaultDataSource()) {
 				continue;
 			}
@@ -3317,13 +3330,9 @@ public class ServiceBuilder {
 
 		StringBundler sb = new StringBundler();
 
-		Iterator<String> itr = indexSQLs.values().iterator();
-
 		String prevEntityName = null;
 
-		while (itr.hasNext()) {
-			String indexSQL = itr.next();
-
+		for (String indexSQL : indexSQLs.values()) {
 			int pos = indexSQL.indexOf(" on ");
 
 			String indexSQLSuffix = indexSQL.substring(pos + 4);
@@ -3331,18 +3340,19 @@ public class ServiceBuilder {
 			String entityName = indexSQLSuffix.split(" ")[0];
 
 			if ((prevEntityName != null) &&
-				(!prevEntityName.equals(entityName))) {
+				!prevEntityName.equals(entityName)) {
 
 				sb.append("\n");
 			}
 
 			sb.append(indexSQL);
-
-			if (itr.hasNext()) {
-				sb.append("\n");
-			}
+			sb.append("\n");
 
 			prevEntityName = entityName;
+		}
+
+		if (!indexSQLs.isEmpty()) {
+			sb.setIndex(sb.index() - 1);
 		}
 
 		FileUtil.write(sqlFile, sb.toString(), true);
@@ -3351,30 +3361,27 @@ public class ServiceBuilder {
 
 		sb.setIndex(0);
 
-		itr = indexProps.keySet().iterator();
-
 		prevEntityName = null;
 
-		while (itr.hasNext()) {
-			String finderName = itr.next();
-
+		for (String finderName : indexProps.keySet()) {
 			String indexName = indexProps.get(finderName);
 
 			String entityName = finderName.split("\\.")[0];
 
 			if ((prevEntityName != null) &&
-				(!prevEntityName.equals(entityName))) {
+				!prevEntityName.equals(entityName)) {
 
 				sb.append("\n");
 			}
 
 			sb.append(indexName + StringPool.EQUAL + finderName);
-
-			if (itr.hasNext()) {
-				sb.append("\n");
-			}
+			sb.append("\n");
 
 			prevEntityName = entityName;
+		}
+
+		if (!indexProps.isEmpty()) {
+			sb.setIndex(sb.index() - 1);
 		}
 
 		FileUtil.write(propsFile, sb.toString(), true);
@@ -3401,7 +3408,7 @@ public class ServiceBuilder {
 			if (!oldCreateTableString.equals(newCreateTableString)) {
 				content =
 					content.substring(0, x) + newCreateTableString +
-						content.substring(y + 2, content.length());
+						content.substring(y + 2);
 
 				FileUtil.write(sqlFile, content);
 			}
@@ -3476,6 +3483,10 @@ public class ServiceBuilder {
 		for (int i = 0; i < _ejbList.size(); i++) {
 			Entity entity = _ejbList.get(i);
 
+			if (!_isTargetEntity(entity)) {
+				continue;
+			}
+
 			if (!entity.isDefaultDataSource()) {
 				continue;
 			}
@@ -3505,18 +3516,15 @@ public class ServiceBuilder {
 			}
 		}
 
-		StringBundler sb = new StringBundler();
+		StringBundler sb = new StringBundler(sequenceSQLs.size() * 2);
 
-		Iterator<String> itr = sequenceSQLs.iterator();
-
-		while (itr.hasNext()) {
-			String sequenceSQL = itr.next();
-
+		for (String sequenceSQL : sequenceSQLs) {
 			sb.append(sequenceSQL);
+			sb.append("\n");
+		}
 
-			if (itr.hasNext()) {
-				sb.append("\n");
-			}
+		if (!sequenceSQLs.isEmpty()) {
+			sb.setIndex(sb.index() - 1);
 		}
 
 		FileUtil.write(sqlFile, sb.toString(), true);
@@ -3536,6 +3544,10 @@ public class ServiceBuilder {
 		for (int i = 0; i < _ejbList.size(); i++) {
 			Entity entity = _ejbList.get(i);
 
+			if (!_isTargetEntity(entity)) {
+				continue;
+			}
+
 			if (!entity.isDefaultDataSource()) {
 				continue;
 			}
@@ -3546,7 +3558,7 @@ public class ServiceBuilder {
 				_createSQLTables(sqlFile, createTableSQL, entity, true);
 
 				_updateSQLFile(
-					"update-6.1.0-6.1.1.sql", createTableSQL, entity);
+					"update-6.1.1-6.2.0.sql", createTableSQL, entity);
 			}
 		}
 
@@ -3589,7 +3601,7 @@ public class ServiceBuilder {
 			if (!oldCreateTableString.equals(newCreateTableString)) {
 				content =
 					content.substring(0, x) + newCreateTableString +
-						content.substring(y + 2, content.length());
+						content.substring(y + 2);
 
 				FileUtil.write(sqlFile, content);
 			}
@@ -3901,7 +3913,6 @@ public class ServiceBuilder {
 			"springInfrastructureFileName", _springInfrastructureFileName);
 		context.put("apiDir", _apiDir);
 		context.put("implDir", _implDir);
-		context.put("jsonFileName", _jsonFileName);
 		context.put("sqlDir", _sqlDir);
 		context.put("sqlFileName", _sqlFileName);
 		context.put("beanLocatorUtil", _beanLocatorUtil);
@@ -3957,8 +3968,8 @@ public class ServiceBuilder {
 				String indexSpec =
 					entityMapping.getTable() + " (" + colDBName + ");";
 
-				String indexHash =
-					StringUtil.toHexString(indexSpec.hashCode()).toUpperCase();
+				String indexHash = StringUtil.toHexString(
+					indexSpec.hashCode()).toUpperCase();
 
 				String indexName = "IX_" + indexHash;
 
@@ -4190,7 +4201,7 @@ public class ServiceBuilder {
 			}
 
 			if (((i + 1) != regularColList.size()) ||
-				(entity.hasCompoundPK())) {
+				entity.hasCompoundPK()) {
 
 				sb.append(",");
 			}
@@ -4239,7 +4250,7 @@ public class ServiceBuilder {
 			pos = fileName.indexOf(_apiDir + "/") + _apiDir.length();
 		}
 
-		String srcFile = fileName.substring(pos + 1, fileName.length());
+		String srcFile = fileName.substring(pos + 1);
 		String className = StringUtil.replace(
 			srcFile.substring(0, srcFile.length() - 5), "/", ".");
 
@@ -4407,6 +4418,14 @@ public class ServiceBuilder {
 		return true;
 	}
 
+	private boolean _isTargetEntity(Entity entity) {
+		if ((_targetEntityName == null) || _targetEntityName.startsWith("$")) {
+			return true;
+		}
+
+		return _targetEntityName.equals(entity.getName());
+	}
+
 	private boolean _isTypeValue(Type type, String value) {
 		return value.equals(type.getValue());
 	}
@@ -4463,10 +4482,8 @@ public class ServiceBuilder {
 		}
 
 		String dataSource = entityElement.attributeValue("data-source");
-		String sessionFactory = entityElement.attributeValue(
-			"session-factory");
-		String txManager = entityElement.attributeValue(
-			"tx-manager");
+		String sessionFactory = entityElement.attributeValue("session-factory");
+		String txManager = entityElement.attributeValue("tx-manager");
 		boolean cacheEnabled = GetterUtil.getBoolean(
 			entityElement.attributeValue("cache-enabled"), true);
 		boolean jsonEnabled = GetterUtil.getBoolean(
@@ -4594,7 +4611,7 @@ public class ServiceBuilder {
 			boolean asc = true;
 
 			if ((orderElement.attribute("by") != null) &&
-				(orderElement.attributeValue("by").equals("desc"))) {
+				orderElement.attributeValue("by").equals("desc")) {
 
 				asc = false;
 			}
@@ -4641,6 +4658,43 @@ public class ServiceBuilder {
 		List<Element> finderElements = entityElement.elements("finder");
 
 		if (uuid) {
+			if (columnList.contains(new EntityColumn("companyId"))) {
+				Element finderElement = SAXReaderUtil.createElement("finder");
+
+				finderElement.addAttribute("name", "Uuid_C");
+				finderElement.addAttribute("return-type", "Collection");
+
+				Element finderColumnElement = finderElement.addElement(
+					"finder-column");
+
+				finderColumnElement.addAttribute("name", "uuid");
+
+				finderColumnElement = finderElement.addElement("finder-column");
+
+				finderColumnElement.addAttribute("name", "companyId");
+
+				finderElements.add(0, finderElement);
+			}
+
+			if (columnList.contains(new EntityColumn("groupId"))) {
+				Element finderElement = SAXReaderUtil.createElement("finder");
+
+				finderElement.addAttribute("name", "UUID_G");
+				finderElement.addAttribute("return-type", ejbName);
+				finderElement.addAttribute("unique", "true");
+
+				Element finderColumnElement = finderElement.addElement(
+					"finder-column");
+
+				finderColumnElement.addAttribute("name", "uuid");
+
+				finderColumnElement = finderElement.addElement("finder-column");
+
+				finderColumnElement.addAttribute("name", "groupId");
+
+				finderElements.add(0, finderElement);
+			}
+
 			Element finderElement = SAXReaderUtil.createElement("finder");
 
 			finderElement.addAttribute("name", "Uuid");
@@ -4652,24 +4706,6 @@ public class ServiceBuilder {
 			finderColumnElement.addAttribute("name", "uuid");
 
 			finderElements.add(0, finderElement);
-
-			if (columnList.contains(new EntityColumn("groupId"))) {
-				finderElement = SAXReaderUtil.createElement("finder");
-
-				finderElement.addAttribute("name", "UUID_G");
-				finderElement.addAttribute("return-type", ejbName);
-				finderElement.addAttribute("unique", "true");
-
-				finderColumnElement = finderElement.addElement("finder-column");
-
-				finderColumnElement.addAttribute("name", "uuid");
-
-				finderColumnElement = finderElement.addElement("finder-column");
-
-				finderColumnElement.addAttribute("name", "groupId");
-
-				finderElements.add(1, finderElement);
-			}
 		}
 
 		if (permissionedModel) {
@@ -4701,7 +4737,7 @@ public class ServiceBuilder {
 			String finderWhere = finderElement.attributeValue("where");
 
 			if (Validator.isNotNull(finderWhere)) {
-				for (EntityColumn column: columnList) {
+				for (EntityColumn column : columnList) {
 					String name = column.getName();
 
 					if (finderWhere.indexOf(name) != -1) {
@@ -4714,8 +4750,7 @@ public class ServiceBuilder {
 			boolean finderDBIndex = GetterUtil.getBoolean(
 				finderElement.attributeValue("db-index"), true);
 
-			List<EntityColumn> finderColsList =
-				new ArrayList<EntityColumn>();
+			List<EntityColumn> finderColsList = new ArrayList<EntityColumn>();
 
 			List<Element> finderColumnElements = finderElement.elements(
 				"finder-column");
@@ -4724,8 +4759,7 @@ public class ServiceBuilder {
 				String finderColName = finderColumnElement.attributeValue(
 					"name");
 				boolean finderColCaseSensitive = GetterUtil.getBoolean(
-					finderColumnElement.attributeValue("case-sensitive"),
-					true);
+					finderColumnElement.attributeValue("case-sensitive"), true);
 				String finderColComparator = GetterUtil.getString(
 					finderColumnElement.attributeValue("comparator"), "=");
 				String finderColArrayableOperator =
@@ -4853,9 +4887,6 @@ public class ServiceBuilder {
 
 	private static final int _SESSION_TYPE_REMOTE = 0;
 
-	private static Pattern _setterPattern = Pattern.compile(
-		"public void set.*" + Pattern.quote("("));
-
 	private static final String _SQL_CREATE_TABLE = "create table ";
 
 	private static final String _TPL_ROOT =
@@ -4865,16 +4896,20 @@ public class ServiceBuilder {
 		"public .* get.*" + Pattern.quote("(") + "|public boolean is.*" +
 			Pattern.quote("("));
 
+	private static Pattern _setterPattern = Pattern.compile(
+		"public void set.*" + Pattern.quote("("));
+
 	private String _apiDir;
 	private String _author;
 	private boolean _autoNamespaceTables;
 	private Set<String> _badAliasNames;
 	private Set<String> _badColumnNames;
-	private Set<String> _badJsonTypes;
 	private Set<String> _badTableNames;
 	private String _beanLocatorUtil;
 	private String _beanLocatorUtilShortName;
 	private boolean _build;
+	private long _buildNumber;
+	private boolean _buildNumberIncrement;
 	private List<Entity> _ejbList;
 	private Map<String, EntityMapping> _entityMappings;
 	private Map<String, Entity> _entityPool = new HashMap<String, Entity>();
@@ -4882,7 +4917,6 @@ public class ServiceBuilder {
 	private String _implDir;
 	private Map<String, JavaClass> _javaClasses =
 		new HashMap<String, JavaClass>();
-	private String _jsonFileName;
 	private String _modelHintsFileName;
 	private String _ormFileName;
 	private String _outputPath;
@@ -4906,11 +4940,11 @@ public class ServiceBuilder {
 	private String _sqlIndexesFileName;
 	private String _sqlIndexesPropertiesFileName;
 	private String _sqlSequencesFileName;
+	private String _targetEntityName;
 	private String _testDir;
 	private String _testOutputPath;
-	private String _tplBadAliasNames =  _TPL_ROOT + "bad_alias_names.txt";
+	private String _tplBadAliasNames = _TPL_ROOT + "bad_alias_names.txt";
 	private String _tplBadColumnNames = _TPL_ROOT + "bad_column_names.txt";
-	private String _tplBadJsonTypes = _TPL_ROOT + "bad_json_types.txt";
 	private String _tplBadTableNames = _TPL_ROOT + "bad_table_names.txt";
 	private String _tplBlobModel = _TPL_ROOT + "blob_model.ftl";
 	private String _tplEjbPk = _TPL_ROOT + "ejb_pk.ftl";
@@ -4942,6 +4976,8 @@ public class ServiceBuilder {
 	private String _tplService = _TPL_ROOT + "service.ftl";
 	private String _tplServiceBaseImpl = _TPL_ROOT + "service_base_impl.ftl";
 	private String _tplServiceClp = _TPL_ROOT + "service_clp.ftl";
+	private String _tplServiceClpInvoker =
+		_TPL_ROOT + "service_clp_invoker.ftl";
 	private String _tplServiceClpMessageListener =
 		_TPL_ROOT + "service_clp_message_listener.ftl";
 	private String _tplServiceClpSerializer =

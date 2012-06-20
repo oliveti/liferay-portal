@@ -25,7 +25,6 @@ import com.liferay.portal.service.base.WebsiteLocalServiceBaseImpl;
 import com.liferay.portal.util.PortalUtil;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -65,20 +64,6 @@ public class WebsiteLocalServiceImpl extends WebsiteLocalServiceBaseImpl {
 		return website;
 	}
 
-	@Override
-	public void deleteWebsite(long websiteId)
-		throws PortalException, SystemException {
-
-		Website website = websitePersistence.findByPrimaryKey(websiteId);
-
-		deleteWebsite(website);
-	}
-
-	@Override
-	public void deleteWebsite(Website website) throws SystemException {
-		websitePersistence.remove(website);
-	}
-
 	public void deleteWebsites(long companyId, String className, long classPK)
 		throws SystemException {
 
@@ -90,13 +75,6 @@ public class WebsiteLocalServiceImpl extends WebsiteLocalServiceBaseImpl {
 		for (Website website : websites) {
 			deleteWebsite(website);
 		}
-	}
-
-	@Override
-	public Website getWebsite(long websiteId)
-		throws PortalException, SystemException {
-
-		return websitePersistence.findByPrimaryKey(websiteId);
 	}
 
 	public List<Website> getWebsites() throws SystemException {
@@ -139,12 +117,10 @@ public class WebsiteLocalServiceImpl extends WebsiteLocalServiceBaseImpl {
 		// id, class name, and class pk that also has primary set to true
 
 		if (primary) {
-			Iterator<Website> itr = websitePersistence.findByC_C_C_P(
-				companyId, classNameId, classPK, primary).iterator();
+			List<Website> websites = websitePersistence.findByC_C_C_P(
+				companyId, classNameId, classPK, primary);
 
-			while (itr.hasNext()) {
-				Website website = itr.next();
-
+			for (Website website : websites) {
 				if ((websiteId <= 0) || (website.getWebsiteId() != websiteId)) {
 					website.setPrimary(false);
 

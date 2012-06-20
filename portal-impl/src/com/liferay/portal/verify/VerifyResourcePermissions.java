@@ -33,7 +33,6 @@ import com.liferay.portal.service.ResourcePermissionLocalServiceUtil;
 import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortalInstances;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.announcements.model.AnnouncementsEntry;
 import com.liferay.portlet.asset.model.AssetCategory;
 import com.liferay.portlet.asset.model.AssetTag;
@@ -72,10 +71,6 @@ public class VerifyResourcePermissions extends VerifyProcess {
 
 	@Override
 	protected void doVerify() throws Exception {
-		if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM != 6) {
-			return;
-		}
-
 		long[] companyIds = PortalInstances.getCompanyIdsBySQL();
 
 		for (long companyId : companyIds) {
@@ -142,7 +137,7 @@ public class VerifyResourcePermissions extends VerifyProcess {
 		}
 
 		if (_log.isInfoEnabled() &&
-			(resourcePermission.getResourcePermissionId() % 100 == 0)) {
+			((resourcePermission.getResourcePermissionId() % 100) == 0)) {
 
 			_log.info("Processed 100 resource permissions for " + name);
 		}

@@ -60,25 +60,32 @@ public class DLFileRankLocalServiceWrapper implements DLFileRankLocalService,
 	* Deletes the document library file rank with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param fileRankId the primary key of the document library file rank
+	* @return the document library file rank that was removed
 	* @throws PortalException if a document library file rank with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteDLFileRank(long fileRankId)
+	public com.liferay.portlet.documentlibrary.model.DLFileRank deleteDLFileRank(
+		long fileRankId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_dlFileRankLocalService.deleteDLFileRank(fileRankId);
+		return _dlFileRankLocalService.deleteDLFileRank(fileRankId);
 	}
 
 	/**
 	* Deletes the document library file rank from the database. Also notifies the appropriate model listeners.
 	*
 	* @param dlFileRank the document library file rank
+	* @return the document library file rank that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteDLFileRank(
+	public com.liferay.portlet.documentlibrary.model.DLFileRank deleteDLFileRank(
 		com.liferay.portlet.documentlibrary.model.DLFileRank dlFileRank)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		_dlFileRankLocalService.deleteDLFileRank(dlFileRank);
+		return _dlFileRankLocalService.deleteDLFileRank(dlFileRank);
+	}
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return _dlFileRankLocalService.dynamicQuery();
 	}
 
 	/**
@@ -288,6 +295,28 @@ public class DLFileRankLocalServiceWrapper implements DLFileRankLocalService,
 	public void deleteFileRanksByUserId(long userId)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		_dlFileRankLocalService.deleteFileRanksByUserId(userId);
+	}
+
+	public void disableFileRanks(long fileEntryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_dlFileRankLocalService.disableFileRanks(fileEntryId);
+	}
+
+	public void disableFileRanksByFolderId(long folderId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_dlFileRankLocalService.disableFileRanksByFolderId(folderId);
+	}
+
+	public void enableFileRanks(long fileEntryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_dlFileRankLocalService.enableFileRanks(fileEntryId);
+	}
+
+	public void enableFileRanksByFolderId(long folderId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_dlFileRankLocalService.enableFileRanksByFolderId(folderId);
 	}
 
 	public java.util.List<com.liferay.portlet.documentlibrary.model.DLFileRank> getFileRanks(

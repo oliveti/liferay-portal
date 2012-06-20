@@ -59,10 +59,12 @@ import com.liferay.portlet.journal.NoSuchArticleException;
 import com.liferay.portlet.journal.NoSuchStructureException;
 import com.liferay.portlet.journal.NoSuchTemplateException;
 import com.liferay.portlet.journal.model.JournalArticle;
+import com.liferay.portlet.journal.model.JournalFolder;
 import com.liferay.portlet.journal.model.JournalStructure;
 import com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.portlet.journal.service.JournalArticleServiceUtil;
 import com.liferay.portlet.journal.service.JournalContentSearchLocalServiceUtil;
+import com.liferay.portlet.journal.service.JournalFolderServiceUtil;
 import com.liferay.portlet.journal.service.JournalStructureLocalServiceUtil;
 import com.liferay.portlet.journal.util.JournalUtil;
 
@@ -70,6 +72,7 @@ import java.io.File;
 
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -124,6 +127,8 @@ public class EditArticleAction extends PortletAction {
 
 					throw new PortalException(uploadException.getCause());
 				}
+
+				return;
 			}
 			else if (cmd.equals(Constants.ADD) ||
 					 cmd.equals(Constants.TRANSLATE) ||
@@ -152,79 +157,73 @@ public class EditArticleAction extends PortletAction {
 				unsubscribeArticles(actionRequest);
 			}
 
-			if (Validator.isNotNull(cmd)) {
-				String redirect = ParamUtil.getString(
-					actionRequest, "redirect");
+			String redirect = ParamUtil.getString(actionRequest, "redirect");
 
-				int workflowAction = ParamUtil.getInteger(
-					actionRequest, "workflowAction",
-					WorkflowConstants.ACTION_PUBLISH);
+			int workflowAction = ParamUtil.getInteger(
+				actionRequest, "workflowAction",
+				WorkflowConstants.ACTION_PUBLISH);
 
-				if ((article != null) &&
-					(workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT)) {
+			if ((article != null) &&
+				(workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT)) {
 
-					redirect = getSaveAndContinueRedirect(
-						portletConfig, actionRequest, article, redirect);
+				redirect = getSaveAndContinueRedirect(
+					portletConfig, actionRequest, article, redirect);
+			}
+
+			if (redirect.contains("/content/" + oldUrlTitle + "?")) {
+				int pos = redirect.indexOf("?");
+
+				if (pos == -1) {
+					pos = redirect.length();
 				}
 
-				if (redirect.contains("/content/" + oldUrlTitle + "?")) {
-					int pos = redirect.indexOf("?");
+				String newRedirect = redirect.substring(
+					0, pos - oldUrlTitle.length());
 
-					if (pos == -1) {
-						pos = redirect.length();
-					}
+				newRedirect += article.getUrlTitle();
 
-					String newRedirect = redirect.substring(
-						0, pos - oldUrlTitle.length());
-
-					newRedirect += article.getUrlTitle();
-
-					if (oldUrlTitle.contains("/maximized")) {
-						newRedirect += "/maximized";
-					}
-
-					if (pos < redirect.length()) {
-						newRedirect +=
-							"?" +
-								redirect.substring(pos + 1, redirect.length());
-					}
-
-					redirect = newRedirect;
+				if (oldUrlTitle.contains("/maximized")) {
+					newRedirect += "/maximized";
 				}
 
-				WindowState windowState = actionRequest.getWindowState();
-
-				ThemeDisplay themeDisplay =
-					(ThemeDisplay)actionRequest.getAttribute(
-						WebKeys.THEME_DISPLAY);
-
-				Layout layout = themeDisplay.getLayout();
-
-				if (cmd.equals(Constants.DELETE_VERSIONS) &&
-					hasArticle(actionRequest)) {
-
-					redirect = ParamUtil.getString(
-						actionRequest, "originalRedirect");
+				if (pos < redirect.length()) {
+					newRedirect += "?" + redirect.substring(pos + 1);
 				}
 
-				if (cmd.equals(Constants.DELETE_TRANSLATION) ||
-					cmd.equals(Constants.TRANSLATE)) {
+				redirect = newRedirect;
+			}
 
-					setForward(
-						actionRequest,
-						"portlet.journal.update_translation_redirect");
-				}
-				else if (!windowState.equals(LiferayWindowState.POP_UP) &&
-						 layout.isTypeControlPanel()) {
+			WindowState windowState = actionRequest.getWindowState();
 
-					sendRedirect(actionRequest, actionResponse, redirect);
-				}
-				else {
-					redirect = PortalUtil.escapeRedirect(redirect);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
 
-					if (Validator.isNotNull(redirect)) {
-						actionResponse.sendRedirect(redirect);
-					}
+			Layout layout = themeDisplay.getLayout();
+
+			if (cmd.equals(Constants.DELETE_VERSIONS) &&
+				hasArticle(actionRequest)) {
+
+				redirect = ParamUtil.getString(
+					actionRequest, "originalRedirect");
+			}
+
+			if (cmd.equals(Constants.DELETE_TRANSLATION) ||
+				cmd.equals(Constants.TRANSLATE)) {
+
+				setForward(
+					actionRequest,
+					"portlet.journal.update_translation_redirect");
+			}
+			else if (!windowState.equals(LiferayWindowState.POP_UP) &&
+					 layout.isTypeControlPanel()) {
+
+				sendRedirect(actionRequest, actionResponse, redirect);
+			}
+			else {
+				redirect = PortalUtil.escapeRedirect(redirect);
+
+				if (Validator.isNotNull(redirect)) {
+					actionResponse.sendRedirect(redirect);
 				}
 			}
 		}
@@ -234,7 +233,7 @@ public class EditArticleAction extends PortletAction {
 				e instanceof NoSuchTemplateException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.journal.error");
 			}
@@ -250,12 +249,12 @@ public class EditArticleAction extends PortletAction {
 					 e instanceof ArticleVersionException ||
 					 e instanceof DuplicateArticleIdException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else if (e instanceof AssetCategoryException ||
 					 e instanceof AssetTagException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName(), e);
+				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
 			else {
 				throw e;
@@ -272,7 +271,7 @@ public class EditArticleAction extends PortletAction {
 		try {
 			ActionUtil.getArticle(renderRequest);
 		}
-		catch (NoSuchArticleException nsse) {
+		catch (NoSuchArticleException nsae) {
 
 			// Let this slide because the user can manually input a article id
 			// for a new article that does not yet exist.
@@ -282,7 +281,7 @@ public class EditArticleAction extends PortletAction {
 			if (//e instanceof NoSuchArticleException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass().getName());
+				SessionErrors.add(renderRequest, e.getClass());
 
 				return mapping.findForward("portlet.journal.error");
 			}
@@ -331,21 +330,30 @@ public class EditArticleAction extends PortletAction {
 
 			double version = 0;
 
-			if (pos == -1) {
-				JournalArticleServiceUtil.deleteArticle(
-					groupId, articleId, articleURL, serviceContext);
-			}
-			else {
-				articleId = articleId.substring(0, pos);
-				version = GetterUtil.getDouble(
-					deleteArticleId.substring(
-						pos + VERSION_SEPARATOR.length()));
+			try {
+				if (pos == -1) {
+					JournalArticleServiceUtil.deleteArticle(
+						groupId, articleId, articleURL, serviceContext);
+				}
+				else {
+					articleId = articleId.substring(0, pos);
+					version = GetterUtil.getDouble(
+						deleteArticleId.substring(
+							pos + VERSION_SEPARATOR.length()));
 
-				JournalArticleServiceUtil.deleteArticle(
-					groupId, articleId, version, articleURL, serviceContext);
-			}
+					JournalArticleServiceUtil.deleteArticle(
+						groupId, articleId, version, articleURL,
+						serviceContext);
+				}
 
-			JournalUtil.removeRecentArticle(actionRequest, articleId, version);
+				JournalUtil.removeRecentArticle(
+					actionRequest, articleId, version);
+			}
+			catch (NoSuchArticleException nsae) {
+				long deleteFolderId = GetterUtil.getLong(deleteArticleId);
+
+				JournalFolderServiceUtil.deleteFolder(deleteFolderId);
+			}
 		}
 	}
 
@@ -370,20 +378,49 @@ public class EditArticleAction extends PortletAction {
 
 			double version = 0;
 
-			if (pos == -1) {
-				JournalArticleServiceUtil.expireArticle(
-					groupId, articleId, articleURL, serviceContext);
-			}
-			else {
-				articleId = articleId.substring(0, pos);
-				version = GetterUtil.getDouble(
-					expireArticleId.substring(
-						pos + VERSION_SEPARATOR.length()));
+			try {
+				if (pos == -1) {
+					JournalArticleServiceUtil.expireArticle(
+						groupId, articleId, articleURL, serviceContext);
+				}
+				else {
+					articleId = articleId.substring(0, pos);
+					version = GetterUtil.getDouble(
+						expireArticleId.substring(
+							pos + VERSION_SEPARATOR.length()));
 
-				JournalArticleServiceUtil.expireArticle(
-					groupId, articleId, version, articleURL, serviceContext);
+					JournalArticleServiceUtil.expireArticle(
+						groupId, articleId, version, articleURL,
+						serviceContext);
+				}
+			}
+			catch (NoSuchArticleException nsae) {
+				long expireFolderId = GetterUtil.getLong(expireArticleId);
+
+				expireFolder(groupId, expireFolderId, serviceContext);
 			}
 		}
+	}
+
+	protected void expireFolder(
+			long groupId, long parentFolderId, ServiceContext serviceContext)
+		throws Exception {
+
+		List<JournalFolder> folders = JournalFolderServiceUtil.getFolders(
+			groupId, parentFolderId);
+
+		for (JournalFolder folder : folders) {
+			expireFolder(groupId, folder.getFolderId(), serviceContext);
+		}
+
+		List<JournalArticle> articles = JournalArticleServiceUtil.getArticles(
+			groupId, parentFolderId);
+
+		for (JournalArticle article : articles) {
+			JournalArticleServiceUtil.expireArticle(
+				groupId, article.getArticleId(), null, serviceContext);
+		}
+
 	}
 
 	protected Map<String, byte[]> getImages(
@@ -403,7 +440,7 @@ public class EditArticleAction extends PortletAction {
 				byte[] bytes = FileUtil.getBytes(file);
 
 				if ((bytes != null) && (bytes.length > 0)) {
-					name = name.substring(imagePrefix.length(), name.length());
+					name = name.substring(imagePrefix.length());
 
 					images.put(name, bytes);
 				}
@@ -446,9 +483,7 @@ public class EditArticleAction extends PortletAction {
 		return portletURL.toString();
 	}
 
-	protected boolean hasArticle(ActionRequest actionRequest)
-		throws Exception {
-
+	protected boolean hasArticle(ActionRequest actionRequest) throws Exception {
 		long groupId = ParamUtil.getLong(actionRequest, "groupId");
 		String articleId = ParamUtil.getString(actionRequest, "articleId");
 
@@ -509,24 +544,18 @@ public class EditArticleAction extends PortletAction {
 		UploadPortletRequest uploadPortletRequest =
 			PortalUtil.getUploadPortletRequest(actionRequest);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		String cmd = ParamUtil.getString(uploadPortletRequest, Constants.CMD);
 
 		long groupId = ParamUtil.getLong(uploadPortletRequest, "groupId");
-
+		long folderId = ParamUtil.getLong(uploadPortletRequest, "folderId");
 		long classNameId = ParamUtil.getLong(
 			uploadPortletRequest, "classNameId");
 		long classPK = ParamUtil.getLong(uploadPortletRequest, "classPK");
-
 		String articleId = ParamUtil.getString(
 			uploadPortletRequest, "articleId");
 		boolean autoArticleId = ParamUtil.getBoolean(
 			uploadPortletRequest, "autoArticleId");
-
 		double version = ParamUtil.getDouble(uploadPortletRequest, "version");
-
 		boolean localized = ParamUtil.getBoolean(
 			uploadPortletRequest, "localized");
 
@@ -549,7 +578,7 @@ public class EditArticleAction extends PortletAction {
 			description = ParamUtil.getString(
 				uploadPortletRequest, "description_" + defaultLanguageId);
 		}
-		else{
+		else {
 			toLocale = LocaleUtil.fromLanguageId(toLanguageId);
 
 			title = ParamUtil.getString(
@@ -683,15 +712,16 @@ public class EditArticleAction extends PortletAction {
 			// Add article
 
 			article = JournalArticleServiceUtil.addArticle(
-				groupId, classNameId, classPK, articleId, autoArticleId,
-				titleMap, descriptionMap, content, type, structureId,
-				templateId, layoutUuid, displayDateMonth, displayDateDay,
-				displayDateYear, displayDateHour, displayDateMinute,
-				expirationDateMonth, expirationDateDay, expirationDateYear,
-				expirationDateHour, expirationDateMinute, neverExpire,
-				reviewDateMonth, reviewDateDay, reviewDateYear, reviewDateHour,
-				reviewDateMinute, neverReview, indexable, smallImage,
-				smallImageURL, smallFile, images, articleURL, serviceContext);
+				groupId, folderId, classNameId, classPK, articleId,
+				autoArticleId, titleMap, descriptionMap, content, type,
+				structureId, templateId, layoutUuid, displayDateMonth,
+				displayDateDay, displayDateYear, displayDateHour,
+				displayDateMinute, expirationDateMonth, expirationDateDay,
+				expirationDateYear, expirationDateHour, expirationDateMinute,
+				neverExpire, reviewDateMonth, reviewDateDay, reviewDateYear,
+				reviewDateHour, reviewDateMinute, neverReview, indexable,
+				smallImage, smallImageURL, smallFile, images, articleURL,
+				serviceContext);
 
 			AssetPublisherUtil.addAndStoreSelection(
 				actionRequest, JournalArticle.class.getName(),
@@ -725,18 +755,9 @@ public class EditArticleAction extends PortletAction {
 			}
 			else {
 				if (curArticle.isTemplateDriven()) {
-					JournalStructure structure = null;
-
-					try {
-						structure =
-							JournalStructureLocalServiceUtil.getStructure(
-								groupId, structureId);
-					}
-					catch (NoSuchStructureException nsse) {
-						structure =
-							JournalStructureLocalServiceUtil.getStructure(
-								themeDisplay.getCompanyGroupId(), structureId);
-					}
+					JournalStructure structure =
+						JournalStructureLocalServiceUtil.getStructure(
+							groupId, structureId, true);
 
 					content = JournalUtil.mergeArticleContent(
 						curArticle.getContent(), content, true);
@@ -760,15 +781,15 @@ public class EditArticleAction extends PortletAction {
 				descriptionMap.put(defaultLocale, description);
 
 				article = JournalArticleServiceUtil.updateArticle(
-					groupId, articleId, version, titleMap, descriptionMap,
-					content, type, structureId, templateId, layoutUuid,
-					displayDateMonth, displayDateDay, displayDateYear,
-					displayDateHour, displayDateMinute, expirationDateMonth,
-					expirationDateDay, expirationDateYear, expirationDateHour,
-					expirationDateMinute, neverExpire, reviewDateMonth,
-					reviewDateDay, reviewDateYear, reviewDateHour,
-					reviewDateMinute, neverReview, indexable, smallImage,
-					smallImageURL, smallFile, images, articleURL,
+					groupId, folderId, articleId, version, titleMap,
+					descriptionMap, content, type, structureId, templateId,
+					layoutUuid, displayDateMonth, displayDateDay,
+					displayDateYear, displayDateHour, displayDateMinute,
+					expirationDateMonth, expirationDateDay, expirationDateYear,
+					expirationDateHour, expirationDateMinute, neverExpire,
+					reviewDateMonth, reviewDateDay, reviewDateYear,
+					reviewDateHour, reviewDateMinute, neverReview, indexable,
+					smallImage, smallImageURL, smallFile, images, articleURL,
 					serviceContext);
 			}
 			else if (cmd.equals(Constants.TRANSLATE)) {
@@ -821,7 +842,7 @@ public class EditArticleAction extends PortletAction {
 
 		JournalContentSearchLocalServiceUtil.updateContentSearch(
 			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
-			portletResource, articleId);
+			portletResource, articleId, true);
 	}
 
 }

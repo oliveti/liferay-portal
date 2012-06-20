@@ -56,26 +56,33 @@ public class RoleLocalServiceWrapper implements RoleLocalService,
 	* Deletes the role with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param roleId the primary key of the role
+	* @return the role that was removed
 	* @throws PortalException if a role with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteRole(long roleId)
+	public com.liferay.portal.model.Role deleteRole(long roleId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_roleLocalService.deleteRole(roleId);
+		return _roleLocalService.deleteRole(roleId);
 	}
 
 	/**
 	* Deletes the role from the database. Also notifies the appropriate model listeners.
 	*
 	* @param role the role
+	* @return the role that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteRole(com.liferay.portal.model.Role role)
+	public com.liferay.portal.model.Role deleteRole(
+		com.liferay.portal.model.Role role)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_roleLocalService.deleteRole(role);
+		return _roleLocalService.deleteRole(role);
+	}
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return _roleLocalService.dynamicQuery();
 	}
 
 	/**
@@ -801,9 +808,8 @@ public class RoleLocalServiceWrapper implements RoleLocalService,
 	* @param keywords the keywords (space separated), which may occur in the
 	role's name or description (optionally <code>null</code>)
 	* @param types the role types (optionally <code>null</code>)
-	* @param params the finder parameters. Can specify values for
-	"permissionsResourceId" and "usersRoles" keys. For more
-	information, see {@link
+	* @param params the finder parameters. Can specify values for the
+	"usersRoles" key. For more information, see {@link
 	com.liferay.portal.service.persistence.RoleFinder}
 	* @param start the lower bound of the range of roles to return
 	* @param end the upper bound of the range of roles to return (not
@@ -879,9 +885,8 @@ public class RoleLocalServiceWrapper implements RoleLocalService,
 	* @param name the role's name (optionally <code>null</code>)
 	* @param description the role's description (optionally <code>null</code>)
 	* @param types the role types (optionally <code>null</code>)
-	* @param params the finder's parameters. Can specify values for
-	"permissionsResourceId" and "usersRoles" keys. For more
-	information, see {@link
+	* @param params the finder's parameters. Can specify values for the
+	"usersRoles" key. For more information, see {@link
 	com.liferay.portal.service.persistence.RoleFinder}
 	* @param start the lower bound of the range of the roles to return
 	* @param end the upper bound of the range of the roles to return (not
@@ -962,9 +967,8 @@ public class RoleLocalServiceWrapper implements RoleLocalService,
 	* @param name the role's name (optionally <code>null</code>)
 	* @param description the role's description (optionally <code>null</code>)
 	* @param types the role types (optionally <code>null</code>)
-	* @param params the finder parameters. Can specify values for
-	"permissionsResourceId" and "usersRoles" keys. For more
-	information, see {@link
+	* @param params the finder parameters. Can specify values for the
+	"usersRoles" key. For more information, see {@link
 	com.liferay.portal.service.persistence.RoleFinder}
 	* @return the number of matching roles
 	* @throws SystemException if a system exception occurred

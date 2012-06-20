@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.lar.PortletDataHandlerControl;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StreamUtil;
@@ -74,16 +75,30 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 	@Override
 	public PortletDataHandlerControl[] getExportControls() {
 		return new PortletDataHandlerControl[] {
-			_categoriesAndMessages, _attachments, _threadFlags, _userBans,
-			_ratings, _tags
+			_categoriesAndMessages, _threadFlags, _userBans
+		};
+	}
+
+	@Override
+	public PortletDataHandlerControl[] getExportMetadataControls() {
+		return new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(
+				_NAMESPACE, "message-board-messages", true, _metadataControls)
 		};
 	}
 
 	@Override
 	public PortletDataHandlerControl[] getImportControls() {
 		return new PortletDataHandlerControl[] {
-			_categoriesAndMessages, _attachments, _threadFlags, _userBans,
-			_ratings, _tags
+			_categoriesAndMessages, _threadFlags, _userBans
+		};
+	}
+
+	@Override
+	public PortletDataHandlerControl[] getImportMetadataControls() {
+		return new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(
+				_NAMESPACE, "message-board-messages", true, _metadataControls)
 		};
 	}
 
@@ -340,6 +355,11 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		message.setPriority(message.getPriority());
 
+		MBThread thread = message.getThread();
+
+		messageElement.addAttribute(
+			"question", String.valueOf(thread.isQuestion()));
+
 		if (portletDataContext.getBooleanParameter(_NAMESPACE, "attachments") &&
 			message.isAttachments()) {
 
@@ -387,7 +407,7 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 			long categoryId)
 		throws Exception {
 
-		if ((!portletDataContext.hasDateRange()) ||
+		if (!portletDataContext.hasDateRange() ||
 			(categoryId == MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) ||
 			(categoryId == MBCategoryConstants.DISCUSSION_CATEGORY_ID)) {
 
@@ -595,7 +615,8 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			userBanElement, ban, _NAMESPACE);
 
-		List<User> users = UserUtil.findByUuid(ban.getBanUserUuid());
+		List<User> users = UserUtil.findByUuid_C(
+			ban.getBanUserUuid(), portletDataContext.getCompanyId());
 
 		Iterator<User> itr = users.iterator();
 
@@ -618,12 +639,12 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		long userId = portletDataContext.getUserId(category.getUserUuid());
 
-		Map<Long, Long> categoryPKs =
+		Map<Long, Long> categoryIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				MBCategory.class);
 
 		long parentCategoryId = MapUtil.getLong(
-			categoryPKs, category.getParentCategoryId(),
+			categoryIds, category.getParentCategoryId(),
 			category.getParentCategoryId());
 
 		String emailAddress = null;
@@ -661,7 +682,7 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 			importCategory(portletDataContext, path, parentCategory);
 
 			parentCategoryId = MapUtil.getLong(
-				categoryPKs, category.getParentCategoryId(),
+				categoryIds, category.getParentCategoryId(),
 				category.getParentCategoryId());
 		}
 
@@ -717,25 +738,25 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 		long userId = portletDataContext.getUserId(message.getUserUuid());
 		String userName = message.getUserName();
 
-		Map<Long, Long> categoryPKs =
+		Map<Long, Long> categoryIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				MBCategory.class);
 
 		long categoryId = MapUtil.getLong(
-			categoryPKs, message.getCategoryId(), message.getCategoryId());
+			categoryIds, message.getCategoryId(), message.getCategoryId());
 
-		Map<Long, Long> threadPKs =
+		Map<Long, Long> threadIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				MBThread.class);
 
-		long threadId = MapUtil.getLong(threadPKs, message.getThreadId(), 0);
+		long threadId = MapUtil.getLong(threadIds, message.getThreadId(), 0);
 
-		Map<Long, Long> messagePKs =
+		Map<Long, Long> messageIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				MBMessage.class);
 
 		long parentMessageId = MapUtil.getLong(
-			messagePKs, message.getParentMessageId(),
+			messageIds, message.getParentMessageId(),
 			message.getParentMessageId());
 
 		List<String> existingFiles = new ArrayList<String>();
@@ -754,7 +775,7 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 			}
 
 			categoryId = getCategoryId(
-				portletDataContext, message, categoryPKs, categoryId);
+				portletDataContext, message, categoryIds, categoryId);
 
 			MBMessage importedMessage = null;
 
@@ -790,7 +811,16 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 					message.getAllowPingbacks(), serviceContext);
 			}
 
-			threadPKs.put(message.getThreadId(), importedMessage.getThreadId());
+			importedMessage.setAnswer(message.getAnswer());
+
+			if (importedMessage.isRoot()) {
+				MBThreadLocalServiceUtil.updateQuestion(
+					importedMessage.getThreadId(),
+					GetterUtil.getBoolean(
+						messageElement.attributeValue("question")));
+			}
+
+			threadIds.put(message.getThreadId(), importedMessage.getThreadId());
 
 			portletDataContext.importClassedModel(
 				message, importedMessage, _NAMESPACE);
@@ -813,12 +843,12 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		long userId = portletDataContext.getUserId(threadFlag.getUserUuid());
 
-		Map<Long, Long> messagePKs =
+		Map<Long, Long> messageIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				MBMessage.class);
 
 		long threadId = MapUtil.getLong(
-			messagePKs, threadFlag.getThreadId(), threadFlag.getThreadId());
+			messageIds, threadFlag.getThreadId(), threadFlag.getThreadId());
 
 		MBThread thread = MBThreadUtil.fetchByPrimaryKey(threadId);
 
@@ -848,18 +878,16 @@ public class MBPortletDataHandlerImpl extends BasePortletDataHandler {
 	private static Log _log = LogFactoryUtil.getLog(
 		MBPortletDataHandlerImpl.class);
 
-	private static PortletDataHandlerBoolean _attachments =
-		new PortletDataHandlerBoolean(_NAMESPACE, "attachments");
-
 	private static PortletDataHandlerBoolean _categoriesAndMessages =
 		new PortletDataHandlerBoolean(
 			_NAMESPACE, "categories-and-messages", true, true);
 
-	private static PortletDataHandlerBoolean _ratings =
-		new PortletDataHandlerBoolean(_NAMESPACE, "ratings");
-
-	private static PortletDataHandlerBoolean _tags =
-		new PortletDataHandlerBoolean(_NAMESPACE, "tags");
+	private static PortletDataHandlerControl[] _metadataControls =
+		new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(_NAMESPACE, "attachments"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "ratings"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "tags")
+		};
 
 	private static PortletDataHandlerBoolean _threadFlags =
 		new PortletDataHandlerBoolean(_NAMESPACE, "thread-flags");

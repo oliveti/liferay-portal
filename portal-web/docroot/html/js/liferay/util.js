@@ -6,6 +6,8 @@
 	var isArray = Lang.isArray;
 	var arrayIndexOf = AArray.indexOf;
 
+	var EVENT_CLICK = 'click';
+
 	var htmlEscapedValues = [];
 	var htmlUnescapedValues = [];
 
@@ -430,15 +432,14 @@
 			return Liferay.EDITORS && Liferay.EDITORS[editorImpl];
 		},
 
-		openWindow: function(config) {
+		openWindow: function(config, callback) {
 			config.openingWindow = window;
 
 			var top = Util.getTop();
 
 			var topUtil = top.Liferay.Util;
-			var topAUI = top.AUI;
 
-			topUtil._openWindowProvider(config);
+			topUtil._openWindowProvider(config, callback);
 		},
 
 		processTab: function(id) {
@@ -545,8 +546,6 @@
 		toCharCode: A.cached(
 			function(name) {
 				var buffer = [];
-
-				name = unescape(escape(name).replace(/%u/g, '\\u'));
 
 				for (var i = 0; i < name.length; i++) {
 					buffer[i] = name.charCodeAt(i);
@@ -674,35 +673,51 @@
 		Util,
 		'afterIframeLoaded',
 		function(event) {
-			var iframeBody = A.one(event.doc.body);
+			var iframeDocument = A.one(event.doc);
 
-			iframeBody.addClass('aui-dialog-iframe-popup');
-
-			var closeButton = iframeBody.one('.aui-button-input-cancel');
-			var hideLink = iframeBody.one('.lfr-hide-dialog');
+			var iframeBody = iframeDocument.one('body');
 
 			var dialog = event.dialog;
 
-			if (closeButton) {
-				closeButton.on('click', dialog.close, dialog);
-			}
+			iframeBody.addClass('aui-dialog-iframe-popup');
 
-			if (hideLink) {
-				hideLink.on(
-					'click',
-					function(){
-						dialog.set('visible', false, SRC_HIDE_LINK);
-					}
-				);
-			}
+			iframeBody.delegate(
+				EVENT_CLICK,
+				function() {
+					iframeDocument.purge(true);
+
+					dialog.close();
+				},
+				'.aui-button-input-cancel'
+			);
+
+			iframeBody.delegate(
+				'submit',
+				function(event) {
+					iframeDocument.purge(true);
+				},
+				'form'
+			);
+
+			iframeBody.delegate(
+				EVENT_CLICK,
+				function(){
+					dialog.set('visible', false, SRC_HIDE_LINK);
+
+					iframeDocument.purge(true);
+				},
+				'.lfr-hide-dialog'
+			);
 
 			var rolesSearchContainer = iframeBody.one('#rolesSearchContainerSearchContainer');
 
 			if (rolesSearchContainer) {
 				rolesSearchContainer.delegate(
-					'click',
+					EVENT_CLICK,
 					function(event){
 						event.preventDefault();
+
+						iframeDocument.purge(true);
 
 						submitForm(document.hrefFm, event.currentTarget.attr('href'));
 					},
@@ -925,7 +940,7 @@
 				}
 
 				checkBox.on(
-					'click',
+					EVENT_CLICK,
 					function() {
 						toggleBox.set('disabled', !toggleBox.get('disabled'));
 					}
@@ -959,7 +974,7 @@
 			var interacting = false;
 
 			var clickHandle = A.getDoc().on(
-				'click',
+				EVENT_CLICK,
 				function(event) {
 					interacting = true;
 
@@ -1017,26 +1032,18 @@
 	Liferay.provide(
 		Util,
 		'inlineEditor',
-		function(options) {
-			if (options.uri && options.button) {
-				var button = options.button;
-				var height = options.height || 640;
-				var textarea = options.textarea;
-				var uri = options.uri;
-				var width = options.width || 680;
+		function(options, callback) {
+			var editorButton = A.one(options.button);
 
-				var editorButton = A.one(button);
+			if (options.uri && editorButton) {
+				delete options.button;
 
-				if (editorButton) {
-					delete options.button;
-
-					editorButton.on(
-						'click',
-						function(event) {
-							Util.openWindow(options);
-						}
-					);
-				}
+				editorButton.on(
+					EVENT_CLICK,
+					function(event) {
+						Util.openWindow(options, callback);
+					}
+				);
 			}
 		},
 		['aui-dialog', 'aui-io']
@@ -1077,7 +1084,7 @@
 	Liferay.provide(
 		Util,
 		'openDDMPortlet',
-		function(config) {
+		function(config, callback) {
 			var instance = this;
 
 			var defaultValues = {
@@ -1094,7 +1101,10 @@
 			ddmURL.setDoAsGroupId(config.doAsGroupId || themeDisplay.getScopeGroupId());
 
 			ddmURL.setParameter('chooseCallback', config.chooseCallback);
+			ddmURL.setParameter('classNameId', config.classNameId);
+			ddmURL.setParameter('classPK', config.classPK);
 			ddmURL.setParameter('ddmResource', config.ddmResource);
+			ddmURL.setParameter('ddmResourceActionId', config.ddmResourceActionId);
 			ddmURL.setParameter('saveCallback', config.saveCallback);
 			ddmURL.setParameter('scopeAvailableFields', config.availableFields);
 			ddmURL.setParameter('scopeStorageType', config.storageType);
@@ -1114,8 +1124,6 @@
 			if ('showToolbar' in config) {
 				ddmURL.setParameter('showToolbar', config.showToolbar);
 			}
-
-			ddmURL.setParameter('structureId', config.structureId);
 
 			if (config.struts_action) {
 				ddmURL.setParameter('struts_action', config.struts_action);
@@ -1144,7 +1152,7 @@
 				dialogConfig.align = Util.Window.ALIGN_CENTER;
 			}
 
-			Util.openWindow(config);
+			Util.openWindow(config, callback);
 		},
 		['liferay-portlet-url']
 	);
@@ -1162,7 +1170,7 @@
 					title.setData('portletTitleEditOptions', options);
 
 					title.on(
-						'click',
+						EVENT_CLICK,
 						function(event) {
 							var editable = Util._getEditableInstance(title);
 
@@ -1199,13 +1207,7 @@
 
 			nameEl.empty();
 
-			var button = A.byIdNS(namespace, 'removeFolderButton');
-
-			if (button) {
-				button.attr('disabled', true);
-
-				button.ancestor('.aui-button').addClass('aui-button-disabled');
-			}
+			Liferay.Util.toggleDisabled(A.byIdNS(namespace, 'removeFolderButton'), true);
 		},
 		['aui-base']
 	);
@@ -1393,6 +1395,7 @@
 				{
 					data: {
 						doAsUserId: params.doAsUserId,
+						p_auth: Liferay.authToken,
 						p_l_id: params.plid,
 						portletId: params.portletId,
 						title: params.title
@@ -1523,7 +1526,7 @@
 				}
 
 				checkBox.on(
-					'click',
+					EVENT_CLICK,
 					function() {
 						toggleBox.toggle();
 					}
@@ -1555,25 +1558,37 @@
 				docBody.addClass(currentClass);
 
 				trigger.on(
-					'click',
+					EVENT_CLICK,
 					function(event) {
 						docBody.toggleClass(visibleClass).toggleClass(hiddenClass);
 
 						Liferay._editControlsState = (docBody.hasClass(visibleClass) ? 'visible' : 'hidden');
 
-						A.io.request(
-							themeDisplay.getPathMain() + '/portal/session_click',
-							{
-								data: {
-									'liferay_toggle_controls': Liferay._editControlsState
-								}
-							}
-						);
+						Liferay.Store('liferay_toggle_controls', Liferay._editControlsState);
 					}
 				);
 			}
 		},
-		['aui-io']
+		['liferay-store']
+	);
+
+	Liferay.provide(
+		Util,
+		'toggleDisabled',
+		function(button, state) {
+			if (!A.instanceOf(button, A.NodeList)) {
+				button = A.all(button);
+			}
+
+			button.each(
+				function(item, index, collection) {
+					item.attr('disabled', state);
+
+					item.ancestor('.aui-button').toggleClass('aui-button-disabled', state);
+				}
+			);
+		},
+		['aui-base']
 	);
 
 	Liferay.provide(
@@ -1690,8 +1705,8 @@
 	Liferay.provide(
 		Util,
 		'_openWindowProvider',
-		function(config) {
-			Util._openWindow(config);
+		function(config, callback) {
+			Util._openWindow(config, callback);
 		},
 		['liferay-util-window']
 	);

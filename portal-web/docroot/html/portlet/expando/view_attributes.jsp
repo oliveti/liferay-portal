@@ -46,8 +46,8 @@ List<String> attributeNames = Collections.list(expandoBridge.getAttributeNames()
 	iteratorURL="<%= portletURL %>"
 >
 	<liferay-ui:search-container-results
-		total="<%= attributeNames.size() %>"
 		results="<%= attributeNames %>"
+		total="<%= attributeNames.size() %>"
 	/>
 
 	<liferay-ui:search-container-row
@@ -84,7 +84,7 @@ List<String> attributeNames = Collections.list(expandoBridge.getAttributeNames()
 		<%@ include file="/html/portlet/expando/attribute_columns.jspf" %>
 	</liferay-ui:search-container-row>
 
-	<c:if test="<%= PortalPermissionUtil.contains(permissionChecker, ActionKeys.ADD_EXPANDO) %>">
+	<c:if test="<%= PortletPermissionUtil.contains(permissionChecker, PortletKeys.EXPANDO, ActionKeys.ADD_EXPANDO) %>">
 		<aui:button-row>
 			<aui:button onClick='<%= renderResponse.getNamespace() + "addExpando();" %>' value="add-custom-field" />
 		</aui:button-row>

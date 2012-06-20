@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.scheduler.SchedulerEntryImpl;
 import com.liferay.portal.kernel.scheduler.StorageType;
 import com.liferay.portal.kernel.scheduler.TimeUnit;
 import com.liferay.portal.kernel.scheduler.TriggerType;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.UnmodifiableList;
 import com.liferay.portal.pop.messaging.POPNotificationsMessageListener;
 import com.liferay.portal.util.PropsValues;
@@ -37,9 +36,7 @@ import java.util.List;
  */
 public class POPServerUtil {
 
-	public static void addListener(MessageListener listener)
-		throws Exception {
-
+	public static void addListener(MessageListener listener) throws Exception {
 		_instance._addListener(listener);
 	}
 
@@ -145,8 +142,7 @@ public class POPServerUtil {
 				PropsValues.POP_SERVER_NOTIFICATIONS_INTERVAL);
 
 			SchedulerEngineUtil.schedule(
-				schedulerEntry, StorageType.MEMORY_CLUSTERED,
-				PortalClassLoaderUtil.getClassLoader(), 0);
+				schedulerEntry, StorageType.MEMORY_CLUSTERED, null, 0);
 		}
 		catch (Exception e) {
 			_log.error(e, e);

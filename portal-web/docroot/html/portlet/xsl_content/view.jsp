@@ -30,8 +30,8 @@ try {
 	if (bracketBegin > -1) {
 		bracketEnd = xmlUrl.indexOf("]", bracketBegin);
 
-		if (bracketEnd > -1 && ((bracketEnd - bracketBegin) > 0)) {
-			String[] compilerTagNames = (String[])request.getAttribute(WebKeys.TAGS_COMPILER_ENTRIES);
+		if ((bracketEnd > -1) && ((bracketEnd - bracketBegin) > 0)) {
+			String[] compilerTagNames = ParamUtil.getParameterValues(request, "tags");
 
 			if (compilerTagNames.length > 0) {
 				String category = null;

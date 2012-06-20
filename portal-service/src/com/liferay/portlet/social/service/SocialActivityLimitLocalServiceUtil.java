@@ -15,7 +15,6 @@
 package com.liferay.portlet.social.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class SocialActivityLimitLocalServiceUtil {
 	* Deletes the social activity limit with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param activityLimitId the primary key of the social activity limit
+	* @return the social activity limit that was removed
 	* @throws PortalException if a social activity limit with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSocialActivityLimit(long activityLimitId)
+	public static com.liferay.portlet.social.model.SocialActivityLimit deleteSocialActivityLimit(
+		long activityLimitId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSocialActivityLimit(activityLimitId);
+		return getService().deleteSocialActivityLimit(activityLimitId);
 	}
 
 	/**
 	* Deletes the social activity limit from the database. Also notifies the appropriate model listeners.
 	*
 	* @param socialActivityLimit the social activity limit
+	* @return the social activity limit that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteSocialActivityLimit(
+	public static com.liferay.portlet.social.model.SocialActivityLimit deleteSocialActivityLimit(
 		com.liferay.portlet.social.model.SocialActivityLimit socialActivityLimit)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteSocialActivityLimit(socialActivityLimit);
+		return getService().deleteSocialActivityLimit(socialActivityLimit);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -271,26 +277,30 @@ public class SocialActivityLimitLocalServiceUtil {
 			activityType, activityCounterName, limitPeriod);
 	}
 
+	public static com.liferay.portlet.social.model.SocialActivityLimit fetchActivityLimit(
+		long groupId, long userId, long classNameId, long classPK,
+		int activityType, java.lang.String activityCounterName)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .fetchActivityLimit(groupId, userId, classNameId, classPK,
+			activityType, activityCounterName);
+	}
+
 	public static SocialActivityLimitLocalService getService() {
 		if (_service == null) {
 			_service = (SocialActivityLimitLocalService)PortalBeanLocatorUtil.locate(SocialActivityLimitLocalService.class.getName());
 
 			ReferenceRegistry.registerReference(SocialActivityLimitLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(SocialActivityLimitLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(SocialActivityLimitLocalService service) {
-		MethodCache.remove(SocialActivityLimitLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(SocialActivityLimitLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(SocialActivityLimitLocalService.class);
 	}
 
 	private static SocialActivityLimitLocalService _service;

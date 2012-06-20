@@ -45,6 +45,10 @@ public class CalEventAssetRenderer extends BaseAssetRenderer {
 		_event = event;
 	}
 
+	public String getAssetRendererFactoryClassName() {
+		return CalEventAssetRendererFactory.CLASS_NAME;
+	}
+
 	public long getClassPK() {
 		return _event.getEventId();
 	}
@@ -117,6 +121,10 @@ public class CalEventAssetRenderer extends BaseAssetRenderer {
 
 	public long getUserId() {
 		return _event.getUserId();
+	}
+
+	public String getUserName() {
+		return _event.getUserName();
 	}
 
 	public String getUuid() {

@@ -85,6 +85,11 @@ public class SeleneseToJavaBuilder {
 		Set<String> fileNames = getFileNames();
 
 		for (String fileName : fileNames) {
+			if (fileName.length() > 161) {
+				System.out.println(
+					"Exceeds 177 characters: portal-web/test/" + fileName);
+			}
+
 			if (fileName.endsWith("Test.html")) {
 				testHtmlCount++;
 
@@ -242,8 +247,7 @@ public class SeleneseToJavaBuilder {
 
 			z = testCaseName.lastIndexOf("../", z);
 
-			importClassName += testCaseName.substring(
-				z + 2, testCaseName.length());
+			importClassName += testCaseName.substring(z + 2);
 
 			count = StringUtil.count(fileName, "/") - 2;
 
@@ -578,10 +582,13 @@ public class SeleneseToJavaBuilder {
 			String param3 = fixParam(params[2]);
 
 			if (param1.equals("addSelection") || param1.equals("clickAt") ||
-				param1.equals("doubleClickAt") || param1.equals("keyPress") ||
+				param1.equals("doubleClickAt") || param1.equals("keyDown") ||
+				param1.equals("keyPress") || param1.equals("keyUp") ||
 				param1.equals("mouseMoveAt") || param1.equals("openWindow") ||
 				param1.equals("select") || param1.equals("type") ||
-				param1.equals("typeKeys") || param1.equals("uploadFile") ||
+				param1.equals("typeKeys") ||
+				param1.equals("uploadCommonFile") ||
+				param1.equals("uploadTempFile") ||
 				param1.equals("waitForPopUp")) {
 
 				sb.append("selenium.");
@@ -855,7 +862,7 @@ public class SeleneseToJavaBuilder {
 			}
 			else if (param1.equals("check") || param1.equals("click") ||
 					 param1.equals("doubleClick") ||
-					 param1.equals("downloadFile") ||
+					 param1.equals("downloadTempFile") ||
 					 param1.equals("mouseDown") || param1.equals("mouseMove") ||
 					 param1.equals("mouseOver") || param1.equals("mouseUp") ||
 					 param1.equals("open") || param1.equals("selectFrame") ||
@@ -896,7 +903,9 @@ public class SeleneseToJavaBuilder {
 				sb.append("loadRequiredJavaScriptModules();");
 			}
 			else if (param1.equals("clickAtAndWait") ||
+					 param1.equals("keyDownAndWait") ||
 					 param1.equals("keyPressAndWait") ||
+					 param1.equals("keyUpAndWait") ||
 					 param1.equals("selectAndWait")) {
 
 				sb.append("selenium.");
@@ -913,7 +922,8 @@ public class SeleneseToJavaBuilder {
 
 				sb.append("loadRequiredJavaScriptModules();");
 			}
-			else if (param1.equals("close") || param1.equals("refresh") ||
+			else if (param1.equals("close") || param1.equals("goBack") ||
+					 param1.equals("refresh") ||
 					 param1.equals("setBrowserOption") ||
 					 param1.equals("windowFocus") ||
 					 param1.equals("windowMaximize")) {
@@ -934,6 +944,19 @@ public class SeleneseToJavaBuilder {
 				sb.append("System.out.println(\"");
 				sb.append(param2);
 				sb.append("\");");
+			}
+			else if (param1.equals("goBackAndWait") ||
+					 param1.equals("refreshAndWait") ||
+					 param1.equals("windowMaximizeAndWait")) {
+
+				String text = param1.substring(0, param1.length() - 7);
+
+				sb.append("selenium.");
+				sb.append(text);
+				sb.append("();");
+				sb.append("selenium.waitForPageToLoad(\"30000\");");
+
+				sb.append("loadRequiredJavaScriptModules();");
 			}
 			else if (param1.equals("gotoIf")) {
 				String conditional = StringUtil.replace(
@@ -959,18 +982,6 @@ public class SeleneseToJavaBuilder {
 				sb.append("Thread.sleep(");
 				sb.append(param2);
 				sb.append(");");
-			}
-			else if (param1.equals("refreshAndWait") ||
-					 param1.equals("windowMaximizeAndWait")) {
-
-				String text = param1.substring(0, param1.length() - 7);
-
-				sb.append("selenium.");
-				sb.append(text);
-				sb.append("();");
-				sb.append("selenium.waitForPageToLoad(\"30000\");");
-
-				sb.append("loadRequiredJavaScriptModules();");
 			}
 			else if (param1.equals("store")) {
 				sb.append("boolean ");

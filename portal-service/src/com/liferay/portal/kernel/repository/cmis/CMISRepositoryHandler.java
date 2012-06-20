@@ -65,10 +65,10 @@ public abstract class CMISRepositoryHandler extends BaseRepositoryImpl {
 			parentFolderId, title, description, serviceContext);
 	}
 
-	public void cancelCheckOut(long fileEntryId)
+	public FileVersion cancelCheckOut(long fileEntryId)
 		throws PortalException, SystemException {
 
-		_baseCmisRepository.cancelCheckOut(fileEntryId);
+		return _baseCmisRepository.cancelCheckOut(fileEntryId);
 	}
 
 	public void checkInFileEntry(
@@ -414,17 +414,20 @@ public abstract class CMISRepositoryHandler extends BaseRepositoryImpl {
 			folderId, newParentFolderId, serviceContext);
 	}
 
-	public Lock refreshFileEntryLock(String lockUuid, long expirationTime)
+	public Lock refreshFileEntryLock(
+			String lockUuid, long companyId, long expirationTime)
 		throws PortalException, SystemException {
 
 		return _baseCmisRepository.refreshFileEntryLock(
-			lockUuid, expirationTime);
+			lockUuid, companyId, expirationTime);
 	}
 
-	public Lock refreshFolderLock(String lockUuid, long expirationTime)
+	public Lock refreshFolderLock(
+			String lockUuid, long companyId, long expirationTime)
 		throws PortalException, SystemException {
 
-		return _baseCmisRepository.refreshFolderLock(lockUuid, expirationTime);
+		return _baseCmisRepository.refreshFolderLock(
+			lockUuid, companyId, expirationTime);
 	}
 
 	public void revertFileEntry(

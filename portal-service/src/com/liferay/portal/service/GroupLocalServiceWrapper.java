@@ -56,26 +56,33 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	* Deletes the group with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param groupId the primary key of the group
+	* @return the group that was removed
 	* @throws PortalException if a group with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteGroup(long groupId)
+	public com.liferay.portal.model.Group deleteGroup(long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_groupLocalService.deleteGroup(groupId);
+		return _groupLocalService.deleteGroup(groupId);
 	}
 
 	/**
 	* Deletes the group from the database. Also notifies the appropriate model listeners.
 	*
 	* @param group the group
+	* @return the group that was removed
 	* @throws PortalException
 	* @throws SystemException if a system exception occurred
 	*/
-	public void deleteGroup(com.liferay.portal.model.Group group)
+	public com.liferay.portal.model.Group deleteGroup(
+		com.liferay.portal.model.Group group)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		_groupLocalService.deleteGroup(group);
+		return _groupLocalService.deleteGroup(group);
+	}
+
+	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return _groupLocalService.dynamicQuery();
 	}
 
 	/**
@@ -252,6 +259,7 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	* Adds a group.
 	*
 	* @param userId the primary key of the group's creator/owner
+	* @param parentGroupId the primary key of the parent group
 	* @param className the entity's class name
 	* @param classPK the primary key of the entity's instance
 	* @param liveGroupId the primary key of the live group
@@ -274,21 +282,22 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	* @throws SystemException if a system exception occurred
 	*/
 	public com.liferay.portal.model.Group addGroup(long userId,
-		java.lang.String className, long classPK, long liveGroupId,
-		java.lang.String name, java.lang.String description, int type,
-		java.lang.String friendlyURL, boolean site, boolean active,
+		long parentGroupId, java.lang.String className, long classPK,
+		long liveGroupId, java.lang.String name, java.lang.String description,
+		int type, java.lang.String friendlyURL, boolean site, boolean active,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		return _groupLocalService.addGroup(userId, className, classPK,
-			liveGroupId, name, description, type, friendlyURL, site, active,
-			serviceContext);
+		return _groupLocalService.addGroup(userId, parentGroupId, className,
+			classPK, liveGroupId, name, description, type, friendlyURL, site,
+			active, serviceContext);
 	}
 
 	/**
 	* Adds the group using the default live group.
 	*
 	* @param userId the primary key of the group's creator/owner
+	* @param parentGroupId the primary key of the parent group
 	* @param className the entity's class name
 	* @param classPK the primary key of the entity's instance
 	* @param name the entity's name
@@ -309,14 +318,15 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	* @throws SystemException if a system exception occurred
 	*/
 	public com.liferay.portal.model.Group addGroup(long userId,
-		java.lang.String className, long classPK, java.lang.String name,
-		java.lang.String description, int type, java.lang.String friendlyURL,
-		boolean site, boolean active,
+		long parentGroupId, java.lang.String className, long classPK,
+		java.lang.String name, java.lang.String description, int type,
+		java.lang.String friendlyURL, boolean site, boolean active,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		return _groupLocalService.addGroup(userId, className, classPK, name,
-			description, type, friendlyURL, site, active, serviceContext);
+		return _groupLocalService.addGroup(userId, parentGroupId, className,
+			classPK, name, description, type, friendlyURL, site, active,
+			serviceContext);
 	}
 
 	/**
@@ -391,7 +401,8 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	}
 
 	/**
-	* Returns the group with the matching group name.
+	* Returns the group with the matching group name by first searching the
+	* system groups and then using the finder cache.
 	*
 	* @param companyId the primary key of the company
 	* @param name the group's name
@@ -488,6 +499,20 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _groupLocalService.getGroup(companyId, name);
+	}
+
+	public java.lang.String getGroupDescriptiveName(
+		com.liferay.portal.model.Group group, java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _groupLocalService.getGroupDescriptiveName(group, locale);
+	}
+
+	public java.lang.String getGroupDescriptiveName(long groupId,
+		java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _groupLocalService.getGroupDescriptiveName(groupId, locale);
 	}
 
 	/**
@@ -930,12 +955,31 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 		return _groupLocalService.hasUserGroup(userId, groupId, inherit);
 	}
 
+	/**
+	* Returns the group with the matching group name by first searching the
+	* system groups and then using the finder cache.
+	*
+	* @param companyId the primary key of the company
+	* @param name the group's name
+	* @return the group with the name and associated company, or
+	<code>null</code> if a matching group could not be found
+	* @throws SystemException if a system exception occurred
+	*/
 	public com.liferay.portal.model.Group loadFetchGroup(long companyId,
 		java.lang.String name)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _groupLocalService.loadFetchGroup(companyId, name);
 	}
 
+	/**
+	* Returns the group with the matching group name.
+	*
+	* @param companyId the primary key of the company
+	* @param name the group's name
+	* @return the group with the name and associated company
+	* @throws PortalException if a matching group could not be found
+	* @throws SystemException if a system exception occurred
+	*/
 	public com.liferay.portal.model.Group loadGetGroup(long companyId,
 		java.lang.String name)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -943,6 +987,35 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 		return _groupLocalService.loadGetGroup(companyId, name);
 	}
 
+	/**
+	* Returns a name ordered range of all the company's groups, optionally
+	* including the user's inherited organization groups and user groups.
+	* System and staged groups are not included.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end -
+	* start</code> instances. <code>start</code> and <code>end</code> are not
+	* primary keys, they are indexes in the result set. Thus, <code>0</code>
+	* refers to the first result in the set. Setting both <code>start</code>
+	* and <code>end</code> to {@link
+	* com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	* result set.
+	* </p>
+	*
+	* @param companyId the primary key of the company
+	* @param params the finder params (optionally <code>null</code>). To
+	include a user's organizations, inherited organizations, and user
+	groups in the search, add an entry with key
+	&quot;usersGroups&quot; mapped to the user's ID and an entry with
+	key &quot;inherit&quot; mapped to a non-<code>null</code> object.
+	For more information see {@link
+	com.liferay.portal.service.persistence.GroupFinder}
+	* @param start the lower bound of the range of groups to return
+	* @param end the upper bound of the range of groups to return (not
+	inclusive)
+	* @return the matching groups ordered by name
+	* @throws SystemException if a system exception occurred
+	*/
 	public java.util.List<com.liferay.portal.model.Group> search(
 		long companyId,
 		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
@@ -979,7 +1052,6 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	&quot;usersGroups&quot; mapped to the user's ID and an entry with
 	key &quot;inherit&quot; mapped to a non-<code>null</code> object.
 	For more information see {@link
-	com.liferay.portal.service.persistence.GroupFinder}
 	com.liferay.portal.service.persistence.GroupFinder}
 	* @param start the lower bound of the range of groups to return
 	* @param end the upper bound of the range of groups to return (not
@@ -1259,27 +1331,10 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	}
 
 	/**
-	* Updates the group's type settings.
-	*
-	* @param groupId the primary key of the group
-	* @param typeSettings the group's new type settings (optionally
-	<code>null</code>)
-	* @return the group
-	* @throws PortalException if a group with the primary key could not be
-	found
-	* @throws SystemException if a system exception occurred
-	*/
-	public com.liferay.portal.model.Group updateGroup(long groupId,
-		java.lang.String typeSettings)
-		throws com.liferay.portal.kernel.exception.PortalException,
-			com.liferay.portal.kernel.exception.SystemException {
-		return _groupLocalService.updateGroup(groupId, typeSettings);
-	}
-
-	/**
 	* Updates the group.
 	*
 	* @param groupId the primary key of the group
+	* @param parentGroupId the primary key of the parent group
 	* @param name the group's new name
 	* @param description the group's new description (optionally
 	<code>null</code>)
@@ -1298,13 +1353,31 @@ public class GroupLocalServiceWrapper implements GroupLocalService,
 	* @throws SystemException if a system exception occurred
 	*/
 	public com.liferay.portal.model.Group updateGroup(long groupId,
-		java.lang.String name, java.lang.String description, int type,
-		java.lang.String friendlyURL, boolean active,
-		com.liferay.portal.service.ServiceContext serviceContext)
+		long parentGroupId, java.lang.String name,
+		java.lang.String description, int type, java.lang.String friendlyURL,
+		boolean active, com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		return _groupLocalService.updateGroup(groupId, name, description, type,
-			friendlyURL, active, serviceContext);
+		return _groupLocalService.updateGroup(groupId, parentGroupId, name,
+			description, type, friendlyURL, active, serviceContext);
+	}
+
+	/**
+	* Updates the group's type settings.
+	*
+	* @param groupId the primary key of the group
+	* @param typeSettings the group's new type settings (optionally
+	<code>null</code>)
+	* @return the group
+	* @throws PortalException if a group with the primary key could not be
+	found
+	* @throws SystemException if a system exception occurred
+	*/
+	public com.liferay.portal.model.Group updateGroup(long groupId,
+		java.lang.String typeSettings)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _groupLocalService.updateGroup(groupId, typeSettings);
 	}
 
 	/**

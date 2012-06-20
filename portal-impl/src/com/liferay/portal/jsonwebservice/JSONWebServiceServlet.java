@@ -14,7 +14,9 @@
 
 package com.liferay.portal.jsonwebservice;
 
-import com.liferay.portal.kernel.servlet.PortletServlet;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.servlet.PluginContextListener;
 import com.liferay.portal.kernel.upload.UploadServletRequest;
 import com.liferay.portal.kernel.util.ContextPathUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -92,9 +94,17 @@ public class JSONWebServiceServlet extends JSONServlet {
 				uri = uri.concat(StringPool.QUESTION).concat(queryString);
 			}
 
+			if (_log.isDebugEnabled()) {
+				_log.debug("Redirect from secure to public");
+			}
+
 			response.sendRedirect(uri);
 
 			return;
+		}
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Servlet context " + request.getContextPath());
 		}
 
 		String apiPath = PortalUtil.getPathMain() + "/portal/api/jsonws";
@@ -119,12 +129,17 @@ public class JSONWebServiceServlet extends JSONServlet {
 			String queryString = request.getQueryString();
 
 			if (Validator.isNull(queryString)) {
-				String servletContextPath = ContextPathUtil.getContextPath(
-					servletContext);
-
-				queryString =
-					"contextPath=" + HttpUtil.encodeURL(servletContextPath);
+				queryString = StringPool.BLANK;
 			}
+			else {
+				queryString += StringPool.AMPERSAND;
+			}
+
+			String servletContextPath = ContextPathUtil.getContextPath(
+				servletContext);
+
+			queryString +=
+				"contextPath=" + HttpUtil.encodeURL(servletContextPath);
 
 			apiPath = serverURL + apiPath + StringPool.QUESTION + queryString;
 
@@ -147,12 +162,11 @@ public class JSONWebServiceServlet extends JSONServlet {
 
 	@Override
 	protected JSONAction getJSONAction(ServletContext servletContext) {
-		ClassLoader portletClassLoader =
-			(ClassLoader)servletContext.getAttribute(
-				PortletServlet.PORTLET_CLASS_LOADER);
+		ClassLoader classLoader = (ClassLoader)servletContext.getAttribute(
+			PluginContextListener.PLUGIN_CLASS_LOADER);
 
 		_jsonWebServiceServiceAction = new JSONWebServiceServiceAction(
-			ContextPathUtil.getContextPath(servletContext), portletClassLoader);
+			ContextPathUtil.getContextPath(servletContext), classLoader);
 
 		_jsonWebServiceServiceAction.setServletContext(servletContext);
 
@@ -173,7 +187,7 @@ public class JSONWebServiceServlet extends JSONServlet {
 
 		if (user != null) {
 			PermissionChecker permissionChecker =
-				PermissionCheckerFactoryUtil.create(user, true);
+				PermissionCheckerFactoryUtil.create(user);
 
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
 
@@ -181,6 +195,9 @@ public class JSONWebServiceServlet extends JSONServlet {
 			request.setAttribute("userId", user.getUserId());
 		}
 	}
+
+	private static Log _log = LogFactoryUtil.getLog(
+		JSONWebServiceServlet.class);
 
 	private JSONWebServiceServiceAction _jsonWebServiceServiceAction;
 

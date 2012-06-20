@@ -51,7 +51,7 @@ else if (tabs2.equals("page-updated-email")) {
 }
 %>
 
-<liferay-portlet:renderURL var="portletURL" portletConfiguration="true">
+<liferay-portlet:renderURL portletConfiguration="true" var="portletURL">
 	<portlet:param name="tabs2" value="<%= tabs2 %>" />
 	<portlet:param name="redirect" value="<%= redirect %>" />
 </liferay-portlet:renderURL>
@@ -331,11 +331,7 @@ else if (tabs2.equals("page-updated-email")) {
 				Arrays.sort(visibleNodes);
 				Arrays.sort(hiddenNodes);
 
-				Iterator<String> itr = currentVisibleNodes.iterator();
-
-				while (itr.hasNext()) {
-					String folderColumn = itr.next();
-
+				for (String folderColumn : currentVisibleNodes) {
 					if ((Arrays.binarySearch(hiddenNodes, folderColumn) < 0) && (Arrays.binarySearch(visibleNodes, folderColumn) < 0)) {
 						leftList.add(new KeyValuePair(folderColumn, LanguageUtil.get(pageContext, folderColumn)));
 					}
@@ -354,17 +350,16 @@ else if (tabs2.equals("page-updated-email")) {
 				}
 
 				rightList = ListUtil.sort(rightList, new KeyValuePairComparator(false, true));
-
 				%>
 
 				<liferay-ui:input-move-boxes
-					leftTitle="visible"
-					rightTitle="hidden"
 					leftBoxName="currentVisibleNodes"
-					rightBoxName="availableVisibleNodes"
-					leftReorder="true"
 					leftList="<%= leftList %>"
+					leftReorder="true"
+					leftTitle="visible"
+					rightBoxName="availableVisibleNodes"
 					rightList="<%= rightList %>"
+					rightTitle="hidden"
 				/>
 			</aui:fieldset>
 		</c:when>

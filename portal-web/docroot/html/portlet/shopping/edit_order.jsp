@@ -390,17 +390,16 @@ long orderId = BeanParamUtil.getLong(order, request, "orderId");
 	searchContainer.setHeaderNames(headerNames);
 	searchContainer.setHover(false);
 
-	List results = ShoppingOrderItemLocalServiceUtil.getOrderItems(order.getOrderId());
+	List<ShoppingOrderItem> results = ShoppingOrderItemLocalServiceUtil.getOrderItems(order.getOrderId());
+
 	int total = results.size();
 
 	searchContainer.setTotal(total);
 
 	List resultRows = searchContainer.getResultRows();
 
-	Iterator itr = results.iterator();
-
-	for (int i = 0; itr.hasNext(); i++) {
-		ShoppingOrderItem orderItem = (ShoppingOrderItem)itr.next();
+	for (int i = 0; i < total; i++) {
+		ShoppingOrderItem orderItem = results.get(i);
 
 		ShoppingItem item = null;
 
@@ -418,8 +417,8 @@ long orderId = BeanParamUtil.getLong(order, request, "orderId");
 
 		PortletURL rowURL = null;
 
-	if (item != null) {
-		rowURL = renderResponse.createRenderURL();
+		if (item != null) {
+			rowURL = renderResponse.createRenderURL();
 
 			rowURL.setParameter("struts_action", "/shopping/view_item");
 			rowURL.setParameter("itemId", String.valueOf(item.getItemId()));
@@ -574,7 +573,7 @@ long orderId = BeanParamUtil.getLong(order, request, "orderId");
 	</c:if>
 </aui:form>
 
-<c:if test="<%= !windowState.equals(LiferayWindowState.POP_UP) %>">
+<c:if test="<%= PropsValues.SHOPPING_ORDER_COMMENTS_ENABLED && !windowState.equals(LiferayWindowState.POP_UP) %>">
 	<liferay-ui:panel-container extended="<%= true %>"  id="shoppingEditOrderPanelContainer" persistState="<%= true %>">
 		<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id="shoppingEditOrderCommentsPanel" persistState="<%= true %>" title="comments">
 			<portlet:actionURL var="discussionURL">

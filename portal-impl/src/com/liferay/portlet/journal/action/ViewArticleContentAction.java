@@ -21,7 +21,10 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.model.User;
 import com.liferay.portal.service.ImageLocalServiceUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
@@ -29,13 +32,18 @@ import com.liferay.portal.util.WebKeys;
 import com.liferay.portal.webserver.WebServerServletTokenUtil;
 import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.portlet.journal.model.JournalArticleConstants;
+import com.liferay.portlet.journal.model.impl.JournalArticleImpl;
 import com.liferay.portlet.journal.service.JournalArticleImageLocalServiceUtil;
 import com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.portlet.journal.service.JournalArticleServiceUtil;
+import com.liferay.portlet.journal.util.JournalUtil;
+import com.liferay.util.PwdGenerator;
 
 import java.io.File;
 
-import java.util.Iterator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,6 +65,8 @@ public class ViewArticleContentAction extends Action {
 			HttpServletResponse response)
 		throws Exception {
 
+		UploadServletRequest uploadServletRequest = null;
+
 		try {
 			String cmd = ParamUtil.getString(request, Constants.CMD);
 
@@ -73,6 +83,68 @@ public class ViewArticleContentAction extends Action {
 			String output = null;
 
 			if (cmd.equals(Constants.PREVIEW)) {
+				uploadServletRequest = PortalUtil.getUploadServletRequest(
+					request);
+
+				String title = ParamUtil.getString(
+					uploadServletRequest, "title");
+				String description = ParamUtil.getString(
+					uploadServletRequest, "description");
+				String type = ParamUtil.getString(uploadServletRequest, "type");
+				String structureId = ParamUtil.getString(
+					uploadServletRequest, "structureId");
+				String templateId = ParamUtil.getString(
+					uploadServletRequest, "templateId");
+
+				Date now = new Date();
+
+				Date createDate = now;
+				Date modifiedDate = now;
+				Date displayDate = now;
+
+				User user = PortalUtil.getUser(uploadServletRequest);
+
+				String xml = ParamUtil.getString(uploadServletRequest, "xml");
+
+				Document doc = SAXReaderUtil.read(xml);
+
+				Element root = doc.getRootElement();
+
+				String previewArticleId =
+					"PREVIEW_" +
+						PwdGenerator.getPassword(PwdGenerator.KEY3, 10);
+
+				format(
+					groupId, articleId, version, previewArticleId, root,
+					uploadServletRequest);
+
+				Map<String, String> tokens = JournalUtil.getTokens(
+					groupId, themeDisplay);
+
+				tokens.put("article_resource_pk", "-1");
+
+				JournalArticle article = new JournalArticleImpl();
+
+				article.setGroupId(groupId);
+				article.setCompanyId(user.getCompanyId());
+				article.setUserId(user.getUserId());
+				article.setUserName(user.getFullName());
+				article.setCreateDate(createDate);
+				article.setModifiedDate(modifiedDate);
+				article.setArticleId(articleId);
+				article.setVersion(version);
+				article.setTitle(title);
+				article.setDescription(description);
+				article.setContent(xml);
+				article.setType(type);
+				article.setStructureId(structureId);
+				article.setTemplateId(templateId);
+				article.setDisplayDate(displayDate);
+
+				output = JournalArticleLocalServiceUtil.getArticleContent(
+					article, templateId, null, languageId, themeDisplay);
+			}
+			else if (cmd.equals(Constants.VIEW)) {
 				JournalArticle article = JournalArticleServiceUtil.getArticle(
 					groupId, articleId, version);
 
@@ -101,6 +173,11 @@ public class ViewArticleContentAction extends Action {
 
 			return null;
 		}
+		finally {
+			if (uploadServletRequest != null) {
+				uploadServletRequest.cleanUp();
+			}
+		}
 	}
 
 	protected void format(
@@ -109,17 +186,15 @@ public class ViewArticleContentAction extends Action {
 			UploadServletRequest uploadServletRequest)
 		throws Exception {
 
-		Iterator<Element> itr = root.elements().iterator();
+		List<Element> elements = root.elements();
 
-		while (itr.hasNext()) {
-			Element el = itr.next();
+		for (Element element : elements) {
+			Element dynamicContent = element.element("dynamic-content");
 
-			Element dynamicContent = el.element("dynamic-content");
-
-			String elInstanceId = el.attributeValue(
+			String elInstanceId = element.attributeValue(
 				"instance-id", StringPool.BLANK);
-			String elName = el.attributeValue("name", StringPool.BLANK);
-			String elType = el.attributeValue("type", StringPool.BLANK);
+			String elName = element.attributeValue("name", StringPool.BLANK);
+			String elType = element.attributeValue("type", StringPool.BLANK);
 			String elContent = StringPool.BLANK;
 			String elLanguage = StringPool.BLANK;
 
@@ -171,7 +246,7 @@ public class ViewArticleContentAction extends Action {
 			}
 
 			format(
-				groupId, articleId, version, previewArticleId, el,
+				groupId, articleId, version, previewArticleId, element,
 				uploadServletRequest);
 		}
 	}

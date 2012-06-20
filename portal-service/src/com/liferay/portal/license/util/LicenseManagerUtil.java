@@ -14,8 +14,12 @@
 
 package com.liferay.portal.license.util;
 
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.license.LicenseInfo;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -39,6 +43,12 @@ public class LicenseManagerUtil {
 		getLicenseManager().checkLicense(productId);
 	}
 
+	public static List<Map<String, String>> getClusterLicenseProperties(
+		String clusterNodeId) {
+
+		return getLicenseManager().getLicenseProperties();
+	}
+
 	public static String getHostName() {
 		return getLicenseManager().getHostName();
 	}
@@ -52,7 +62,21 @@ public class LicenseManagerUtil {
 	}
 
 	public static LicenseManager getLicenseManager() {
+		PortalRuntimePermission.checkGetBeanProperty(LicenseManagerUtil.class);
+
 		return _licenseManager;
+	}
+
+	public static List<Map<String, String>> getLicenseProperties() {
+		return getLicenseManager().getLicenseProperties();
+	}
+
+	public static Map<String, String> getLicenseProperties(String productId) {
+		return getLicenseManager().getLicenseProperties(productId);
+	}
+
+	public static int getLicenseState(Map<String, String> licenseProperties) {
+		return getLicenseManager().getLicenseState(licenseProperties);
 	}
 
 	public static int getLicenseState(String productId) {
@@ -63,7 +87,13 @@ public class LicenseManagerUtil {
 		return getLicenseManager().getMacAddresses();
 	}
 
+	public static void registerLicense(JSONObject jsonObject) throws Exception {
+		getLicenseManager().registerLicense(jsonObject);
+	}
+
 	public void setLicenseManager(LicenseManager licenseManager) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_licenseManager = licenseManager;
 	}
 

@@ -41,6 +41,17 @@ SitesUtil.addPortletBreadcrumbEntries(group, pagesName, redirectURL, request, re
 
 <liferay-ui:error exception="<%= LayoutNameException.class %>" message="please-enter-a-valid-name" />
 
+<liferay-ui:error exception="<%= RequiredLayoutException.class %>">
+
+	<%
+	RequiredLayoutException rle = (RequiredLayoutException)errorException;
+	%>
+
+	<c:if test="<%= rle.getType() == RequiredLayoutException.AT_LEAST_ONE %>">
+		<liferay-ui:message key="you-must-have-at-least-one-page" />
+	</c:if>
+</liferay-ui:error>
+
 <c:choose>
 	<c:when test="<%= portletName.equals(PortletKeys.MY_SITES) || portletName.equals(PortletKeys.GROUP_PAGES) || portletName.equals(PortletKeys.MY_PAGES) || portletName.equals(PortletKeys.SITES_ADMIN) || portletName.equals(PortletKeys.USER_GROUPS_ADMIN) || portletName.equals(PortletKeys.USERS_ADMIN) %>">
 		<c:if test="<%= portletName.equals(PortletKeys.MY_SITES) || portletName.equals(PortletKeys.GROUP_PAGES) || portletName.equals(PortletKeys.SITES_ADMIN) || portletName.equals(PortletKeys.USER_GROUPS_ADMIN) || portletName.equals(PortletKeys.USERS_ADMIN) %>">
@@ -69,8 +80,8 @@ SitesUtil.addPortletBreadcrumbEntries(group, pagesName, redirectURL, request, re
 		<liferay-ui:tabs
 			names="<%= tabs1Names %>"
 			param="tabs1"
-			value="<%= tabs1 %>"
 			url="<%= tabs1URL %>"
+			value="<%= tabs1 %>"
 		/>
 
 		<%
@@ -82,6 +93,7 @@ SitesUtil.addPortletBreadcrumbEntries(group, pagesName, redirectURL, request, re
 			PortalUtil.addPortletBreadcrumbEntry(request, selLayout.getName(locale), currentURL);
 		}
 		%>
+
 	</c:when>
 	<c:otherwise>
 
@@ -94,7 +106,7 @@ SitesUtil.addPortletBreadcrumbEntries(group, pagesName, redirectURL, request, re
 		%>
 
 		<div class="layout-breadcrumb">
-			<liferay-ui:breadcrumb displayStyle="horizontal" showPortletBreadcrumb="<%= true %>" showGuestGroup="<%= false %>" showLayout="<%= false %>" showParentGroups="<%= false %>" />
+			<liferay-ui:breadcrumb displayStyle="horizontal" showGuestGroup="<%= false %>" showLayout="<%= false %>" showParentGroups="<%= false %>" showPortletBreadcrumb="<%= true %>" />
 		</div>
 	</c:otherwise>
 </c:choose>
@@ -136,7 +148,7 @@ SitesUtil.addPortletBreadcrumbEntries(group, pagesName, redirectURL, request, re
 
 						<c:choose>
 							<c:when test="<%= layoutSetBranches.size() > 1 %>">
-								<liferay-ui:icon-menu align="left" cssClass="layoutset-branches-menu" direction="down" extended="<%= true %>" message="<%= layoutSetBranch.getName() %>" icon='<%= themeDisplay.getPathThemeImages() + "/dock/staging.png" %>' >
+								<liferay-ui:icon-menu align="left" cssClass="layoutset-branches-menu" direction="down" extended="<%= true %>" icon='<%= themeDisplay.getPathThemeImages() + "/common/staging.png" %>' message="<%= layoutSetBranch.getName() %>">
 
 									<%
 									for (int i = 0; i < layoutSetBranches.size(); i++) {
@@ -170,7 +182,7 @@ SitesUtil.addPortletBreadcrumbEntries(group, pagesName, redirectURL, request, re
 							<c:otherwise>
 								<liferay-ui:icon
 									cssClass="layoutset-branch"
-									image="../dock/staging"
+									image="../common/staging"
 									label="<%= true %>"
 									message='<%= (layoutSetBranch == null || (layoutSetBranches.size() == 1)) ? "staging" : layoutSetBranch.getName() %>'
 								/>
@@ -218,14 +230,27 @@ SitesUtil.addPortletBreadcrumbEntries(group, pagesName, redirectURL, request, re
 			function(event) {
 				event.preventDefault();
 
+				var hash = location.hash;
+
+				var prefix = '#_LFR_FN_<portlet:namespace />';
+				var historyKey = '';
+
+				if (hash.indexOf(prefix) != -1) {
+					historyKey = hash.replace(prefix, '');
+				}
+
 				var requestUri = A.Lang.sub(
 					event.currentTarget.get('href'),
 					{
-						historyKey: location.hash.replace('#_LFR_FN_<portlet:namespace />', '')
+						historyKey: historyKey
 					}
 				);
 
 				layoutsContainer.io.set('uri', requestUri);
+
+				if (layoutsContainer.ParseContent) {
+					layoutsContainer.ParseContent.get('queue').stop();
+				}
 
 				layoutsContainer.io.start();
 			},

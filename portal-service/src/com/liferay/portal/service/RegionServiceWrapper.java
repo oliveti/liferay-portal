@@ -29,6 +29,24 @@ public class RegionServiceWrapper implements RegionService,
 		_regionService = regionService;
 	}
 
+	/**
+	* Returns the Spring bean ID for this bean.
+	*
+	* @return the Spring bean ID for this bean
+	*/
+	public java.lang.String getBeanIdentifier() {
+		return _regionService.getBeanIdentifier();
+	}
+
+	/**
+	* Sets the Spring bean ID for this bean.
+	*
+	* @param beanIdentifier the Spring bean ID for this bean
+	*/
+	public void setBeanIdentifier(java.lang.String beanIdentifier) {
+		_regionService.setBeanIdentifier(beanIdentifier);
+	}
+
 	public com.liferay.portal.model.Region addRegion(long countryId,
 		java.lang.String regionCode, java.lang.String name, boolean active)
 		throws com.liferay.portal.kernel.exception.PortalException,
@@ -36,10 +54,23 @@ public class RegionServiceWrapper implements RegionService,
 		return _regionService.addRegion(countryId, regionCode, name, active);
 	}
 
+	public com.liferay.portal.model.Region fetchRegion(long countryId,
+		java.lang.String regionCode)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _regionService.fetchRegion(countryId, regionCode);
+	}
+
 	public com.liferay.portal.model.Region getRegion(long regionId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _regionService.getRegion(regionId);
+	}
+
+	public com.liferay.portal.model.Region getRegion(long countryId,
+		java.lang.String regionCode)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _regionService.getRegion(countryId, regionCode);
 	}
 
 	public java.util.List<com.liferay.portal.model.Region> getRegions()

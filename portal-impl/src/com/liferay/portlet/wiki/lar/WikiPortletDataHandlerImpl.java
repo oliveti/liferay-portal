@@ -83,6 +83,10 @@ public class WikiPortletDataHandlerImpl extends BasePortletDataHandler {
 		Element dlFileEntriesElement = pagesElement.addElement(
 			"dl-file-entries");
 		Element dlFileRanksElement = pagesElement.addElement("dl-file-ranks");
+		Element dlRepositoriesElement = pagesElement.addElement(
+			"dl-repositories");
+		Element dlRepositoryEntriesElement = pagesElement.addElement(
+			"dl-repository-entries");
 
 		List<WikiPage> pages = WikiPageUtil.findByN_S(
 			node.getNodeId(), WorkflowConstants.STATUS_APPROVED,
@@ -93,8 +97,13 @@ public class WikiPortletDataHandlerImpl extends BasePortletDataHandler {
 			exportPage(
 				portletDataContext, nodesElement, pagesElement,
 				dlFileEntryTypesElement, dlFoldersElement, dlFileEntriesElement,
-				dlFileRanksElement, page, true);
+				dlFileRanksElement, dlRepositoriesElement,
+				dlRepositoryEntriesElement, page, true);
 		}
+	}
+
+	public static PortletDataHandlerControl[] getMetadataControls() {
+		return _metadataControls;
 	}
 
 	public static void importNode(
@@ -172,12 +181,12 @@ public class WikiPortletDataHandlerImpl extends BasePortletDataHandler {
 
 		long userId = portletDataContext.getUserId(page.getUserUuid());
 
-		Map<Long, Long> nodePKs =
+		Map<Long, Long> nodeIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				WikiNode.class);
 
 		long nodeId = MapUtil.getLong(
-			nodePKs, page.getNodeId(), page.getNodeId());
+			nodeIds, page.getNodeId(), page.getNodeId());
 
 		String content = JournalPortletDataHandlerImpl.importReferencedContent(
 			portletDataContext, pageElement, page.getContent());
@@ -254,16 +263,30 @@ public class WikiPortletDataHandlerImpl extends BasePortletDataHandler {
 	@Override
 	public PortletDataHandlerControl[] getExportControls() {
 		return new PortletDataHandlerControl[] {
-			_nodesAndPages, _attachments, _categories, _comments, _ratings,
-			_tags
+			_nodesAndPages
+		};
+	}
+
+	@Override
+	public PortletDataHandlerControl[] getExportMetadataControls() {
+		return new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(
+				_NAMESPACE, "wiki-pages", true, _metadataControls)
 		};
 	}
 
 	@Override
 	public PortletDataHandlerControl[] getImportControls() {
 		return new PortletDataHandlerControl[] {
-			_nodesAndPages, _attachments, _categories, _comments, _ratings,
-			_tags
+			_nodesAndPages
+		};
+	}
+
+	@Override
+	public PortletDataHandlerControl[] getImportMetadataControls() {
+		return new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(
+				_NAMESPACE, "wiki-pages", true, _metadataControls)
 		};
 	}
 
@@ -310,7 +333,9 @@ public class WikiPortletDataHandlerImpl extends BasePortletDataHandler {
 			PortletDataContext portletDataContext, Element nodesElement,
 			Element pagesElement, Element dlFileEntryTypesElement,
 			Element dlFoldersElement, Element dlFileEntriesElement,
-			Element dlFileRanksElement, WikiPage page, boolean checkDateRange)
+			Element dlFileRanksElement, Element dlRepositoriesElement,
+			Element dlRepositoryEntriesElement, WikiPage page,
+			boolean checkDateRange)
 		throws Exception {
 
 		if (!portletDataContext.isWithinDateRange(page.getModifiedDate())) {
@@ -336,6 +361,7 @@ public class WikiPortletDataHandlerImpl extends BasePortletDataHandler {
 				JournalPortletDataHandlerImpl.exportReferencedContent(
 					portletDataContext, dlFileEntryTypesElement,
 					dlFoldersElement, dlFileEntriesElement, dlFileRanksElement,
+					dlRepositoriesElement, dlRepositoryEntriesElement,
 					pageElement, page.getContent());
 
 			page.setContent(content);
@@ -553,11 +579,11 @@ public class WikiPortletDataHandlerImpl extends BasePortletDataHandler {
 			importPage(portletDataContext, pageElement, page);
 		}
 
-		Map<Long, Long> nodePKs =
+		Map<Long, Long> nodeIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
 				WikiNode.class);
 
-		for (long nodeId : nodePKs.values()) {
+		for (long nodeId : nodeIds.values()) {
 			WikiCacheUtil.clearCache(nodeId);
 		}
 
@@ -566,23 +592,17 @@ public class WikiPortletDataHandlerImpl extends BasePortletDataHandler {
 
 	private static final String _NAMESPACE = "wiki";
 
-	private static PortletDataHandlerBoolean _attachments =
-		new PortletDataHandlerBoolean(_NAMESPACE, "attachments");
-
-	private static PortletDataHandlerBoolean _categories =
-		new PortletDataHandlerBoolean(_NAMESPACE, "categories");
-
-	private static PortletDataHandlerBoolean _comments =
-		new PortletDataHandlerBoolean(_NAMESPACE, "comments");
+	private static PortletDataHandlerControl[] _metadataControls =
+		new PortletDataHandlerControl[] {
+			new PortletDataHandlerBoolean(_NAMESPACE, "attachments"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "categories"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "comments"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "ratings"),
+			new PortletDataHandlerBoolean(_NAMESPACE, "tags")
+		};
 
 	private static PortletDataHandlerBoolean _nodesAndPages =
 		new PortletDataHandlerBoolean(
 			_NAMESPACE, "wikis-and-pages", true, true);
-
-	private static PortletDataHandlerBoolean _ratings =
-		new PortletDataHandlerBoolean(_NAMESPACE, "ratings");
-
-	private static PortletDataHandlerBoolean _tags =
-		new PortletDataHandlerBoolean(_NAMESPACE, "tags");
 
 }

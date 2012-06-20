@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.xml.XPath;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.dynamicdatamapping.RequiredStructureException;
 import com.liferay.portlet.dynamicdatamapping.StructureDuplicateElementException;
 import com.liferay.portlet.dynamicdatamapping.StructureDuplicateStructureKeyException;
@@ -43,12 +44,12 @@ import com.liferay.portlet.dynamicdatamapping.model.DDMStructureConstants;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplate;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplateConstants;
 import com.liferay.portlet.dynamicdatamapping.service.base.DDMStructureLocalServiceBaseImpl;
+import com.liferay.portlet.dynamicdatamapping.util.DDMTemplateHelperUtil;
 import com.liferay.portlet.dynamicdatamapping.util.DDMXMLUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -169,7 +170,18 @@ public class DDMStructureLocalServiceImpl
 		if (ddmStructureLinkPersistence.countByStructureId(
 				structure.getStructureId()) > 0) {
 
-			throw new RequiredStructureException();
+			throw new RequiredStructureException(
+				RequiredStructureException.REFERENCED_STRUCTURE_LINK);
+		}
+
+		long classNameId = PortalUtil.getClassNameId(DDMStructure.class);
+
+		if (ddmTemplatePersistence.countByG_C_C(
+				structure.getGroupId(), classNameId,
+				structure.getPrimaryKey()) > 0) {
+
+			throw new RequiredStructureException(
+				RequiredStructureException.REFERENCED_TEMPLATE);
 		}
 
 		// Structure
@@ -315,6 +327,12 @@ public class DDMStructureLocalServiceImpl
 		return ddmStructurePersistence.findByGroupId(groupId, start, end);
 	}
 
+	public List<DDMStructure> getStructures(long[] groupIds)
+		throws SystemException {
+
+		return ddmStructurePersistence.findByGroupId(groupIds);
+	}
+
 	public int getStructuresCount(long groupId) throws SystemException {
 		return ddmStructurePersistence.countByGroupId(groupId);
 	}
@@ -414,10 +432,8 @@ public class DDMStructureLocalServiceImpl
 
 		List<Node> nodes = structureXPath.selectNodes(structureDocument);
 
-		Iterator<Node> itr = nodes.iterator();
-
-		while (itr.hasNext()) {
-			Element element = (Element)itr.next();
+		for (Node node : nodes) {
+			Element element = (Element)node;
 
 			String name = element.attributeValue("name");
 
@@ -459,8 +475,10 @@ public class DDMStructureLocalServiceImpl
 	protected void syncStructureTemplatesFields(DDMStructure structure)
 		throws PortalException, SystemException {
 
+		long classNameId = PortalUtil.getClassNameId(DDMStructure.class);
+
 		List<DDMTemplate> templates = ddmTemplateLocalService.getTemplates(
-			structure.getStructureId(),
+			classNameId, structure.getStructureId(),
 			DDMTemplateConstants.TEMPLATE_TYPE_DETAIL);
 
 		for (DDMTemplate template : templates) {
@@ -502,7 +520,7 @@ public class DDMStructureLocalServiceImpl
 			DDMTemplate template, Element templateElement)
 		throws PortalException, SystemException {
 
-		DDMStructure structure = template.getStructure();
+		DDMStructure structure = DDMTemplateHelperUtil.fetchStructure(template);
 
 		List<Element> dynamicElementElements = templateElement.elements(
 			"dynamic-element");
@@ -647,8 +665,8 @@ public class DDMStructureLocalServiceImpl
 
 				validate(elements, elNames);
 			}
-			catch (StructureDuplicateElementException fdsee) {
-				throw fdsee;
+			catch (StructureDuplicateElementException sdee) {
+				throw sdee;
 			}
 			catch (StructureXsdException sxe) {
 				throw sxe;

@@ -48,6 +48,10 @@ public class MBCategoryAssetRenderer extends BaseAssetRenderer {
 		_category = category;
 	}
 
+	public String getAssetRendererFactoryClassName() {
+		return MBCategoryAssetRendererFactory.CLASS_NAME;
+	}
+
 	public long getClassPK() {
 		return _category.getCategoryId();
 	}
@@ -114,6 +118,10 @@ public class MBCategoryAssetRenderer extends BaseAssetRenderer {
 
 	public long getUserId() {
 		return _category.getUserId();
+	}
+
+	public String getUserName() {
+		return _category.getUserName();
 	}
 
 	public String getUuid() {

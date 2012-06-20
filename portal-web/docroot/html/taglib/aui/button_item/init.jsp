@@ -21,7 +21,6 @@
 <%
 Map<String, Object> dynamicAttributes = (Map<String, Object>)request.getAttribute("aui:button-item:dynamicAttributes");
 Map<String, Object> scopedAttributes = (Map<String, Object>)request.getAttribute("aui:button-item:scopedAttributes");
-CustomAttributes customAttributes = (CustomAttributes)request.getAttribute("aui:button-item:customAttributes");
 
 Map<String, Object> _options = new HashMap<String, Object>();
 
@@ -32,7 +31,6 @@ if ((scopedAttributes != null) && !scopedAttributes.isEmpty()) {
 if ((dynamicAttributes != null) && !dynamicAttributes.isEmpty()) {
 	_options.putAll(dynamicAttributes);
 }
-
 %>
 
 <%@ include file="/html/taglib/aui/init-alloy.jspf" %>

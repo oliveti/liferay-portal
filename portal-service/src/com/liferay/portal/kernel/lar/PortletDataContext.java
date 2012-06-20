@@ -194,7 +194,7 @@ public interface PortletDataContext extends Serializable {
 
 	public long getUserId(String userUuid) throws SystemException;
 
-	public UserIdStrategy getUserIdStrategy() throws SystemException;
+	public UserIdStrategy getUserIdStrategy();
 
 	public List<String> getZipEntries();
 
@@ -245,7 +245,7 @@ public interface PortletDataContext extends Serializable {
 
 	public boolean isDataStrategyMirror();
 
-	public boolean isDataStrategyMirrorWithOverwritting();
+	public boolean isDataStrategyMirrorWithOverwriting();
 
 	public boolean isPathNotProcessed(String path);
 

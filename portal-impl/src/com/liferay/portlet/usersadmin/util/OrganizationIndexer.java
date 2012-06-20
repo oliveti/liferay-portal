@@ -14,6 +14,13 @@
 
 package com.liferay.portlet.usersadmin.util;
 
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Projection;
+import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.ProjectionList;
+import com.liferay.portal.kernel.dao.orm.Property;
+import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
@@ -26,7 +33,7 @@ import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.Organization;
-import com.liferay.portal.model.OrganizationConstants;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PropsValues;
@@ -53,6 +60,8 @@ public class OrganizationIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.USERS_ADMIN;
 
 	public OrganizationIndexer() {
+		setIndexerEnabled(PropsValues.ORGANIZATIONS_INDEXER_ENABLED);
+		setPermissionAware(true);
 		setStagingAware(false);
 	}
 
@@ -62,16 +71,6 @@ public class OrganizationIndexer extends BaseIndexer {
 
 	public String getPortletId() {
 		return PORTLET_ID;
-	}
-
-	@Override
-	public boolean isIndexerEnabled() {
-		return PropsValues.ORGANIZATIONS_INDEXER_ENABLED;
-	}
-
-	@Override
-	public boolean isPermissionAware() {
-		return _PERMISSION_AWARE;
 	}
 
 	@Override
@@ -128,6 +127,14 @@ public class OrganizationIndexer extends BaseIndexer {
 				addSearchExpando(searchQuery, searchContext, expandoAttributes);
 			}
 		}
+	}
+
+	protected void addReindexCriteria(
+		DynamicQuery dynamicQuery, long companyId) {
+
+		Property property = PropertyFactoryUtil.forName("companyId");
+
+		dynamicQuery.add(property.eq(companyId));
 	}
 
 	@Override
@@ -248,7 +255,8 @@ public class OrganizationIndexer extends BaseIndexer {
 				long companyId = entry.getKey();
 				Collection<Document> documents = entry.getValue();
 
-				SearchEngineUtil.updateDocuments(companyId, documents);
+				SearchEngineUtil.updateDocuments(
+					getSearchEngineId(), companyId, documents);
 			}
 		}
 		else if (obj instanceof Organization) {
@@ -257,7 +265,7 @@ public class OrganizationIndexer extends BaseIndexer {
 			Document document = getDocument(organization);
 
 			SearchEngineUtil.updateDocument(
-				organization.getCompanyId(), document);
+				getSearchEngineId(), organization.getCompanyId(), document);
 		}
 	}
 
@@ -282,32 +290,72 @@ public class OrganizationIndexer extends BaseIndexer {
 	}
 
 	protected void reindexOrganizations(long companyId) throws Exception {
-		int count = OrganizationLocalServiceUtil.getOrganizationsCount(
-			companyId, OrganizationConstants.ANY_PARENT_ORGANIZATION_ID);
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Organization.class, PACLClassLoaderUtil.getPortalClassLoader());
 
-		int pages = count / OrganizationIndexer.DEFAULT_INTERVAL;
+		Projection minOrganizationIdProjection = ProjectionFactoryUtil.min(
+			"organizationId");
+		Projection maxOrganizationIdProjection = ProjectionFactoryUtil.max(
+			"organizationId");
 
-		for (int i = 0; i <= pages; i++) {
-			int start = (i * OrganizationIndexer.DEFAULT_INTERVAL);
-			int end = start + OrganizationIndexer.DEFAULT_INTERVAL;
+		ProjectionList projectionList = ProjectionFactoryUtil.projectionList();
 
-			reindexOrganizations(companyId, start, end);
+		projectionList.add(minOrganizationIdProjection);
+		projectionList.add(maxOrganizationIdProjection);
+
+		dynamicQuery.setProjection(projectionList);
+
+		addReindexCriteria(dynamicQuery, companyId);
+
+		List<Object[]> results = OrganizationLocalServiceUtil.dynamicQuery(
+			dynamicQuery);
+
+		Object[] minAndMaxOrganizationIds = results.get(0);
+
+		if ((minAndMaxOrganizationIds[0] == null) ||
+			(minAndMaxOrganizationIds[1] == null)) {
+
+			return;
+		}
+
+		long minOrganizationId = (Long)minAndMaxOrganizationIds[0];
+		long maxOrganizationId = (Long)minAndMaxOrganizationIds[1];
+
+		long startOrganizationId = minOrganizationId;
+		long endOrganizationId = startOrganizationId + DEFAULT_INTERVAL;
+
+		while (startOrganizationId <= maxOrganizationId) {
+			reindexOrganizations(
+				companyId, startOrganizationId, endOrganizationId);
+
+			startOrganizationId = endOrganizationId;
+			endOrganizationId += DEFAULT_INTERVAL;
 		}
 	}
 
-	protected void reindexOrganizations(long companyId, int start, int end)
+	protected void reindexOrganizations(
+			long companyId, long startOrganizationId, long endOrganizationId)
 		throws Exception {
 
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			Organization.class, PACLClassLoaderUtil.getPortalClassLoader());
+
+		Property property = PropertyFactoryUtil.forName("organizationId");
+
+		dynamicQuery.add(property.ge(startOrganizationId));
+		dynamicQuery.add(property.lt(endOrganizationId));
+
+		addReindexCriteria(dynamicQuery, companyId);
+
 		List<Organization> organizations =
-			OrganizationLocalServiceUtil.getOrganizations(
-				companyId, OrganizationConstants.ANY_PARENT_ORGANIZATION_ID,
-				start, end);
+			OrganizationLocalServiceUtil.dynamicQuery(dynamicQuery);
 
 		if (organizations.isEmpty()) {
 			return;
 		}
 
-		Collection<Document> documents = new ArrayList<Document>();
+		Collection<Document> documents = new ArrayList<Document>(
+			organizations.size());
 
 		for (Organization organization : organizations) {
 			Document document = getDocument(organization);
@@ -315,9 +363,8 @@ public class OrganizationIndexer extends BaseIndexer {
 			documents.add(document);
 		}
 
-		SearchEngineUtil.updateDocuments(companyId, documents);
+		SearchEngineUtil.updateDocuments(
+			getSearchEngineId(), companyId, documents);
 	}
-
-	private static final boolean _PERMISSION_AWARE = true;
 
 }

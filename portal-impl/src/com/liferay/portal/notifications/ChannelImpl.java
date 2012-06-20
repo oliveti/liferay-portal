@@ -75,23 +75,24 @@ public class ChannelImpl extends BaseChannelImpl {
 		_reentrantLock.lock();
 
 		try {
+			if (PropsValues.USER_NOTIFICATION_EVENT_CONFIRMATION_ENABLED) {
+				if (archive) {
+					UserNotificationEventLocalServiceUtil.
+						updateUserNotificationEvents(
+							notificationEventUuids, getCompanyId(), archive);
+				}
+				else {
+					UserNotificationEventLocalServiceUtil.
+						deleteUserNotificationEvents(
+							notificationEventUuids, getCompanyId());
+				}
+			}
+
 			for (String notificationEventUuid : notificationEventUuids) {
 				Map<String, NotificationEvent> unconfirmedNotificationEvents =
 					_getUnconfirmedNotificationEvents();
 
 				unconfirmedNotificationEvents.remove(notificationEventUuid);
-			}
-
-			if (PropsValues.USER_NOTIFICATION_EVENT_CONFIRMATION_ENABLED) {
-				if (archive) {
-					UserNotificationEventLocalServiceUtil.
-						updateUserNotificationEvents(
-							notificationEventUuids, archive);
-				}
-				else {
-					UserNotificationEventLocalServiceUtil.
-						deleteUserNotificationEvents(notificationEventUuids);
-				}
 			}
 		}
 		catch (Exception e) {
@@ -115,26 +116,27 @@ public class ChannelImpl extends BaseChannelImpl {
 		_reentrantLock.lock();
 
 		try {
-			Map<String, NotificationEvent> unconfirmedNotificationEvents =
-				_getUnconfirmedNotificationEvents();
-
-				unconfirmedNotificationEvents.remove(notificationEventUuid);
-
 			if (PropsValues.USER_NOTIFICATION_EVENT_CONFIRMATION_ENABLED) {
 				if (archive) {
 					UserNotificationEventLocalServiceUtil.
 						updateUserNotificationEvent(
-							notificationEventUuid, archive);
+							notificationEventUuid, getCompanyId(), archive);
 				}
 				else {
 					UserNotificationEventLocalServiceUtil.
-						deleteUserNotificationEvent(notificationEventUuid);
+						deleteUserNotificationEvent(
+							notificationEventUuid, getCompanyId());
 				}
 			}
+
+			Map<String, NotificationEvent> unconfirmedNotificationEvents =
+				_getUnconfirmedNotificationEvents();
+
+			unconfirmedNotificationEvents.remove(notificationEventUuid);
 		}
 		catch (Exception e) {
 			throw new ChannelException(
-				"Uanble to confirm delivery for " + notificationEventUuid , e);
+				"Unable to confirm delivery for " + notificationEventUuid , e);
 		}
 		finally {
 			_reentrantLock.unlock();
@@ -144,13 +146,24 @@ public class ChannelImpl extends BaseChannelImpl {
 	public void deleteUserNotificiationEvent(String notificationEventUuid)
 		throws ChannelException {
 
+		_reentrantLock.lock();
+
 		try {
 			UserNotificationEventLocalServiceUtil.
-				deleteUserNotificationEvent(notificationEventUuid);
+				deleteUserNotificationEvent(
+					notificationEventUuid, getCompanyId());
+
+			Map<String, NotificationEvent> unconfirmedNotificationEvents =
+				_getUnconfirmedNotificationEvents();
+
+			unconfirmedNotificationEvents.remove(notificationEventUuid);
 		}
 		catch (Exception e) {
 			throw new ChannelException(
-				"Uanble to delete event " + notificationEventUuid , e);
+				"Unable to delete event " + notificationEventUuid , e);
+		}
+		finally {
+			_reentrantLock.unlock();
 		}
 	}
 
@@ -158,13 +171,26 @@ public class ChannelImpl extends BaseChannelImpl {
 			Collection<String> notificationEventUuids)
 		throws ChannelException {
 
+		_reentrantLock.lock();
+
 		try {
 			UserNotificationEventLocalServiceUtil.
-				deleteUserNotificationEvents(notificationEventUuids);
+				deleteUserNotificationEvents(
+					notificationEventUuids, getCompanyId());
+
+			for (String notificationEventUuid : notificationEventUuids) {
+				Map<String, NotificationEvent> unconfirmedNotificationEvents =
+					_getUnconfirmedNotificationEvents();
+
+				unconfirmedNotificationEvents.remove(notificationEventUuid);
+			}
 		}
 		catch (Exception e) {
 			throw new ChannelException(
-				"Uanble to delete events for user " + getUserId() , e);
+				"Unable to delete events for user " + getUserId() , e);
+		}
+		finally {
+			_reentrantLock.unlock();
 		}
 	}
 
@@ -398,7 +424,8 @@ public class ChannelImpl extends BaseChannelImpl {
 				!invalidNotificationEventUuids.isEmpty()) {
 
 				UserNotificationEventLocalServiceUtil.
-					deleteUserNotificationEvents(invalidNotificationEventUuids);
+					deleteUserNotificationEvents(
+						invalidNotificationEventUuids, getCompanyId());
 			}
 		}
 		catch (Exception e) {
@@ -473,7 +500,7 @@ public class ChannelImpl extends BaseChannelImpl {
 			!invalidNotificationEventUuids.isEmpty()) {
 
 			UserNotificationEventLocalServiceUtil.deleteUserNotificationEvents(
-				invalidNotificationEventUuids);
+				invalidNotificationEventUuids, getCompanyId());
 		}
 
 		return notificationEvents;
@@ -533,7 +560,7 @@ public class ChannelImpl extends BaseChannelImpl {
 
 		if (!invalidNotificationEventUuids.isEmpty()) {
 			UserNotificationEventLocalServiceUtil.deleteUserNotificationEvents(
-				invalidNotificationEventUuids);
+				invalidNotificationEventUuids, getCompanyId());
 		}
 	}
 
@@ -603,7 +630,7 @@ public class ChannelImpl extends BaseChannelImpl {
 	private static Log _log = LogFactoryUtil.getLog(ChannelImpl.class);
 
 	private static Comparator<NotificationEvent> _comparator =
-					new NotificationEventComparator();
+		new NotificationEventComparator();
 
 	private TreeSet<NotificationEvent> _notificationEvents;
 	private ReentrantLock _reentrantLock = new ReentrantLock();

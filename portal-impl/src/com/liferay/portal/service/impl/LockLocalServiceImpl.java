@@ -60,10 +60,10 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 		return lock;
 	}
 
-	public Lock getLockByUuid(String uuid)
+	public Lock getLockByUuidAndCompanyId(String uuid, long companyId)
 		throws PortalException, SystemException {
 
-		List<Lock> locks = lockPersistence.findByUuid(uuid);
+		List<Lock> locks = lockPersistence.findByUuid_C(uuid, companyId);
 
 		if (locks.isEmpty()) {
 			throw new NoSuchLockException();
@@ -91,9 +91,7 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 		}
 	}
 
-	public boolean isLocked(String className, long key)
-		throws SystemException {
-
+	public boolean isLocked(String className, long key) throws SystemException {
 		return isLocked(className, String.valueOf(key));
 	}
 
@@ -215,12 +213,12 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 		return lock;
 	}
 
-	public Lock refresh(String uuid, long expirationTime)
+	public Lock refresh(String uuid, long companyId, long expirationTime)
 		throws PortalException, SystemException {
 
 		Date now = new Date();
 
-		List<Lock> locks = lockPersistence.findByUuid(uuid);
+		List<Lock> locks = lockPersistence.findByUuid_C(uuid, companyId);
 
 		if (locks.isEmpty()) {
 			throw new NoSuchLockException();

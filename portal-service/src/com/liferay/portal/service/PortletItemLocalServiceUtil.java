@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class PortletItemLocalServiceUtil {
 	* Deletes the portlet item with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param portletItemId the primary key of the portlet item
+	* @return the portlet item that was removed
 	* @throws PortalException if a portlet item with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deletePortletItem(long portletItemId)
+	public static com.liferay.portal.model.PortletItem deletePortletItem(
+		long portletItemId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deletePortletItem(portletItemId);
+		return getService().deletePortletItem(portletItemId);
 	}
 
 	/**
 	* Deletes the portlet item from the database. Also notifies the appropriate model listeners.
 	*
 	* @param portletItem the portlet item
+	* @return the portlet item that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deletePortletItem(
+	public static com.liferay.portal.model.PortletItem deletePortletItem(
 		com.liferay.portal.model.PortletItem portletItem)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deletePortletItem(portletItem);
+		return getService().deletePortletItem(portletItem);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -305,20 +311,15 @@ public class PortletItemLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(PortletItemLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(PortletItemLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(PortletItemLocalService service) {
-		MethodCache.remove(PortletItemLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(PortletItemLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(PortletItemLocalService.class);
 	}
 
 	private static PortletItemLocalService _service;

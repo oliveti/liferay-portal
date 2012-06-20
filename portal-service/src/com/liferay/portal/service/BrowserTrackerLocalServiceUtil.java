@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class BrowserTrackerLocalServiceUtil {
 	* Deletes the browser tracker with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param browserTrackerId the primary key of the browser tracker
+	* @return the browser tracker that was removed
 	* @throws PortalException if a browser tracker with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteBrowserTracker(long browserTrackerId)
+	public static com.liferay.portal.model.BrowserTracker deleteBrowserTracker(
+		long browserTrackerId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteBrowserTracker(browserTrackerId);
+		return getService().deleteBrowserTracker(browserTrackerId);
 	}
 
 	/**
 	* Deletes the browser tracker from the database. Also notifies the appropriate model listeners.
 	*
 	* @param browserTracker the browser tracker
+	* @return the browser tracker that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteBrowserTracker(
+	public static com.liferay.portal.model.BrowserTracker deleteBrowserTracker(
 		com.liferay.portal.model.BrowserTracker browserTracker)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteBrowserTracker(browserTracker);
+		return getService().deleteBrowserTracker(browserTracker);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -283,20 +289,15 @@ public class BrowserTrackerLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(BrowserTrackerLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(BrowserTrackerLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(BrowserTrackerLocalService service) {
-		MethodCache.remove(BrowserTrackerLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(BrowserTrackerLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(BrowserTrackerLocalService.class);
 	}
 
 	private static BrowserTrackerLocalService _service;

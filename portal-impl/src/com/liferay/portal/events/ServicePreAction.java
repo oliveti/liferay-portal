@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.SessionParamUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -297,7 +298,7 @@ public class ServicePreAction extends Action {
 		// Permission checker
 
 		PermissionChecker permissionChecker =
-			PermissionCheckerFactoryUtil.create(user, true);
+			PermissionCheckerFactoryUtil.create(user);
 
 		PermissionThreadLocal.setPermissionChecker(permissionChecker);
 
@@ -399,7 +400,8 @@ public class ServicePreAction extends Action {
 				Group sourceGroup = GroupLocalServiceUtil.getGroup(
 					sourceGroupId);
 
-				if (SitesUtil.isUserGroupLayoutSetViewable(
+				if (layout.isPublicLayout() ||
+					SitesUtil.isUserGroupLayoutSetViewable(
 						permissionChecker, layout.getGroup())) {
 
 					layout = new VirtualLayout(layout, sourceGroup);
@@ -435,22 +437,33 @@ public class ServicePreAction extends Action {
 				request.setAttribute(WebKeys.REQUESTED_LAYOUT, layout);
 			}
 
-			boolean isViewableGroup = LayoutPermissionUtil.contains(
+			String ppid = ParamUtil.getString(request, "p_p_id");
+
+			if (Validator.isNull(controlPanelCategory) &&
+				Validator.isNotNull(ppid) &&
+				(LiferayWindowState.isPopUp(request) ||
+				 LiferayWindowState.isExclusive(request))) {
+
+				controlPanelCategory =
+					_CONTROL_PANEL_CATEGORY_PORTLET_PREFIX + ppid;
+			}
+
+			boolean viewableGroup = LayoutPermissionUtil.contains(
 				permissionChecker, layout, controlPanelCategory, true,
 				ActionKeys.VIEW);
-			boolean isViewableStaging = GroupPermissionUtil.contains(
+			boolean viewableStaging = GroupPermissionUtil.contains(
 				permissionChecker, group.getGroupId(), ActionKeys.VIEW_STAGING);
 
-			if (isViewableStaging) {
+			if (viewableStaging) {
 				layouts = LayoutLocalServiceUtil.getLayouts(
 					layout.getGroupId(), layout.isPrivateLayout(),
 					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
 			}
-			else if (!isViewableGroup && group.isStagingGroup()) {
+			else if (!viewableGroup && group.isStagingGroup()) {
 				layout = null;
 			}
 			else if (!isLoginRequest(request) &&
-					 (!isViewableGroup ||
+					 (!viewableGroup ||
 					  (!redirectToDefaultLayout &&
 					   !LayoutPermissionUtil.contains(
 						   permissionChecker, layout, false,
@@ -477,7 +490,7 @@ public class ServicePreAction extends Action {
 
 				throw new NoSuchLayoutException(sb.toString());
 			}
-			else if (isLoginRequest(request) && !isViewableGroup) {
+			else if (isLoginRequest(request) && !viewableGroup) {
 				layout = null;
 			}
 			else if (group.isLayoutPrototype()) {
@@ -662,12 +675,6 @@ public class ServicePreAction extends Action {
 
 			request.setAttribute(WebKeys.LAYOUT, layout);
 			request.setAttribute(WebKeys.LAYOUTS, layouts);
-
-			if (layout.isPrivateLayout() ||
-				!PropsValues.PERMISSIONS_LAYOUT_PUBLIC_CHECK_GUEST_ENABLED) {
-
-				permissionChecker.setCheckGuest(false);
-			}
 		}
 
 		// Scope
@@ -1177,7 +1184,7 @@ public class ServicePreAction extends Action {
 			themeDisplay.setURLMyAccount(myAccountURL);
 		}
 
-		if ((!user.isActive()) ||
+		if (!user.isActive() ||
 			(PrefsPropsUtil.getBoolean(
 				companyId, PropsKeys.TERMS_OF_USE_REQUIRED) &&
 			 !user.isAgreedToTermsOfUse())) {
@@ -1185,6 +1192,10 @@ public class ServicePreAction extends Action {
 			themeDisplay.setShowAddContentIcon(false);
 			themeDisplay.setShowMyAccountIcon(false);
 			themeDisplay.setShowPageSettingsIcon(false);
+		}
+
+		if (layout.isLayoutPrototypeLinkActive()) {
+			themeDisplay.setShowPageCustomizationIcon(false);
 		}
 
 		if (group.isLayoutPrototype()) {
@@ -1284,9 +1295,6 @@ public class ServicePreAction extends Action {
 		parameterMap.put(
 			PortletDataHandlerKeys.PORTLET_SETUP,
 			new String[] {Boolean.TRUE.toString()});
-		parameterMap.put(
-			PortletDataHandlerKeys.USER_PERMISSIONS,
-			new String[] {Boolean.FALSE.toString()});
 
 		LayoutLocalServiceUtil.importLayouts(
 			userId, groupId, privateLayout, parameterMap, larFile);
@@ -1917,42 +1925,34 @@ public class ServicePreAction extends Action {
 
 		ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
-		// Parallel render
+		// Ajaxable render
 
-		boolean parallelRenderEnable = true;
+		if (PropsValues.LAYOUT_AJAX_RENDER_ENABLE) {
+			boolean portletAjaxRender = ParamUtil.getBoolean(
+				request, "p_p_ajax", true);
 
-		Layout layout = themeDisplay.getLayout();
-
-		if (layout != null) {
-			LayoutTypePortlet layoutTypePortlet =
-				themeDisplay.getLayoutTypePortlet();
-
-			List<String> portletIds = layoutTypePortlet.getPortletIds();
-
-			if (portletIds.size() == 1) {
-				String portletId = portletIds.get(0);
-
-				Portlet portlet = PortletLocalServiceUtil.getPortletById(
-					portletId);
-
-				if ((portlet != null) && !portlet.isAjaxable()) {
-					parallelRenderEnable = false;
-				}
-			}
+			request.setAttribute(
+				WebKeys.PORTLET_AJAX_RENDER, portletAjaxRender);
 		}
 
-		Boolean parallelRenderEnableObj = Boolean.valueOf(ParamUtil.getBoolean(
-			request, "p_p_parallel", parallelRenderEnable));
+		// Parallel render
 
-		request.setAttribute(
-			WebKeys.PORTLET_PARALLEL_RENDER, parallelRenderEnableObj);
+		if (PropsValues.LAYOUT_PARALLEL_RENDER_ENABLE &&
+			ServerDetector.isTomcat()) {
+
+			boolean portletParallelRender = ParamUtil.getBoolean(
+				request, "p_p_parallel", true);
+
+			request.setAttribute(
+				WebKeys.PORTLET_PARALLEL_RENDER, portletParallelRender);
+		}
 
 		// Main Journal article
 
 		long mainJournalArticleId = ParamUtil.getLong(request, "p_j_a_id");
 
 		if (mainJournalArticleId > 0) {
-			try{
+			try {
 				JournalArticle mainJournalArticle =
 					JournalArticleServiceUtil.getArticle(mainJournalArticleId);
 

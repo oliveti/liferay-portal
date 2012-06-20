@@ -31,6 +31,15 @@ import com.liferay.portal.service.UserLocalServiceUtil;
 public class GroupPermissionImpl implements GroupPermission {
 
 	public void check(
+			PermissionChecker permissionChecker, Group group, String actionId)
+		throws PortalException, SystemException {
+
+		if (!contains(permissionChecker, group, actionId)) {
+			throw new PrincipalException();
+		}
+	}
+
+	public void check(
 			PermissionChecker permissionChecker, long groupId, String actionId)
 		throws PortalException, SystemException {
 
@@ -40,10 +49,10 @@ public class GroupPermissionImpl implements GroupPermission {
 	}
 
 	public boolean contains(
-			PermissionChecker permissionChecker, long groupId, String actionId)
+			PermissionChecker permissionChecker, Group group, String actionId)
 		throws PortalException, SystemException {
 
-		Group group = GroupLocalServiceUtil.getGroup(groupId);
+		long groupId = group.getGroupId();
 
 		if (group.isStagingGroup()) {
 			group = group.getLiveGroup();
@@ -58,7 +67,8 @@ public class GroupPermissionImpl implements GroupPermission {
 
 			User user = UserLocalServiceUtil.getUserById(group.getClassPK());
 
-			if (UserPermissionUtil.contains(
+			if ((permissionChecker.getUserId() != user.getUserId()) &&
+				 UserPermissionUtil.contains(
 					permissionChecker, user.getUserId(),
 					user.getOrganizationIds(), ActionKeys.UPDATE)) {
 
@@ -66,19 +76,25 @@ public class GroupPermissionImpl implements GroupPermission {
 			}
 		}
 
-		if (actionId.equals(ActionKeys.ADD_LAYOUT)) {
-			if (permissionChecker.hasPermission(
-					groupId, Group.class.getName(), groupId,
-					ActionKeys.MANAGE_LAYOUTS)) {
+		if (actionId.equals(ActionKeys.ADD_LAYOUT) &&
+			permissionChecker.hasPermission(
+				groupId, Group.class.getName(), groupId,
+				ActionKeys.MANAGE_LAYOUTS)) {
 
-				return true;
-			}
+			return true;
 		}
 		else if ((actionId.equals(ActionKeys.EXPORT_IMPORT_LAYOUTS) ||
 				  actionId.equals(ActionKeys.EXPORT_IMPORT_PORTLET_INFO)) &&
 				 permissionChecker.hasPermission(
 					 groupId, Group.class.getName(), groupId,
 					 ActionKeys.PUBLISH_STAGING)) {
+
+			return true;
+		}
+		else if (actionId.equals(ActionKeys.VIEW) &&
+				 permissionChecker.hasPermission(
+					 groupId, Group.class.getName(), groupId,
+					 ActionKeys.ASSIGN_USER_ROLES)) {
 
 			return true;
 		}
@@ -101,8 +117,38 @@ public class GroupPermissionImpl implements GroupPermission {
 
 		// Group id must be set so that users can modify their personal pages
 
-		return permissionChecker.hasPermission(
-			groupId, Group.class.getName(), groupId, actionId);
+		if (permissionChecker.hasPermission(
+				groupId, Group.class.getName(), groupId, actionId)) {
+
+			return true;
+		}
+
+		while (!group.isRoot()) {
+			if (contains(
+					permissionChecker, group.getParentGroupId(),
+					ActionKeys.MANAGE_SUBGROUPS)) {
+
+				return true;
+			}
+
+			group = group.getParentGroup();
+		}
+
+		return false;
+	}
+
+	public boolean contains(
+			PermissionChecker permissionChecker, long groupId, String actionId)
+		throws PortalException, SystemException {
+
+		if (groupId > 0) {
+			Group group = GroupLocalServiceUtil.getGroup(groupId);
+
+			return contains(permissionChecker, group, actionId);
+		}
+		else {
+			return false;
+		}
 	}
 
 }

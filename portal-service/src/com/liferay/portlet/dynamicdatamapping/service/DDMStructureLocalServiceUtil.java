@@ -15,7 +15,6 @@
 package com.liferay.portlet.dynamicdatamapping.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class DDMStructureLocalServiceUtil {
 	* Deletes the d d m structure with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param structureId the primary key of the d d m structure
+	* @return the d d m structure that was removed
 	* @throws PortalException if a d d m structure with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteDDMStructure(long structureId)
+	public static com.liferay.portlet.dynamicdatamapping.model.DDMStructure deleteDDMStructure(
+		long structureId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteDDMStructure(structureId);
+		return getService().deleteDDMStructure(structureId);
 	}
 
 	/**
 	* Deletes the d d m structure from the database. Also notifies the appropriate model listeners.
 	*
 	* @param ddmStructure the d d m structure
+	* @return the d d m structure that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteDDMStructure(
+	public static com.liferay.portlet.dynamicdatamapping.model.DDMStructure deleteDDMStructure(
 		com.liferay.portlet.dynamicdatamapping.model.DDMStructure ddmStructure)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteDDMStructure(ddmStructure);
+		return getService().deleteDDMStructure(ddmStructure);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -448,6 +454,12 @@ public class DDMStructureLocalServiceUtil {
 		return getService().getStructures(groupId, start, end);
 	}
 
+	public static java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMStructure> getStructures(
+		long[] groupIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getStructures(groupIds);
+	}
+
 	public static int getStructuresCount(long groupId)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getService().getStructuresCount(groupId);
@@ -525,20 +537,15 @@ public class DDMStructureLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(DDMStructureLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(DDMStructureLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(DDMStructureLocalService service) {
-		MethodCache.remove(DDMStructureLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(DDMStructureLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(DDMStructureLocalService.class);
 	}
 
 	private static DDMStructureLocalService _service;

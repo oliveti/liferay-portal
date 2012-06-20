@@ -1,6 +1,7 @@
 AUI.add(
 	'liferay-util-window',
 	function(A) {
+		var Lang = A.Lang;
 		var Util = Liferay.Util;
 		var Window = Util.Window;
 
@@ -31,7 +32,7 @@ AUI.add(
 			}
 		};
 
-		Util._openWindow = function(config) {
+		Util._openWindow = function(config, callback) {
 			var openingWindow = config.openingWindow;
 
 			var refreshWindow = config.refreshWindow;
@@ -41,7 +42,7 @@ AUI.add(
 			var id = config.id || A.guid();
 
 			if (config.cache === false) {
-				uri = Liferay.Util.addParams(A.guid() + '=' + A.Lang.now(), uri);
+				uri = Liferay.Util.addParams(A.guid() + '=' + Lang.now(), uri);
 			}
 
 			var dialog = Window._map[id];
@@ -133,8 +134,6 @@ AUI.add(
 					'popupReady',
 					function(event) {
 						if (event.windowName == id) {
-							var dialogIframeNode = event.currentTarget.node;
-
 							event.dialog = dialog;
 							event.details[0].dialog = dialog;
 
@@ -147,6 +146,8 @@ AUI.add(
 
 								dialogUtil.Window._name = id;
 							}
+
+							dialog.iframe.node.focus();
 						}
 					}
 				);
@@ -154,11 +155,15 @@ AUI.add(
 				dialog.render();
 			}
 			else {
-				dialog.show();
+				if (!dialog.get('visible')) {
+					dialog.show();
+
+					dialog.iframe.node.focus();
+
+					dialog.iframe.set('uri', uri);
+				}
 
 				dialog._syncUIPosAlign();
-
-				dialog.iframe.set('uri', uri);
 			}
 
 			if (dialog.get('stack')) {
@@ -166,6 +171,10 @@ AUI.add(
 			}
 
 			dialog.set('title', title);
+
+			if (Lang.isFunction(callback)) {
+				callback(dialog);
+			}
 
 			return dialog;
 		};

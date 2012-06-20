@@ -53,6 +53,7 @@ import java.sql.Types;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -354,6 +355,42 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 		return ${entity.name}.class.getName();
 	}
 
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		<#list entity.regularColList as column>
+			attributes.put("${column.name}", get${column.methodName}());
+		</#list>
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		<#list entity.regularColList as column>
+			<#if column.isPrimitiveType()>
+				${serviceBuilder.getPrimitiveObj(column.type)}
+			<#else>
+				${column.type}
+			</#if>
+
+			${column.name} =
+
+			<#if column.isPrimitiveType()>
+				(${serviceBuilder.getPrimitiveObj(column.type)})
+			<#else>
+				(${column.type})
+			</#if>
+
+			attributes.get("${column.name}");
+
+			if (${column.name} != null) {
+				set${column.methodName}(${column.name});
+			}
+		</#list>
+	}
+
 	<#list entity.regularColList as column>
 		<#if column.name == "classNameId">
 			public String getClassName() {
@@ -362,6 +399,16 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 				}
 
 				return PortalUtil.getClassName(getClassNameId());
+			}
+
+			public void setClassName(String className) {
+				long classNameId = 0;
+
+				if (Validator.isNotNull(className)) {
+					classNameId = PortalUtil.getClassNameId(className);
+				}
+
+				setClassNameId(classNameId);
 			}
 		</#if>
 
@@ -518,13 +565,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 					return;
 				}
 
-				Locale[] locales = LanguageUtil.getAvailableLocales();
-
-				for (Locale locale : locales) {
-					String ${column.name} = ${column.name}Map.get(locale);
-
-					set${column.methodName}(${column.name}, locale, defaultLocale);
-				}
+				set${column.methodName}(LocalizationUtil.updateLocalization(${column.name}Map, get${column.methodName}(), "${column.methodName}", LocaleUtil.toLanguageId(defaultLocale)));
 			}
 		</#if>
 
@@ -594,7 +635,9 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 		}
 
 		public boolean isDraft() {
-			if (getStatus() == WorkflowConstants.STATUS_DRAFT) {
+			if ((getStatus() == WorkflowConstants.STATUS_DRAFT) ||
+				(getStatus() == WorkflowConstants.STATUS_DRAFT_FROM_APPROVED)) {
+
 				return true;
 			}
 			else {
@@ -604,6 +647,15 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 		public boolean isExpired() {
 			if (getStatus() == WorkflowConstants.STATUS_EXPIRED) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
+		public boolean isInTrash() {
+			if (getStatus() == WorkflowConstants.STATUS_IN_TRASH) {
 				return true;
 			}
 			else {
@@ -639,8 +691,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 	<#if (entity.PKClassName == "long") && !stringUtil.startsWith(entity.name, "Expando")>
 		@Override
 		public ExpandoBridge getExpandoBridge() {
-			if (_expandoBridge == null) {
-				_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(
+			return ExpandoBridgeFactoryUtil.getExpandoBridge(
 
 				<#if entity.hasColumn("companyId")>
 					getCompanyId(),
@@ -649,14 +700,13 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 				</#if>
 
 				${entity.name}.class.getName(), getPrimaryKey());
-			}
-
-			return _expandoBridge;
 		}
 
 		@Override
 		public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-			getExpandoBridge().setAttributes(serviceContext);
+			ExpandoBridge expandoBridge = getExpandoBridge();
+
+			expandoBridge.setAttributes(serviceContext);
 		}
 	</#if>
 
@@ -925,10 +975,6 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 			</#if>
 		</#if>
 	</#list>
-
-	<#if (entity.PKClassName == "long") && !stringUtil.startsWith(entity.name, "Expando")>
-		private transient ExpandoBridge _expandoBridge;
-	</#if>
 
 	<#if columnBitmaskEnabled>
 		private long _columnBitmask;

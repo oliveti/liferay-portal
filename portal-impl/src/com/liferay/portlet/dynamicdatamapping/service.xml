@@ -88,7 +88,7 @@
 		<!-- Finder methods -->
 
 		<finder name="GroupId" return-type="Collection">
-			<finder-column name="groupId" />
+			<finder-column name="groupId" arrayable-operator="OR" />
 		</finder>
 		<finder name="ClassNameId" return-type="Collection">
 			<finder-column name="classNameId" />
@@ -151,7 +151,9 @@
 
 		<!-- Other fields -->
 
-		<column name="structureId" type="long" />
+		<column name="classNameId" type="long" />
+		<column name="classPK" type="long" />
+		<column name="templateKey" type="String" />
 		<column name="name" type="String" localized="true" />
 		<column name="description" type="String" localized="true" />
 		<column name="type" type="String" />
@@ -164,8 +166,8 @@
 		<finder name="GroupId" return-type="Collection">
 			<finder-column name="groupId" />
 		</finder>
-		<finder name="StructureId" return-type="Collection">
-			<finder-column name="structureId" />
+		<finder name="ClassPK" return-type="Collection">
+			<finder-column name="classPK" />
 		</finder>
 		<finder name="Type" return-type="Collection">
 			<finder-column name="type" />
@@ -173,12 +175,27 @@
 		<finder name="Language" return-type="Collection">
 			<finder-column name="language" />
 		</finder>
-		<finder name="S_T" return-type="Collection">
-			<finder-column name="structureId" />
+		<finder name="G_C" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="classNameId" />
+		</finder>
+		<finder name="G_T" return-type="DDMStructure" unique="true">
+			<finder-column name="groupId" />
+			<finder-column name="templateKey" />
+		</finder>
+		<finder name="G_C_C" return-type="Collection">
+			<finder-column name="groupId" />
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
+		</finder>
+		<finder name="C_C_T" return-type="Collection">
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
 			<finder-column name="type" />
 		</finder>
-		<finder name="S_T_M" return-type="Collection">
-			<finder-column name="structureId" />
+		<finder name="C_C_T_M" return-type="Collection">
+			<finder-column name="classNameId" />
+			<finder-column name="classPK" />
 			<finder-column name="type" />
 			<finder-column name="mode" />
 		</finder>
@@ -196,6 +213,7 @@
 		<exception>StructureField</exception>
 		<exception>StructureName</exception>
 		<exception>StructureXsd</exception>
+		<exception>TemplateDuplicateTemplateKey</exception>
 		<exception>TemplateName</exception>
 		<exception>TemplateScript</exception>
 	</exceptions>

@@ -15,6 +15,7 @@
 package com.liferay.portlet.documentlibrary.util;
 
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.io.InputStream;
 
@@ -25,16 +26,12 @@ import java.util.Set;
  */
 public class VideoProcessorUtil {
 
-	public static void generateVideo(FileVersion fileVersion)
+	public static void generateVideo(
+			FileVersion sourceFileVersion, FileVersion destinationFileVersion)
 		throws Exception {
 
-		getVideoProcessor().generateVideo(fileVersion);
-	}
-
-	public static InputStream getPreviewAsStream(FileVersion fileVersion)
-		throws Exception {
-
-		return getVideoProcessor().getPreviewAsStream(fileVersion);
+		getVideoProcessor().generateVideo(
+			sourceFileVersion, destinationFileVersion);
 	}
 
 	public static InputStream getPreviewAsStream(
@@ -42,12 +39,6 @@ public class VideoProcessorUtil {
 		throws Exception {
 
 		return getVideoProcessor().getPreviewAsStream(fileVersion, type);
-	}
-
-	public static long getPreviewFileSize(FileVersion fileVersion)
-		throws Exception {
-
-		return getVideoProcessor().getPreviewFileSize(fileVersion);
 	}
 
 	public static long getPreviewFileSize(FileVersion fileVersion, String type)
@@ -75,6 +66,8 @@ public class VideoProcessorUtil {
 	}
 
 	public static VideoProcessor getVideoProcessor() {
+		PortalRuntimePermission.checkGetBeanProperty(VideoProcessorUtil.class);
+
 		return _videoProcessor;
 	}
 
@@ -94,11 +87,15 @@ public class VideoProcessorUtil {
 		return getVideoProcessor().isVideoSupported(mimeType);
 	}
 
-	public static void trigger(FileVersion fileVersion) {
-		getVideoProcessor().trigger(fileVersion);
+	public static void trigger(
+		FileVersion sourceFileVersion, FileVersion destinationFileVersion) {
+
+		getVideoProcessor().trigger(sourceFileVersion, destinationFileVersion);
 	}
 
 	public void setVideoProcessor(VideoProcessor videoProcessor) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_videoProcessor = videoProcessor;
 	}
 

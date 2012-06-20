@@ -29,7 +29,6 @@ import com.liferay.portal.service.base.PhoneLocalServiceBaseImpl;
 import com.liferay.portal.util.PortalUtil;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -71,20 +70,6 @@ public class PhoneLocalServiceImpl extends PhoneLocalServiceBaseImpl {
 		return phone;
 	}
 
-	@Override
-	public void deletePhone(long phoneId)
-		throws PortalException, SystemException {
-
-		Phone phone = phonePersistence.findByPrimaryKey(phoneId);
-
-		deletePhone(phone);
-	}
-
-	@Override
-	public void deletePhone(Phone phone) throws SystemException {
-		phonePersistence.remove(phone);
-	}
-
 	public void deletePhones(long companyId, String className, long classPK)
 		throws SystemException {
 
@@ -96,13 +81,6 @@ public class PhoneLocalServiceImpl extends PhoneLocalServiceBaseImpl {
 		for (Phone phone : phones) {
 			deletePhone(phone);
 		}
-	}
-
-	@Override
-	public Phone getPhone(long phoneId)
-		throws PortalException, SystemException {
-
-		return phonePersistence.findByPrimaryKey(phoneId);
 	}
 
 	public List<Phone> getPhones() throws SystemException {
@@ -146,12 +124,10 @@ public class PhoneLocalServiceImpl extends PhoneLocalServiceBaseImpl {
 		// id, class name, and class pk that also has primary set to true
 
 		if (primary) {
-			Iterator<Phone> itr = phonePersistence.findByC_C_C_P(
-				companyId, classNameId, classPK, primary).iterator();
+			List<Phone> phones = phonePersistence.findByC_C_C_P(
+				companyId, classNameId, classPK, primary);
 
-			while (itr.hasNext()) {
-				Phone phone = itr.next();
-
+			for (Phone phone : phones) {
 				if ((phoneId <= 0) || (phone.getPhoneId() != phoneId)) {
 					phone.setPrimary(false);
 

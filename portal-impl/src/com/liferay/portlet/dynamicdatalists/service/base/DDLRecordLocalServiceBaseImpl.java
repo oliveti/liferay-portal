@@ -21,23 +21,19 @@ import com.liferay.portal.kernel.bean.IdentifiableBean;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
-import com.liferay.portal.kernel.search.SearchException;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.model.PersistedModel;
+import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.service.ResourceLocalService;
-import com.liferay.portal.service.ResourceService;
 import com.liferay.portal.service.UserLocalService;
 import com.liferay.portal.service.UserService;
 import com.liferay.portal.service.WorkflowInstanceLinkLocalService;
-import com.liferay.portal.service.persistence.ResourceFinder;
-import com.liferay.portal.service.persistence.ResourcePersistence;
 import com.liferay.portal.service.persistence.UserFinder;
 import com.liferay.portal.service.persistence.UserPersistence;
 import com.liferay.portal.service.persistence.WorkflowInstanceLinkPersistence;
@@ -79,7 +75,7 @@ import javax.sql.DataSource;
  * @see com.liferay.portlet.dynamicdatalists.service.DDLRecordLocalServiceUtil
  * @generated
  */
-public abstract class DDLRecordLocalServiceBaseImpl
+public abstract class DDLRecordLocalServiceBaseImpl extends BaseLocalServiceImpl
 	implements DDLRecordLocalService, IdentifiableBean {
 	/*
 	 * NOTE FOR DEVELOPERS:
@@ -94,26 +90,12 @@ public abstract class DDLRecordLocalServiceBaseImpl
 	 * @return the d d l record that was added
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DDLRecord addDDLRecord(DDLRecord ddlRecord)
 		throws SystemException {
 		ddlRecord.setNew(true);
 
-		ddlRecord = ddlRecordPersistence.update(ddlRecord, false);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(ddlRecord);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return ddlRecord;
+		return ddlRecordPersistence.update(ddlRecord, false);
 	}
 
 	/**
@@ -130,48 +112,34 @@ public abstract class DDLRecordLocalServiceBaseImpl
 	 * Deletes the d d l record with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param recordId the primary key of the d d l record
+	 * @return the d d l record that was removed
 	 * @throws PortalException if a d d l record with the primary key could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteDDLRecord(long recordId)
+	@Indexable(type = IndexableType.DELETE)
+	public DDLRecord deleteDDLRecord(long recordId)
 		throws PortalException, SystemException {
-		DDLRecord ddlRecord = ddlRecordPersistence.remove(recordId);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.delete(ddlRecord);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return ddlRecordPersistence.remove(recordId);
 	}
 
 	/**
 	 * Deletes the d d l record from the database. Also notifies the appropriate model listeners.
 	 *
 	 * @param ddlRecord the d d l record
+	 * @return the d d l record that was removed
 	 * @throws SystemException if a system exception occurred
 	 */
-	public void deleteDDLRecord(DDLRecord ddlRecord) throws SystemException {
-		ddlRecordPersistence.remove(ddlRecord);
+	@Indexable(type = IndexableType.DELETE)
+	public DDLRecord deleteDDLRecord(DDLRecord ddlRecord)
+		throws SystemException {
+		return ddlRecordPersistence.remove(ddlRecord);
+	}
 
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
+	public DynamicQuery dynamicQuery() {
+		Class<?> clazz = getClass();
 
-		if (indexer != null) {
-			try {
-				indexer.delete(ddlRecord);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
+		return DynamicQueryFactoryUtil.forClass(DDLRecord.class,
+			clazz.getClassLoader());
 	}
 
 	/**
@@ -310,6 +278,7 @@ public abstract class DDLRecordLocalServiceBaseImpl
 	 * @return the d d l record that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DDLRecord updateDDLRecord(DDLRecord ddlRecord)
 		throws SystemException {
 		return updateDDLRecord(ddlRecord, true);
@@ -323,26 +292,12 @@ public abstract class DDLRecordLocalServiceBaseImpl
 	 * @return the d d l record that was updated
 	 * @throws SystemException if a system exception occurred
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public DDLRecord updateDDLRecord(DDLRecord ddlRecord, boolean merge)
 		throws SystemException {
 		ddlRecord.setNew(false);
 
-		ddlRecord = ddlRecordPersistence.update(ddlRecord, merge);
-
-		Indexer indexer = IndexerRegistryUtil.getIndexer(getModelClassName());
-
-		if (indexer != null) {
-			try {
-				indexer.reindex(ddlRecord);
-			}
-			catch (SearchException se) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(se, se);
-				}
-			}
-		}
-
-		return ddlRecord;
+		return ddlRecordPersistence.update(ddlRecord, merge);
 	}
 
 	/**
@@ -547,60 +502,6 @@ public abstract class DDLRecordLocalServiceBaseImpl
 	public void setResourceLocalService(
 		ResourceLocalService resourceLocalService) {
 		this.resourceLocalService = resourceLocalService;
-	}
-
-	/**
-	 * Returns the resource remote service.
-	 *
-	 * @return the resource remote service
-	 */
-	public ResourceService getResourceService() {
-		return resourceService;
-	}
-
-	/**
-	 * Sets the resource remote service.
-	 *
-	 * @param resourceService the resource remote service
-	 */
-	public void setResourceService(ResourceService resourceService) {
-		this.resourceService = resourceService;
-	}
-
-	/**
-	 * Returns the resource persistence.
-	 *
-	 * @return the resource persistence
-	 */
-	public ResourcePersistence getResourcePersistence() {
-		return resourcePersistence;
-	}
-
-	/**
-	 * Sets the resource persistence.
-	 *
-	 * @param resourcePersistence the resource persistence
-	 */
-	public void setResourcePersistence(ResourcePersistence resourcePersistence) {
-		this.resourcePersistence = resourcePersistence;
-	}
-
-	/**
-	 * Returns the resource finder.
-	 *
-	 * @return the resource finder
-	 */
-	public ResourceFinder getResourceFinder() {
-		return resourceFinder;
-	}
-
-	/**
-	 * Sets the resource finder.
-	 *
-	 * @param resourceFinder the resource finder
-	 */
-	public void setResourceFinder(ResourceFinder resourceFinder) {
-		this.resourceFinder = resourceFinder;
 	}
 
 	/**
@@ -938,12 +839,6 @@ public abstract class DDLRecordLocalServiceBaseImpl
 	protected CounterLocalService counterLocalService;
 	@BeanReference(type = ResourceLocalService.class)
 	protected ResourceLocalService resourceLocalService;
-	@BeanReference(type = ResourceService.class)
-	protected ResourceService resourceService;
-	@BeanReference(type = ResourcePersistence.class)
-	protected ResourcePersistence resourcePersistence;
-	@BeanReference(type = ResourceFinder.class)
-	protected ResourceFinder resourceFinder;
 	@BeanReference(type = UserLocalService.class)
 	protected UserLocalService userLocalService;
 	@BeanReference(type = UserService.class)
@@ -974,6 +869,5 @@ public abstract class DDLRecordLocalServiceBaseImpl
 	protected DDMStructureFinder ddmStructureFinder;
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
 	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
-	private static Log _log = LogFactoryUtil.getLog(DDLRecordLocalServiceBaseImpl.class);
 	private String _beanIdentifier;
 }

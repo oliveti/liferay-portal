@@ -72,7 +72,7 @@ long assetClassPK = 0;
 
 <aui:form action="<%= editMultipleFileEntriesURL %>" method="post" name="fm2" onSubmit='<%= "event.preventDefault(); " + liferayPortletResponse.getNamespace() + "updateMultipleFiles();" %>'>
 	<div class="no-files-selected-info portlet-msg-info aui-helper-hidden" id="<portlet:namespace />metadataExplanationContainer">
-		<liferay-ui:message key="select-documents-from-the-left-to-add-them-to-the-document-library" />
+		<liferay-ui:message key="select-documents-from-the-left-to-add-them-to-the-documents-and-media" />
 	</div>
 
 	<aui:input name="repositoryId" type="hidden" value="<%= String.valueOf(repositoryId) %>" />
@@ -90,11 +90,11 @@ long assetClassPK = 0;
 			<aui:input name="description" />
 
 			<c:if test="<%= fileEntryTypes.size() > 1 %>">
-				<liferay-ui:panel cssClass="document-type" collapsible="<%= true %>" persistState="<%= true %>" title="document-type">
+				<liferay-ui:panel collapsible="<%= true %>" cssClass="document-type" persistState="<%= true %>" title="document-type">
 					<aui:input name="fileEntryTypeId" type="hidden" value="<%= (fileEntryTypeId > 0) ? fileEntryTypeId : 0 %>" />
 
 					<div class="document-type-selector">
-						<liferay-ui:icon-menu align="left" direction="down" id="groupSelector" icon='<%= themeDisplay.getPathThemeImages() + "/common/copy.png" %>' message='<%= (fileEntryTypeId > 0) ? HtmlUtil.escape(fileEntryType.getName()) : "basic-document" %>'>
+						<liferay-ui:icon-menu align="left" direction="down" icon='<%= themeDisplay.getPathThemeImages() + "/common/copy.png" %>' id="groupSelector" message='<%= (fileEntryTypeId > 0) ? HtmlUtil.escape(fileEntryType.getName()) : "basic-document" %>'>
 							<liferay-portlet:resourceURL copyCurrentRenderParameters="<%= false %>" var="viewBasicFileEntryTypeURL">
 								<portlet:param name="struts_action" value="/document_library/edit_file_entry" />
 								<portlet:param name="repositoryId" value="<%= String.valueOf(repositoryId) %>" />

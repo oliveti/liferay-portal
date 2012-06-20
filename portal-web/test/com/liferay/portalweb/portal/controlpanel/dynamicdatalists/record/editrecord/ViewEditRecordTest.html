@@ -14,7 +14,17 @@
 	<td></td>
 </tr>
 <tr>
-	<td>waitForElementPresent</td>
+	<td>assertText</td>
+	<td>//li[@id='_145_mySites']/a/span</td>
+	<td>Go to</td>
+</tr>
+<tr>
+	<td>mouseOver</td>
+	<td>//li[@id='_145_mySites']/a/span</td>
+	<td>Go to</td>
+</tr>
+<tr>
+	<td>waitForVisible</td>
 	<td>link=Control Panel</td>
 	<td>Control Panel</td>
 </tr>
@@ -86,7 +96,7 @@
 <tr>
 	<td>assertText</td>
 	<td>//tr[3]/td[4]</td>
-	<td>document.txt</td>
+	<td>Document_1.txt</td>
 </tr>
 <tr>
 	<td>assertText</td>
@@ -96,7 +106,7 @@
 <tr>
 	<td>assertPartialText</td>
 	<td>//tr[3]/td[5]</td>
-	<td>document.txt</td>
+	<td>Document_2.txt</td>
 </tr>
 <tr>
 	<td>assertText</td>
@@ -170,17 +180,17 @@
 </tr>
 <tr>
 	<td>waitForVisible</td>
-	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[1]/a</td>
+	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'View')]/a</td>
 	<td>View</td>
 </tr>
 <tr>
 	<td>assertText</td>
-	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[1]/a</td>
+	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'View')]/a</td>
 	<td>View</td>
 </tr>
 <tr>
 	<td>clickAndWait</td>
-	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[1]/a</td>
+	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'View')]/a</td>
 	<td>View</td>
 </tr>
 <tr>
@@ -201,12 +211,12 @@
 <tr>
 	<td>assertText</td>
 	<td>//div[@class='aui-fieldset-content ']/div[4]</td>
-	<td>Documents and Media document.txt</td>
+	<td>Documents and Media Document_1.txt</td>
 </tr>
 <tr>
 	<td>assertPartialText</td>
 	<td>//div[@class='aui-fieldset-content ']/div[5]</td>
-	<td>File Upload document.txt</td>
+	<td>File Upload Document_2.txt</td>
 </tr>
 <tr>
 	<td>assertText</td>
@@ -244,7 +254,17 @@
 	<td></td>
 </tr>
 <tr>
-	<td>waitForElementPresent</td>
+	<td>assertText</td>
+	<td>//li[@id='_145_mySites']/a/span</td>
+	<td>Go to</td>
+</tr>
+<tr>
+	<td>mouseOver</td>
+	<td>//li[@id='_145_mySites']/a/span</td>
+	<td>Go to</td>
+</tr>
+<tr>
+	<td>waitForVisible</td>
 	<td>link=Control Panel</td>
 	<td>Control Panel</td>
 </tr>
@@ -285,17 +305,17 @@
 </tr>
 <tr>
 	<td>waitForVisible</td>
-	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a</td>
+	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a</td>
 	<td>Spreadsheet View</td>
 </tr>
 <tr>
 	<td>assertText</td>
-	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a</td>
+	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a</td>
 	<td>Spreadsheet View</td>
 </tr>
 <tr>
 	<td>clickAndWait</td>
-	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[2]/a</td>
+	<td>//div[@class='lfr-component lfr-menu-list']/ul/li[contains(.,'Spreadsheet View')]/a</td>
 	<td>Spreadsheet View</td>
 </tr>
 <tr>
@@ -316,12 +336,12 @@
 <tr>
 	<td>assertText</td>
 	<td>//td[4]/div</td>
-	<td>(File)</td>
+	<td>Document_1.txt</td>
 </tr>
 <tr>
 	<td>assertText</td>
 	<td>//td[5]/div</td>
-	<td>document.txt</td>
+	<td>Document_2.txt</td>
 </tr>
 <tr>
 	<td>assertText</td>
@@ -353,8 +373,6 @@
 	<td>//td[11]/div</td>
 	<td>Text Box Edited</td>
 </tr>
-
-
 </tbody></table>
 </body>
 </html>

@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.model.BaseModel;
 import com.liferay.portal.model.impl.BaseModelImpl;
 import com.liferay.portal.util.PortalUtil;
 
@@ -30,6 +31,7 @@ import java.lang.reflect.Proxy;
 import java.sql.Blob;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -122,6 +124,40 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 		);
 	}
 
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		<#list entity.regularColList as column>
+			attributes.put("${column.name}", get${column.methodName}());
+		</#list>
+
+		return attributes;
+	}
+
+	public void setModelAttributes(Map<String, Object> attributes) {
+		<#list entity.regularColList as column>
+			<#if column.isPrimitiveType()>
+				${serviceBuilder.getPrimitiveObj(column.type)}
+			<#else>
+				${column.type}
+			</#if>
+
+			${column.name} =
+
+			<#if column.isPrimitiveType()>
+				(${serviceBuilder.getPrimitiveObj(column.type)})
+			<#else>
+				(${column.type})
+			</#if>
+
+			attributes.get("${column.name}");
+
+			if (${column.name} != null) {
+				set${column.methodName}(${column.name});
+			}
+		</#list>
+	}
+
 	<#list entity.regularColList as column>
 		<#if column.name == "classNameId">
 			public String getClassName() {
@@ -130,6 +166,16 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 				}
 
 				return PortalUtil.getClassName(getClassNameId());
+			}
+
+			public void setClassName(String className) {
+				long classNameId = 0;
+
+				if (Validator.isNotNull(className)) {
+					classNameId = PortalUtil.getClassNameId(className);
+				}
+
+				setClassNameId(classNameId);
 			}
 		</#if>
 
@@ -224,13 +270,7 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 						currentThread.setContextClassLoader(portalClassLoader);
 					}
 
-					Locale[] locales = LanguageUtil.getAvailableLocales();
-
-					for (Locale locale : locales) {
-						String ${column.name} = ${column.name}Map.get(locale);
-
-						set${column.methodName}(${column.name}, locale, defaultLocale);
-					}
+					set${column.methodName}(LocalizationUtil.updateLocalization(${column.name}Map, get${column.methodName}(), "${column.methodName}", LocaleUtil.toLanguageId(defaultLocale)));
 				}
 				finally {
 					if (contextClassLoader != portalClassLoader) {
@@ -330,6 +370,15 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 			}
 		}
 
+		public boolean isInTrash() {
+			if (getStatus() == WorkflowConstants.STATUS_IN_TRASH) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
 		public boolean isPending() {
 			if (getStatus() == WorkflowConstants.STATUS_PENDING) {
 				return true;
@@ -339,6 +388,14 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 			}
 		}
 	</#if>
+
+	public BaseModel<?> get${entity.name}RemoteModel() {
+		return _${entity.varName}RemoteModel;
+	}
+
+	public void set${entity.name}RemoteModel(BaseModel<?> ${entity.varName}RemoteModel) {
+		_${entity.varName}RemoteModel = ${entity.varName}RemoteModel;
+	}
 
 	<#if entity.hasLocalService() && entity.hasColumns()>
 		public void persist() throws SystemException {
@@ -536,5 +593,7 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 			private String _${column.userUuidName};
 		</#if>
 	</#list>
+
+	private BaseModel<?> _${entity.varName}RemoteModel;
 
 }

@@ -178,6 +178,25 @@ public class ChannelHubImpl implements ChannelHub {
 		return channel;
 	}
 
+	public List<NotificationEvent> fetchNotificationEvents(long userId)
+		throws ChannelException {
+
+		return fetchNotificationEvents(userId, false);
+	}
+
+	public List<NotificationEvent> fetchNotificationEvents(
+			long userId, boolean flush)
+		throws ChannelException {
+
+		Channel channel = fetchChannel(userId);
+
+		if (channel == null) {
+			return Collections.emptyList();
+		}
+
+		return channel.getNotificationEvents(flush);
+	}
+
 	public void flush() throws ChannelException {
 		for (Channel channel : _channels.values()) {
 			channel.flush();
@@ -231,7 +250,7 @@ public class ChannelHubImpl implements ChannelHub {
 			long userId, boolean flush)
 		throws ChannelException {
 
-		Channel channel = getChannel(userId);
+		Channel channel = getChannel(userId, false);
 
 		return channel.getNotificationEvents(flush);
 	}
@@ -316,7 +335,7 @@ public class ChannelHubImpl implements ChannelHub {
 		}
 
 		List<NotificationEvent> persistedNotificationEvents =
-				new ArrayList<NotificationEvent>(notificationEvents.size());
+			new ArrayList<NotificationEvent>(notificationEvents.size());
 
 		for (NotificationEvent notificationEvent : notificationEvents) {
 			if (notificationEvent.isDeliveryRequired()) {

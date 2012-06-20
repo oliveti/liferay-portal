@@ -14,7 +14,6 @@
 
 package com.liferay.portal.security.permission;
 
-import com.liferay.portal.NoSuchResourceException;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -29,7 +28,6 @@ import com.liferay.portal.model.GroupConstants;
 import com.liferay.portal.model.GroupedModel;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.Organization;
-import com.liferay.portal.model.Permission;
 import com.liferay.portal.model.PermissionedModel;
 import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.model.Resource;
@@ -39,11 +37,9 @@ import com.liferay.portal.model.Role;
 import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.model.Team;
 import com.liferay.portal.model.UserGroup;
-import com.liferay.portal.security.permission.comparator.PermissionActionIdComparator;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.OrganizationLocalServiceUtil;
-import com.liferay.portal.service.PermissionLocalServiceUtil;
 import com.liferay.portal.service.ResourceBlockLocalServiceUtil;
 import com.liferay.portal.service.ResourceLocalServiceUtil;
 import com.liferay.portal.service.ResourcePermissionLocalServiceUtil;
@@ -51,7 +47,6 @@ import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portal.service.TeamLocalServiceUtil;
 import com.liferay.portal.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.service.permission.PortletPermissionUtil;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.util.UniqueList;
 
 import java.util.ArrayList;
@@ -384,65 +379,50 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 
 			List<Role> roles = new UniqueList<Role>();
 
-			if ((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 3) ||
-				(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 4) ||
-				(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 5) ||
-				(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6)) {
+			if (!groups.isEmpty()) {
+				List<Role> userRelatedRoles =
+					RoleLocalServiceUtil.getUserRelatedRoles(userId, groups);
 
-				if (groups.size() > 0) {
-					List<Role> userRelatedRoles=
-						RoleLocalServiceUtil.getUserRelatedRoles(
-							userId, groups);
-
-					roles.addAll(userRelatedRoles);
-				}
-				else {
-					roles.addAll(RoleLocalServiceUtil.getUserRoles(userId));
-				}
-
-				List<Role> userGroupRoles =
-					RoleLocalServiceUtil.getUserGroupRoles(userId, groupId);
-
-				roles.addAll(userGroupRoles);
-
-				List<Role> userGroupGroupRoles =
-					RoleLocalServiceUtil.getUserGroupGroupRoles(
-						userId, groupId);
-
-				roles.addAll(userGroupGroupRoles);
-
-				if (group != null) {
-					if (group.isOrganization() &&
-						userOrgGroups.contains(group)) {
-
-						Role organizationUserRole =
-							RoleLocalServiceUtil.getRole(
-								group.getCompanyId(),
-								RoleConstants.ORGANIZATION_USER);
-
-						roles.add(organizationUserRole);
-					}
-
-					if (group.isSite() &&
-						(userGroups.contains(group) ||
-						 userOrgGroups.contains(group))) {
-
-						Role siteMemberRole = RoleLocalServiceUtil.getRole(
-							group.getCompanyId(), RoleConstants.SITE_MEMBER);
-
-						roles.add(siteMemberRole);
-					}
-
-					if ((group.isOrganization() &&
-						 userOrgGroups.contains(group)) ||
-						(group.isSite() && userGroups.contains(group))) {
-
-						addTeamRoles(userId, group, roles);
-					}
-				}
+				roles.addAll(userRelatedRoles);
 			}
 			else {
-				roles = new ArrayList<Role>();
+				roles.addAll(RoleLocalServiceUtil.getUserRoles(userId));
+			}
+
+			List<Role> userGroupRoles = RoleLocalServiceUtil.getUserGroupRoles(
+				userId, groupId);
+
+			roles.addAll(userGroupRoles);
+
+			List<Role> userGroupGroupRoles =
+				RoleLocalServiceUtil.getUserGroupGroupRoles(userId, groupId);
+
+			roles.addAll(userGroupGroupRoles);
+
+			if (group != null) {
+				if (group.isOrganization() && userOrgGroups.contains(group)) {
+					Role organizationUserRole = RoleLocalServiceUtil.getRole(
+						group.getCompanyId(), RoleConstants.ORGANIZATION_USER);
+
+					roles.add(organizationUserRole);
+				}
+
+				if (group.isSite() &&
+					(userGroups.contains(group) ||
+					 userOrgGroups.contains(group))) {
+
+					Role siteMemberRole = RoleLocalServiceUtil.getRole(
+						group.getCompanyId(), RoleConstants.SITE_MEMBER);
+
+					roles.add(siteMemberRole);
+				}
+
+				if ((group.isOrganization() &&
+					 userOrgGroups.contains(group)) ||
+					(group.isSite() && userGroups.contains(group))) {
+
+					addTeamRoles(userId, group, roles);
+				}
 			}
 
 			bag = new PermissionCheckerBagImpl(
@@ -482,48 +462,29 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		}
 
 		try {
-			if (PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) {
-				if (ResourceBlockLocalServiceUtil.isSupported(name)) {
-					PermissionedModel permissionedModel =
-						ResourceBlockLocalServiceUtil.getPermissionedModel(
-							name, GetterUtil.getLong(primKey));
+			if (ResourceBlockLocalServiceUtil.isSupported(name)) {
+				PermissionedModel permissionedModel =
+					ResourceBlockLocalServiceUtil.getPermissionedModel(
+						name, GetterUtil.getLong(primKey));
 
-					long groupId = 0;
+				long groupId = 0;
 
-					if (permissionedModel instanceof GroupedModel) {
-						GroupedModel groupedModel =
-							(GroupedModel)permissionedModel;
+				if (permissionedModel instanceof GroupedModel) {
+					GroupedModel groupedModel = (GroupedModel)permissionedModel;
 
-						groupId = groupedModel.getGroupId();
-					}
-
-					ResourceBlockIdsBag resourceBlockIdsBag =
-						getOwnerResourceBlockIdsBag(companyId, groupId, name);
-
-					return ResourceBlockLocalServiceUtil.hasPermission(
-						name, permissionedModel, actionId, resourceBlockIdsBag);
+					groupId = groupedModel.getGroupId();
 				}
 
-				return ResourcePermissionLocalServiceUtil.hasResourcePermission(
-					companyId, name, ResourceConstants.SCOPE_INDIVIDUAL,
-					primKey, getOwnerRoleId(), actionId);
+				ResourceBlockIdsBag resourceBlockIdsBag =
+					getOwnerResourceBlockIdsBag(companyId, groupId, name);
+
+				return ResourceBlockLocalServiceUtil.hasPermission(
+					name, permissionedModel, actionId, resourceBlockIdsBag);
 			}
 
-			ResourceActionsUtil.checkAction(name, actionId);
-
-			Resource resource = ResourceLocalServiceUtil.getResource(
-				companyId, name, ResourceConstants.SCOPE_INDIVIDUAL, primKey);
-
-			List<Permission> permissions =
-				PermissionLocalServiceUtil.getRolePermissions(
-					getOwnerRoleId(), resource.getResourceId());
-
-			int pos = Collections.binarySearch(
-				permissions, actionId, new PermissionActionIdComparator());
-
-			if (pos >= 0) {
-				return true;
-			}
+			return ResourcePermissionLocalServiceUtil.hasResourcePermission(
+				companyId, name, ResourceConstants.SCOPE_INDIVIDUAL, primKey,
+				getOwnerRoleId(), actionId);
 		}
 		catch (Exception e) {
 			if (_log.isDebugEnabled()) {
@@ -663,6 +624,17 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		}
 	}
 
+	public boolean isGroupMember(long groupId) {
+		try {
+			return isGroupMemberImpl(groupId);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			return false;
+		}
+	}
+
 	public boolean isGroupOwner(long groupId) {
 		try {
 			return isGroupOwnerImpl(groupId);
@@ -674,37 +646,44 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		}
 	}
 
+	public boolean isOrganizationAdmin(long organizationId) {
+		try {
+			return isOrganizationAdminImpl(organizationId);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			return false;
+		}
+	}
+
 	protected void addTeamRoles(long userId, Group group, List<Role> roles)
 		throws Exception {
 
-		if ((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 5) ||
-			(PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6)) {
+		List<Team> userTeams = TeamLocalServiceUtil.getUserTeams(
+			userId, group.getGroupId());
 
-			List<Team> userTeams = TeamLocalServiceUtil.getUserTeams(
-				userId, group.getGroupId());
+		for (Team team : userTeams) {
+			Role role = RoleLocalServiceUtil.getTeamRole(
+				team.getCompanyId(), team.getTeamId());
 
-			for (Team team : userTeams) {
-				Role role = RoleLocalServiceUtil.getTeamRole(
-					team.getCompanyId(), team.getTeamId());
+			roles.add(role);
+		}
 
-				roles.add(role);
-			}
+		LinkedHashMap<String, Object> teamParams =
+			new LinkedHashMap<String, Object>();
 
-			LinkedHashMap<String, Object> teamParams =
-				new LinkedHashMap<String, Object>();
+		teamParams.put("usersUserGroups", userId);
 
-			teamParams.put("usersUserGroups", userId);
+		List<Team> userGroupTeams = TeamLocalServiceUtil.search(
+			group.getGroupId(), null, null, teamParams, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
 
-			List<Team> userGroupTeams = TeamLocalServiceUtil.search(
-				group.getGroupId(), null, null, teamParams, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS, null);
+		for (Team team : userGroupTeams) {
+			Role role = RoleLocalServiceUtil.getTeamRole(
+				team.getCompanyId(), team.getTeamId());
 
-			for (Team team : userGroupTeams) {
-				Role role = RoleLocalServiceUtil.getTeamRole(
-					team.getCompanyId(), team.getTeamId());
-
-				roles.add(role);
-			}
+			roles.add(role);
 		}
 	}
 
@@ -739,79 +718,39 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 
 		List<Resource> resources = new ArrayList<Resource>(4);
 
-		try {
-			Resource resource = ResourceLocalServiceUtil.getResource(
-				companyId, name, ResourceConstants.SCOPE_INDIVIDUAL, primKey);
+		Resource individualResource = ResourceLocalServiceUtil.getResource(
+			companyId, name, ResourceConstants.SCOPE_INDIVIDUAL, primKey);
 
-			resources.add(resource);
-		}
-		catch (NoSuchResourceException nsre) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Resource " + companyId + " " + name + " " +
-						ResourceConstants.SCOPE_INDIVIDUAL + " " + primKey +
-							" does not exist");
-			}
-		}
+		resources.add(individualResource);
 
 		// Group
 
-		try {
-			if (groupId > 0) {
-				Resource resource = ResourceLocalServiceUtil.getResource(
-					companyId, name, ResourceConstants.SCOPE_GROUP,
-					String.valueOf(groupId));
+		if (groupId > 0) {
+			Resource groupResource = ResourceLocalServiceUtil.getResource(
+				companyId, name, ResourceConstants.SCOPE_GROUP,
+				String.valueOf(groupId));
 
-				resources.add(resource);
-			}
-		}
-		catch (NoSuchResourceException nsre) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Resource " + companyId + " " + name + " " +
-						ResourceConstants.SCOPE_GROUP + " " + groupId +
-							" does not exist");
-			}
+			resources.add(groupResource);
 		}
 
 		// Group template
 
-		try {
-			if (signedIn && (groupId > 0)) {
-				Resource resource = ResourceLocalServiceUtil.getResource(
+		if (signedIn && (groupId > 0)) {
+			Resource groupTemplateResource =
+				ResourceLocalServiceUtil.getResource(
 					companyId, name, ResourceConstants.SCOPE_GROUP_TEMPLATE,
 					String.valueOf(GroupConstants.DEFAULT_PARENT_GROUP_ID));
 
-				resources.add(resource);
-			}
-		}
-		catch (NoSuchResourceException nsre) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Resource " + companyId + " " + name + " " +
-						ResourceConstants.SCOPE_GROUP_TEMPLATE + " " +
-							GroupConstants.DEFAULT_PARENT_GROUP_ID +
-								" does not exist");
-			}
+			resources.add(groupTemplateResource);
 		}
 
 		// Company
 
-		try {
-			Resource resource = ResourceLocalServiceUtil.getResource(
-				companyId, name, ResourceConstants.SCOPE_COMPANY,
-				String.valueOf(companyId));
+		Resource companyResource = ResourceLocalServiceUtil.getResource(
+			companyId, name, ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(companyId));
 
-			resources.add(resource);
-		}
-		catch (NoSuchResourceException nsre) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Resource " + companyId + " " + name + " " +
-						ResourceConstants.SCOPE_COMPANY + " " + companyId +
-							" does not exist");
-			}
-		}
+		resources.add(companyResource);
 
 		return resources;
 	}
@@ -887,9 +826,7 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		PermissionCheckerBag bag = getGuestUserBag();
 
 		try {
-			if ((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) &&
-				ResourceBlockLocalServiceUtil.isSupported(name)) {
-
+			if (ResourceBlockLocalServiceUtil.isSupported(name)) {
 				ResourceBlockIdsBag resourceBlockIdsBag =
 					getGuestResourceBlockIdsBag(companyId, groupId, name);
 
@@ -898,8 +835,8 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 					resourceBlockIdsBag);
 			}
 
-			return PermissionLocalServiceUtil.hasUserPermissions(
-				defaultUserId, groupId, resources, actionId, bag);
+			return ResourceLocalServiceUtil.hasUserPermissions(
+				defaultUserId, groupId, resources, actionId, bag.getRoleIds());
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -916,8 +853,7 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 				return hasGuestPermission(groupId, name, primKey, actionId);
 			}
 
-			if ((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) &&
-				ResourceBlockLocalServiceUtil.isSupported(name)) {
+			if (ResourceBlockLocalServiceUtil.isSupported(name)) {
 
 				// It is not necessary to check guest permissions separately,
 				// as the user's resource block IDs bag will already have the
@@ -967,7 +903,7 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		// Check if the layout manager has permission to do this action for the
 		// current portlet
 
-		if ((Validator.isNotNull(name)) && (Validator.isNotNull(primKey)) &&
+		if (Validator.isNotNull(name) && Validator.isNotNull(primKey) &&
 			(primKey.indexOf(PortletConstants.LAYOUT_SEPARATOR) != -1)) {
 
 			hasLayoutManagerPermission =
@@ -975,18 +911,26 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 					name, actionId);
 		}
 
-		if (checkAdmin &&
-			(isCompanyAdminImpl(companyId) ||
-			 (isGroupAdminImpl(groupId) && hasLayoutManagerPermission))) {
+		if (checkAdmin) {
+			if (isCompanyAdminImpl(companyId)) {
+				return true;
+			}
 
-			return true;
+			if (name.equals(Organization.class.getName())) {
+				long organizationId = GetterUtil.getInteger(primKey);
+
+				if (isOrganizationAdminImpl(organizationId)) {
+					return true;
+				}
+			}
+			else if (isGroupAdminImpl(groupId) && hasLayoutManagerPermission) {
+				return true;
+			}
 		}
 
 		logHasUserPermission(groupId, name, primKey, actionId, stopWatch, 1);
 
-		if ((PropsValues.PERMISSIONS_USER_CHECK_ALGORITHM == 6) &&
-			ResourceBlockLocalServiceUtil.isSupported(name)) {
-
+		if (ResourceBlockLocalServiceUtil.isSupported(name)) {
 			ResourceBlockIdsBag resourceBlockIdsBag = getResourceBlockIdsBag(
 				companyId, groupId, getUserId(), name);
 
@@ -1012,8 +956,8 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 
 		PermissionCheckerBag bag = getUserBag(user.getUserId(), groupId);
 
-		boolean value = PermissionLocalServiceUtil.hasUserPermissions(
-			user.getUserId(), groupId, resources, actionId, bag);
+		boolean value = ResourceLocalServiceUtil.hasUserPermissions(
+			user.getUserId(), groupId, resources, actionId, bag.getRoleIds());
 
 		logHasUserPermission(groupId, name, primKey, actionId, stopWatch, 4);
 
@@ -1080,6 +1024,31 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		}
 	}
 
+	protected boolean isGroupMemberImpl(long groupId) throws Exception {
+		if (!signedIn) {
+			return false;
+		}
+
+		if (groupId <= 0) {
+			return false;
+		}
+
+		Group group = GroupLocalServiceUtil.getGroup(groupId);
+
+		PermissionCheckerBag bag = getUserBag(user.getUserId(), groupId);
+
+		if (bag == null) {
+			_log.error("Bag should never be null");
+		}
+
+		if (bag.isGroupMember(this, group)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 	protected boolean isGroupOwnerImpl(long groupId) throws Exception {
 		if (!signedIn) {
 			return false;
@@ -1106,6 +1075,47 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		}
 
 		if (bag.isGroupOwner(this, group)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	protected boolean isOrganizationAdminImpl(long organizationId)
+		throws Exception {
+
+		if (!signedIn) {
+			return false;
+		}
+
+		if (isOmniadmin()) {
+			return true;
+		}
+
+		if (organizationId <= 0) {
+			return false;
+		}
+
+		Organization organization =
+			OrganizationLocalServiceUtil.fetchOrganization(organizationId);
+
+		if (organization == null) {
+			return false;
+		}
+
+		if (isCompanyAdmin(organization.getCompanyId())) {
+			return true;
+		}
+
+		PermissionCheckerBag bag = getUserBag(
+			user.getUserId(), organization.getGroupId());
+
+		if (bag == null) {
+			_log.error("Bag should never be null");
+		}
+
+		if (bag.isOrganizationAdmin(this, organization)) {
 			return true;
 		}
 		else {

@@ -23,7 +23,39 @@ import com.liferay.portalweb.portal.util.RuntimeVariables;
 public class ViewNotificationsAddAsConnectionTest extends BaseTestCase {
 	public void testViewNotificationsAddAsConnection()
 		throws Exception {
-		selenium.open("/user/joebloggs/home1/");
+		selenium.open("/user/joebloggs/so/dashboard/");
+		loadRequiredJavaScriptModules();
+		assertTrue(selenium.isElementPresent(
+				"//li[@id='_145_notificationsMenu']"));
+		assertEquals(RuntimeVariables.replace("1"),
+			selenium.getText("//span[@class='notification-count']"));
+		selenium.mouseOver("//li[@id='_145_notificationsMenu']");
+
+		for (int second = 0;; second++) {
+			if (second >= 90) {
+				fail("timeout");
+			}
+
+			try {
+				if (selenium.isVisible("//div[@class='title']")) {
+					break;
+				}
+			}
+			catch (Exception e) {
+			}
+
+			Thread.sleep(1000);
+		}
+
+		assertEquals(RuntimeVariables.replace(
+				"Social01 would like to add you as a connection."),
+			selenium.getText("//div[@class='title']"));
+		assertEquals(RuntimeVariables.replace("Confirm"),
+			selenium.getText(
+				"//span[@class='lfr-user-action-item lfr-user-action-confirm']/a"));
+		selenium.clickAt("//span[@class='lfr-user-action-item lfr-user-action-confirm']/a",
+			RuntimeVariables.replace("Confirm"));
+		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -42,37 +74,9 @@ public class ViewNotificationsAddAsConnectionTest extends BaseTestCase {
 			Thread.sleep(1000);
 		}
 
-		assertEquals(RuntimeVariables.replace("1"),
-			selenium.getText("//span[@class='notification-count']"));
-		selenium.mouseOver("//span[@class='notification-count']");
-
-		for (int second = 0;; second++) {
-			if (second >= 90) {
-				fail("timeout");
-			}
-
-			try {
-				if (selenium.isElementPresent(
-							"//div[contains(@class, 'user-notification-events-container')]")) {
-					break;
-				}
-			}
-			catch (Exception e) {
-			}
-
-			Thread.sleep(1000);
-		}
-
-		assertTrue(selenium.isVisible(
-				"//div[contains(@class, 'user-notification-events-container')]"));
-		assertEquals(RuntimeVariables.replace(
-				"Social01 would like to add you as a connection."),
-			selenium.getText(
-				"//div[contains(@class, 'user-notification-event-content')]/div[2]/div/span"));
-		assertEquals(RuntimeVariables.replace("Confirm"),
-			selenium.getText("//div[@class='notification-entry']/div[2]/span/a"));
-		assertEquals(RuntimeVariables.replace("Ignore"),
-			selenium.getText(
-				"//div[@class='notification-entry']/div[2]/span[2]/a"));
+		selenium.clickAt("//span[@class='notification-count']",
+			RuntimeVariables.replace("Notification Count"));
+		assertFalse(selenium.isTextPresent(
+				"Social01 would like to add you as a connection."));
 	}
 }

@@ -75,7 +75,7 @@ public class SplitThreadAction extends PortletAction {
 			if (e instanceof PrincipalException ||
 				e instanceof RequiredMessageException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.message_boards.error");
 			}
@@ -84,7 +84,7 @@ public class SplitThreadAction extends PortletAction {
 					 e instanceof NoSuchThreadException ||
 					 e instanceof SplitThreadException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else {
 				throw e;
@@ -105,7 +105,7 @@ public class SplitThreadAction extends PortletAction {
 			if (e instanceof NoSuchMessageException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass().getName());
+				SessionErrors.add(renderRequest, e.getClass());
 
 				return mapping.findForward("portlet.message_boards.error");
 			}
@@ -160,10 +160,7 @@ public class SplitThreadAction extends PortletAction {
 				layoutFullURL + "/-/message_boards/view_message/" +
 					message.getMessageId();
 
-			body = StringUtil.replace(
-				body,
-				new String[] {"${newThreadURL}", "[url=]"},
-				new String[] {newThreadURL, "[url=" + newThreadURL + "]"});
+			body = StringUtil.replace(body, "${newThreadURL}", newThreadURL);
 
 			serviceContext.setAddGroupPermissions(true);
 			serviceContext.setAddGuestPermissions(true);

@@ -124,23 +124,6 @@ public class JournalContentSearchLocalServiceImpl
 		}
 	}
 
-	@Override
-	public void deleteJournalContentSearch(JournalContentSearch contentSearch)
-		throws SystemException {
-
-		journalContentSearchPersistence.remove(contentSearch);
-	}
-
-	@Override
-	public void deleteJournalContentSearch(long contentSearchId)
-		throws PortalException, SystemException {
-
-		JournalContentSearch contentSearch =
-			journalContentSearchPersistence.findByPrimaryKey(contentSearchId);
-
-		deleteJournalContentSearch(contentSearch);
-	}
-
 	public void deleteLayoutContentSearches(
 			long groupId, boolean privateLayout, long layoutId)
 		throws SystemException {
@@ -212,6 +195,13 @@ public class JournalContentSearchLocalServiceImpl
 
 	public int getLayoutIdsCount(String articleId) throws SystemException {
 		return journalContentSearchPersistence.countByArticleId(articleId);
+	}
+
+	public List<JournalContentSearch> getPortletContentSearches(
+			String portletId)
+		throws SystemException {
+
+		return journalContentSearchPersistence.findByPortletId(portletId);
 	}
 
 	public JournalContentSearch updateContentSearch(

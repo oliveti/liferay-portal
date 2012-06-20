@@ -15,7 +15,6 @@
 package com.liferay.portlet.expando.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -66,25 +65,32 @@ public class ExpandoTableLocalServiceUtil {
 	* Deletes the expando table with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param tableId the primary key of the expando table
+	* @return the expando table that was removed
 	* @throws PortalException if a expando table with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteExpandoTable(long tableId)
+	public static com.liferay.portlet.expando.model.ExpandoTable deleteExpandoTable(
+		long tableId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteExpandoTable(tableId);
+		return getService().deleteExpandoTable(tableId);
 	}
 
 	/**
 	* Deletes the expando table from the database. Also notifies the appropriate model listeners.
 	*
 	* @param expandoTable the expando table
+	* @return the expando table that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteExpandoTable(
+	public static com.liferay.portlet.expando.model.ExpandoTable deleteExpandoTable(
 		com.liferay.portlet.expando.model.ExpandoTable expandoTable)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteExpandoTable(expandoTable);
+		return getService().deleteExpandoTable(expandoTable);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -443,20 +449,15 @@ public class ExpandoTableLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(ExpandoTableLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(ExpandoTableLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(ExpandoTableLocalService service) {
-		MethodCache.remove(ExpandoTableLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(ExpandoTableLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(ExpandoTableLocalService.class);
 	}
 
 	private static ExpandoTableLocalService _service;

@@ -69,7 +69,7 @@ public class EditLDAPServerAction extends PortletAction {
 		}
 		catch (Exception e) {
 			if (e instanceof PrincipalException) {
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.portal_settings.error");
 			}
@@ -207,8 +207,7 @@ public class EditLDAPServerAction extends PortletAction {
 		PropsKeys.LDAP_SECURITY_CREDENTIALS, PropsKeys.LDAP_SECURITY_PRINCIPAL,
 		PropsKeys.LDAP_SERVER_NAME, PropsKeys.LDAP_USER_CUSTOM_MAPPINGS,
 		PropsKeys.LDAP_USER_DEFAULT_OBJECT_CLASSES,
-		PropsKeys.LDAP_USER_MAPPINGS,
-		PropsKeys.LDAP_USERS_DN
+		PropsKeys.LDAP_USER_MAPPINGS, PropsKeys.LDAP_USERS_DN
 	};
 
 }

@@ -34,7 +34,9 @@ import java.io.Serializable;
 import java.sql.Types;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The base model implementation for the UserGroup service. Represents a row in the &quot;UserGroup&quot; database table, with each column mapped to a property of this class.
@@ -175,6 +177,59 @@ public class UserGroupModelImpl extends BaseModelImpl<UserGroup>
 		return UserGroup.class.getName();
 	}
 
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("userGroupId", getUserGroupId());
+		attributes.put("companyId", getCompanyId());
+		attributes.put("parentUserGroupId", getParentUserGroupId());
+		attributes.put("name", getName());
+		attributes.put("description", getDescription());
+		attributes.put("addedByLDAPImport", getAddedByLDAPImport());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		Long userGroupId = (Long)attributes.get("userGroupId");
+
+		if (userGroupId != null) {
+			setUserGroupId(userGroupId);
+		}
+
+		Long companyId = (Long)attributes.get("companyId");
+
+		if (companyId != null) {
+			setCompanyId(companyId);
+		}
+
+		Long parentUserGroupId = (Long)attributes.get("parentUserGroupId");
+
+		if (parentUserGroupId != null) {
+			setParentUserGroupId(parentUserGroupId);
+		}
+
+		String name = (String)attributes.get("name");
+
+		if (name != null) {
+			setName(name);
+		}
+
+		String description = (String)attributes.get("description");
+
+		if (description != null) {
+			setDescription(description);
+		}
+
+		Boolean addedByLDAPImport = (Boolean)attributes.get("addedByLDAPImport");
+
+		if (addedByLDAPImport != null) {
+			setAddedByLDAPImport(addedByLDAPImport);
+		}
+	}
+
 	@JSON
 	public long getUserGroupId() {
 		return _userGroupId;
@@ -294,17 +349,15 @@ public class UserGroupModelImpl extends BaseModelImpl<UserGroup>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(getCompanyId(),
-					UserGroup.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(getCompanyId(),
+			UserGroup.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -486,7 +539,6 @@ public class UserGroupModelImpl extends BaseModelImpl<UserGroup>
 	private String _originalName;
 	private String _description;
 	private boolean _addedByLDAPImport;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private UserGroup _escapedModelProxy;
 }

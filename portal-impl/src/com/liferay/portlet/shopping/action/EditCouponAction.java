@@ -79,7 +79,7 @@ public class EditCouponAction extends PortletAction {
 			if (e instanceof NoSuchCouponException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(actionRequest, e.getClass().getName());
+				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.shopping.error");
 			}
@@ -100,19 +100,17 @@ public class EditCouponAction extends PortletAction {
 						(CouponLimitCategoriesException)e;
 
 					SessionErrors.add(
-						actionRequest, e.getClass().getName(),
-						clce.getCategoryIds());
+						actionRequest, e.getClass(), clce.getCategoryIds());
 				}
 				else if (e instanceof CouponLimitSKUsException) {
 					CouponLimitSKUsException clskue =
 						(CouponLimitSKUsException)e;
 
 					SessionErrors.add(
-						actionRequest, e.getClass().getName(),
-						clskue.getSkus());
+						actionRequest, e.getClass(), clskue.getSkus());
 				}
 				else {
-					SessionErrors.add(actionRequest, e.getClass().getName());
+					SessionErrors.add(actionRequest, e.getClass());
 				}
 			}
 			else {
@@ -134,7 +132,7 @@ public class EditCouponAction extends PortletAction {
 			if (e instanceof NoSuchCouponException ||
 				e instanceof PrincipalException) {
 
-				SessionErrors.add(renderRequest, e.getClass().getName());
+				SessionErrors.add(renderRequest, e.getClass());
 
 				return mapping.findForward("portlet.shopping.error");
 			}

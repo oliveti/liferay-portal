@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+
 import java.io.IOException;
 
 import java.net.URL;
@@ -102,6 +104,8 @@ public class HttpUtil {
 	}
 
 	public static Http getHttp() {
+		PortalRuntimePermission.checkGetBeanProperty(HttpUtil.class);
+
 		return _http;
 	}
 
@@ -121,6 +125,10 @@ public class HttpUtil {
 
 	public static Map<String, String[]> getParameterMap(String queryString) {
 		return getHttp().getParameterMap(queryString);
+	}
+
+	public static String getPath(String url) {
+		return getHttp().getPath(url);
 	}
 
 	public static String getProtocol(ActionRequest actionRequest) {
@@ -277,14 +285,18 @@ public class HttpUtil {
 	 * represent a file or some JNDI resource. In that case, the default Java
 	 * implementation is used.
 	 *
+	 * @param  url the URL
 	 * @return A string representation of the resource referenced by the URL
 	 *         object
+	 * @throws IOException if an IO Exception occurred
 	 */
 	public static String URLtoString(URL url) throws IOException {
 		return getHttp().URLtoString(url);
 	}
 
 	public void setHttp(Http http) {
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
+
 		_http = http;
 	}
 

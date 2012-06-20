@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.SortedArrayList;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Lock;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileVersion;
@@ -167,10 +168,17 @@ public class LiferayRepository
 		return new LiferayFolder(dlFolder);
 	}
 
-	public void cancelCheckOut(long fileEntryId)
+	public FileVersion cancelCheckOut(long fileEntryId)
 		throws PortalException, SystemException {
 
-		dlFileEntryService.cancelCheckOut(fileEntryId);
+		DLFileVersion dlFileVersion = dlFileEntryService.cancelCheckOut(
+			fileEntryId);
+
+		if (dlFileVersion != null) {
+			return new LiferayFileVersion(dlFileVersion);
+		}
+
+		return null;
 	}
 
 	public void checkInFileEntry(
@@ -232,6 +240,12 @@ public class LiferayRepository
 
 		dlFileEntryService.deleteFileEntry(
 			getGroupId(), toFolderId(folderId), title);
+	}
+
+	public void deleteFileVersion(long fileEntryId, String version)
+		throws PortalException, SystemException {
+
+		dlFileEntryService.deleteFileVersion(fileEntryId, version);
 	}
 
 	public void deleteFolder(long folderId)
@@ -386,9 +400,19 @@ public class LiferayRepository
 			int end, OrderByComparator obc)
 		throws SystemException {
 
+		return getFolders(
+			parentFolderId, WorkflowConstants.STATUS_APPROVED,
+			includeMountfolders, start, end, obc);
+	}
+
+	public List<Folder> getFolders(
+			long parentFolderId, int status, boolean includeMountfolders,
+			int start, int end, OrderByComparator obc)
+		throws SystemException {
+
 		List<DLFolder> dlFolders = dlFolderService.getFolders(
-			getGroupId(), toFolderId(parentFolderId), includeMountfolders,
-			start, end, obc);
+			getGroupId(), toFolderId(parentFolderId), status,
+			includeMountfolders, start, end, obc);
 
 		return toFolders(dlFolders);
 	}
@@ -438,15 +462,21 @@ public class LiferayRepository
 			includeMountFolders);
 	}
 
-	public int getFoldersCount(long parentFolderId) throws SystemException {
-		return getFoldersCount(parentFolderId, true);
-	}
-
 	public int getFoldersCount(long parentFolderId, boolean includeMountfolders)
 		throws SystemException {
 
+		return getFoldersCount(
+			parentFolderId, WorkflowConstants.STATUS_APPROVED,
+			includeMountfolders);
+	}
+
+	public int getFoldersCount(
+			long parentFolderId, int status, boolean includeMountfolders)
+		throws SystemException {
+
 		return dlFolderService.getFoldersCount(
-			getGroupId(), toFolderId(parentFolderId), includeMountfolders);
+			getGroupId(), toFolderId(parentFolderId), status,
+			includeMountfolders);
 	}
 
 	public int getFoldersFileEntriesCount(List<Long> folderIds, int status)
@@ -577,17 +607,20 @@ public class LiferayRepository
 		return new LiferayFolder(dlFolder);
 	}
 
-	public Lock refreshFileEntryLock(String lockUuid, long expirationTime)
+	public Lock refreshFileEntryLock(
+			String lockUuid, long companyId, long expirationTime)
 		throws PortalException, SystemException {
 
 		return dlFileEntryService.refreshFileEntryLock(
-			lockUuid, expirationTime);
+			lockUuid, companyId, expirationTime);
 	}
 
-	public Lock refreshFolderLock(String lockUuid, long expirationTime)
+	public Lock refreshFolderLock(
+			String lockUuid, long companyId, long expirationTime)
 		throws PortalException, SystemException {
 
-		return dlFolderService.refreshFolderLock(lockUuid, expirationTime);
+		return dlFolderService.refreshFolderLock(
+			lockUuid, companyId, expirationTime);
 	}
 
 	public void revertFileEntry(
@@ -601,6 +634,8 @@ public class LiferayRepository
 	public Hits search(SearchContext searchContext) throws SearchException {
 		Indexer indexer = IndexerRegistryUtil.getIndexer(
 			DLFileEntryConstants.getClassName());
+
+		searchContext.setSearchEngineId(indexer.getSearchEngineId());
 
 		BooleanQuery fullQuery = indexer.getFullQuery(searchContext);
 

@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.model.Portlet;
 import com.liferay.taglib.aui.base.BaseScriptTag;
 
 import java.util.Set;
@@ -117,6 +118,15 @@ public class ScriptTag extends BaseScriptTag {
 		boolean positionInline = isPositionInLine();
 
 		try {
+			String portletId = null;
+
+			Portlet portlet = (Portlet)request.getAttribute(
+				WebKeys.RENDER_PORTLET);
+
+			if (portlet != null) {
+				portletId = portlet.getPortletId();
+			}
+
 			StringBundler bodyContentSB = getBodyContentAsStringBundler();
 
 			String use = getUse();
@@ -126,7 +136,7 @@ public class ScriptTag extends BaseScriptTag {
 
 				request.setAttribute(ScriptTag.class.getName(), scriptData);
 
-				scriptData.append(bodyContentSB, use);
+				scriptData.append(portletId, bodyContentSB, use);
 
 				String page = getPage();
 
@@ -149,7 +159,7 @@ public class ScriptTag extends BaseScriptTag {
 					request.setAttribute(WebKeys.AUI_SCRIPT_DATA, scriptData);
 				}
 
-				scriptData.append(bodyContentSB, use);
+				scriptData.append(portletId, bodyContentSB, use);
 			}
 
 			return EVAL_PAGE;

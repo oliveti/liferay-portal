@@ -1,6 +1,4 @@
 .taglib-discussion table.tree-walker {
-	border-width: 0;
-	border-collapse: collapse;
 	width: 100%;
 }
 
@@ -9,7 +7,7 @@
 }
 
 .taglib-discussion .lfr-discussion {
-	border-bottom: 1px solid #DDD;
+	border-bottom: 1px solid transparent;
 	margin: 0 0 5px;
 	padding: 5px 0 5px 0;
 	position: relative;
@@ -32,26 +30,23 @@
 	width: 15%;
 }
 
+.taglib-discussion .lfr-discussion-details .aui-column-content {
+	padding: 0;
+}
+
 .taglib-discussion .lfr-discussion-details .taglib-user-display {
 	padding-bottom: 0;
 	padding-top: 0;
-	word-wrap: break-word;
+}
+
+.taglib-discussion .lfr-discussion-details .taglib-user-display .user-details .user-name {
+	line-height: 1em;
 }
 
 .taglib-discussion .lfr-discussion-details .taglib-user-display .user-details .user-name, .taglib-discussion .lfr-discussion-details .taglib-user-display .user-profile-image {
 	clear: none;
 	vertical-align: top;
 	text-align: center;
-}
-
-.taglib-discussion .lfr-discussion-details .taglib-user-display .user-details .user-name {
-	font-weight: bold;
-	line-height: 1em;
-	text-decoration: none;
-}
-
-.taglib-discussion .lfr-discussion-details .taglib-user-display .user-details .user-name:hover {
-	text-decoration: underline;
 }
 
 .taglib-discussion .lfr-discussion-details .taglib-user-display .user-profile-image img {
@@ -62,21 +57,22 @@
 	width: 85%;
 }
 
+.taglib-discussion .lfr-discussion-body .lfr-discussion-controls .taglib-ratings .aui-rating-label-element {
+	padding-left: 0;
+}
+
 .taglib-discussion .lfr-discussion-body-content {
-	padding: 5px 0;
+	padding: 5px 0 0 0.5em;
 }
 
 .taglib-discussion .lfr-discussion-posted-on {
 	clear: both;
-	color: #999;
 	float: right;
-	font-size: .9em;
 	padding-top: 0.5em;
 }
 
 .taglib-discussion .lfr-discussion-message {
 	padding-bottom: 1em;
-	padding-left: 0.5em;
 }
 
 .taglib-discussion .taglib-ratings {
@@ -93,14 +89,6 @@
 	display: inline-block;
 	list-style: none;
 	vertical-align: top;
-}
-
-.taglib-discussion .lfr-discussion-actions li a, .taglib-discussion .lfr-discussion-actions li a span {
-	text-decoration: none;
-}
-
-.taglib-discussion .lfr-discussion-actions li a:hover span, .taglib-discussion .lfr-discussion-actions li a:focus span {
-	text-decoration: underline;
 }
 
 .taglib-discussion .lfr-discussion-actions li a {
@@ -130,8 +118,6 @@
 }
 
 .taglib-discussion .lfr-discussion-form-container .lfr-discussion-form {
-	background: #DDD;
-	border-radius: 4px;
 	display: inline-block;
 	padding: 5px 5px 5px 50px;
 	position: relative;
@@ -162,4 +148,46 @@
 
 .ie6 .taglib-discussion .lfr-discussion, .ie7 .taglib-discussion .lfr-discussion {
 	zoom: 1;
+}
+
+/* Skin */
+
+.taglib-discussion table.tree-walker {
+	border-width: 0;
+	border-collapse: collapse;
+}
+
+.taglib-discussion .lfr-discussion {
+	border-bottom-color: #DDD;
+}
+
+.taglib-discussion .lfr-discussion-details .taglib-user-display {
+	word-wrap: break-word;
+}
+
+.taglib-discussion .lfr-discussion-details .taglib-user-display .user-details .user-name {
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.taglib-discussion .lfr-discussion-details .taglib-user-display .user-details .user-name:hover {
+	text-decoration: underline;
+}
+
+.taglib-discussion .lfr-discussion-posted-on {
+	color: #999;
+	font-size: .9em;
+}
+
+.taglib-discussion .lfr-discussion-actions li a, .taglib-discussion .lfr-discussion-actions li a span {
+	text-decoration: none;
+}
+
+.taglib-discussion .lfr-discussion-actions li a:hover span, .taglib-discussion .lfr-discussion-actions li a:focus span {
+	text-decoration: underline;
+}
+
+.taglib-discussion .lfr-discussion-form-container .lfr-discussion-form {
+	background: #DDD;
+	border-radius: 4px;
 }

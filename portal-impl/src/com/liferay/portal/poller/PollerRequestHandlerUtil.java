@@ -16,6 +16,9 @@ package com.liferay.portal.poller;
 
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.poller.PollerHeader;
+import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Edward Han
@@ -31,15 +34,17 @@ public class PollerRequestHandlerUtil {
 	}
 
 	public static JSONObject processRequest(
-			String path, String pollerRequestString)
+			HttpServletRequest request, String pollerRequestString)
 		throws Exception {
 
 		return getPollerRequestHandler().processRequest(
-			path, pollerRequestString);
+			request, pollerRequestString);
 	}
 
 	public void setPollerRequestHandler(
 		PollerRequestHandler pollerRequestHandler) {
+
+		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_pollerRequestHandler = pollerRequestHandler;
 	}

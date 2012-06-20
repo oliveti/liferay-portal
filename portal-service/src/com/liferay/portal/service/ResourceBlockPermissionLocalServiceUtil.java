@@ -15,7 +15,6 @@
 package com.liferay.portal.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.MethodCache;
 import com.liferay.portal.kernel.util.ReferenceRegistry;
 
 /**
@@ -67,26 +66,34 @@ public class ResourceBlockPermissionLocalServiceUtil {
 	* Deletes the resource block permission with the primary key from the database. Also notifies the appropriate model listeners.
 	*
 	* @param resourceBlockPermissionId the primary key of the resource block permission
+	* @return the resource block permission that was removed
 	* @throws PortalException if a resource block permission with the primary key could not be found
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteResourceBlockPermission(
+	public static com.liferay.portal.model.ResourceBlockPermission deleteResourceBlockPermission(
 		long resourceBlockPermissionId)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteResourceBlockPermission(resourceBlockPermissionId);
+		return getService()
+				   .deleteResourceBlockPermission(resourceBlockPermissionId);
 	}
 
 	/**
 	* Deletes the resource block permission from the database. Also notifies the appropriate model listeners.
 	*
 	* @param resourceBlockPermission the resource block permission
+	* @return the resource block permission that was removed
 	* @throws SystemException if a system exception occurred
 	*/
-	public static void deleteResourceBlockPermission(
+	public static com.liferay.portal.model.ResourceBlockPermission deleteResourceBlockPermission(
 		com.liferay.portal.model.ResourceBlockPermission resourceBlockPermission)
 		throws com.liferay.portal.kernel.exception.SystemException {
-		getService().deleteResourceBlockPermission(resourceBlockPermission);
+		return getService()
+				   .deleteResourceBlockPermission(resourceBlockPermission);
+	}
+
+	public static com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
+		return getService().dynamicQuery();
 	}
 
 	/**
@@ -279,6 +286,16 @@ public class ResourceBlockPermissionLocalServiceUtil {
 		getService().deleteResourceBlockPermissions(resourceBlockId);
 	}
 
+	public static java.util.Map<java.lang.Long, java.util.Set<java.lang.String>> getAvailableResourceBlockPermissionActionIds(
+		long[] roleIds, java.lang.String name, long primKey,
+		java.util.List<java.lang.String> actionIds)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .getAvailableResourceBlockPermissionActionIds(roleIds, name,
+			primKey, actionIds);
+	}
+
 	public static com.liferay.portal.model.ResourceBlockPermissionsContainer getResourceBlockPermissionsContainer(
 		long resourceBlockId)
 		throws com.liferay.portal.kernel.exception.SystemException {
@@ -299,20 +316,15 @@ public class ResourceBlockPermissionLocalServiceUtil {
 
 			ReferenceRegistry.registerReference(ResourceBlockPermissionLocalServiceUtil.class,
 				"_service");
-			MethodCache.remove(ResourceBlockPermissionLocalService.class);
 		}
 
 		return _service;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setService(ResourceBlockPermissionLocalService service) {
-		MethodCache.remove(ResourceBlockPermissionLocalService.class);
-
-		_service = service;
-
-		ReferenceRegistry.registerReference(ResourceBlockPermissionLocalServiceUtil.class,
-			"_service");
-		MethodCache.remove(ResourceBlockPermissionLocalService.class);
 	}
 
 	private static ResourceBlockPermissionLocalService _service;

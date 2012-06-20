@@ -26,7 +26,7 @@
 
 	<div id="portal_add_content">
 		<div class="portal-add-content">
-			<aui:form action='<%= themeDisplay.getPathMain() + "/portal/update_layout?p_l_id=" + plid + "&p_v_l_s_g_id=" + themeDisplay.getParentGroupId() %>' method="post" name="fm" useNamespace="<%= false %>">
+			<aui:form action='<%= themeDisplay.getPathMain() + "/portal/update_layout?p_auth=" + AuthTokenUtil.getToken(request) + "&p_l_id=" + plid + "&p_v_l_s_g_id=" + themeDisplay.getParentGroupId() %>' method="post" name="fm" useNamespace="<%= false %>">
 				<aui:input name="doAsUserId" type="hidden" value="<%= themeDisplay.getDoAsUserId() %>" />
 				<aui:input name="<%= Constants.CMD %>" type="hidden" value="template" />
 				<aui:input name="<%= WebKeys.REFERER %>" type="hidden" value="<%= refererURL.toString() %>" />
@@ -49,17 +49,13 @@
 
 				portletCategory = _getRelevantPortletCategory(permissionChecker, portletCategory, panelSelectedPortlets, layoutTypePortlet, layout, user);
 
-				List categories = ListUtil.fromCollection(portletCategory.getCategories());
+				List<PortletCategory> categories = ListUtil.fromCollection(portletCategory.getCategories());
 
 				categories = ListUtil.sort(categories, new PortletCategoryComparator(locale));
 
 				int portletCategoryIndex = 0;
 
-				Iterator itr = categories.iterator();
-
-				while (itr.hasNext()) {
-					PortletCategory curPortletCategory = (PortletCategory)itr.next();
-
+				for (PortletCategory curPortletCategory : categories) {
 					if (curPortletCategory.isHidden()) {
 						continue;
 					}

@@ -21,12 +21,24 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletClassLoaderUtil;
 import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
+import com.liferay.portal.kernel.util.PreloadClassLoader;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.security.lang.PortalSecurityManagerThreadLocal;
+import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
+import com.liferay.portal.security.pacl.PACLPolicyManager;
 import com.liferay.portal.spring.util.FilterClassLoader;
 
 import java.io.FileNotFoundException;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.aopalliance.aop.Advice;
+
+import org.springframework.aop.Advisor;
+import org.springframework.aop.SpringProxy;
+import org.springframework.aop.TargetSource;
+import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
@@ -43,6 +55,31 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
  * @see    PortletContextLoaderListener
  */
 public class PortletApplicationContext extends XmlWebApplicationContext {
+
+	public static ClassLoader getBeanClassLoader() {
+		if (_isUseRestrictedClassLoader()) {
+			boolean enabled = PortalSecurityManagerThreadLocal.isEnabled();
+
+			try {
+				PortalSecurityManagerThreadLocal.setEnabled(false);
+
+				return new PreloadClassLoader(
+					PortletClassLoaderUtil.getClassLoader(), _classes);
+			}
+			finally {
+				PortalSecurityManagerThreadLocal.setEnabled(enabled);
+			}
+		}
+
+		ClassLoader beanClassLoader =
+			AggregateClassLoader.getAggregateClassLoader(
+				new ClassLoader[] {
+					PortletClassLoaderUtil.getClassLoader(),
+					PACLClassLoaderUtil.getPortalClassLoader()
+				});
+
+		return new FilterClassLoader(beanClassLoader);
+	}
 
 	@Override
 	protected String[] getDefaultConfigLocations() {
@@ -76,21 +113,16 @@ public class PortletApplicationContext extends XmlWebApplicationContext {
 	}
 
 	@Override
-	protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-		ClassLoader beanClassLoader =
-			AggregateClassLoader.getAggregateClassLoader(
-				new ClassLoader[] {
-					PortletClassLoaderUtil.getClassLoader(),
-					PortalClassLoaderUtil.getClassLoader()
-				});
+	protected void initBeanDefinitionReader(
+		XmlBeanDefinitionReader xmlBeanDefinitionReader) {
 
-		beanClassLoader = new FilterClassLoader(beanClassLoader);
-
-		reader.setBeanClassLoader(beanClassLoader);
+		xmlBeanDefinitionReader.setBeanClassLoader(getBeanClassLoader());
 	}
 
 	@Override
-	protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) {
+	protected void loadBeanDefinitions(
+		XmlBeanDefinitionReader xmlBeanDefinitionReader) {
+
 		String[] configLocations = getPortletConfigLocations();
 
 		if (configLocations == null) {
@@ -98,8 +130,13 @@ public class PortletApplicationContext extends XmlWebApplicationContext {
 		}
 
 		for (String configLocation : configLocations) {
+			boolean checkReadFile =
+				PortalSecurityManagerThreadLocal.isCheckReadFile();
+
 			try {
-				reader.loadBeanDefinitions(configLocation);
+				PortalSecurityManagerThreadLocal.setCheckReadFile(false);
+
+				xmlBeanDefinitionReader.loadBeanDefinitions(configLocation);
 			}
 			catch (Exception e) {
 				Throwable cause = e.getCause();
@@ -113,10 +150,29 @@ public class PortletApplicationContext extends XmlWebApplicationContext {
 					_log.error(e, e);
 				}
 			}
+			finally {
+				PortalSecurityManagerThreadLocal.setCheckReadFile(
+					checkReadFile);
+			}
 		}
+	}
+
+	private static boolean _isUseRestrictedClassLoader() {
+		return PACLPolicyManager.isActive();
 	}
 
 	private static Log _log = LogFactoryUtil.getLog(
 		PortletApplicationContext.class);
+
+	private static Map<String, Class<?>> _classes =
+		new HashMap<String, Class<?>>();
+
+	static {
+		_classes.put(Advice.class.getName(), Advice.class);
+		_classes.put(Advised.class.getName(), Advised.class);
+		_classes.put(Advisor.class.getName(), Advisor.class);
+		_classes.put(SpringProxy.class.getName(), SpringProxy.class);
+		_classes.put(TargetSource.class.getName(), TargetSource.class);
+	}
 
 }

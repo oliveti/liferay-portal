@@ -51,9 +51,7 @@ public class DLFolderImpl extends DLFolderBaseImpl {
 		return ancestors;
 	}
 
-	public DLFolder getParentFolder()
-		throws PortalException, SystemException {
-
+	public DLFolder getParentFolder() throws PortalException, SystemException {
 		if (getParentFolderId() == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 			return null;
 		}
@@ -81,7 +79,7 @@ public class DLFolderImpl extends DLFolderBaseImpl {
 
 		// Remove leading /
 
-		path = path.substring(1, path.length());
+		path = path.substring(1);
 
 		return StringUtil.split(path, CharPool.SLASH);
 	}

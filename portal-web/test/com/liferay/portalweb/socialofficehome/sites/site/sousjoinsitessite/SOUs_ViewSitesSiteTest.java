@@ -22,7 +22,7 @@ import com.liferay.portalweb.portal.util.RuntimeVariables;
  */
 public class SOUs_ViewSitesSiteTest extends BaseTestCase {
 	public void testSOUs_ViewSitesSite() throws Exception {
-		selenium.open("/user/socialoffice01/home1/");
+		selenium.open("/user/socialoffice01/so/dashboard/");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -42,7 +42,7 @@ public class SOUs_ViewSitesSiteTest extends BaseTestCase {
 			Thread.sleep(1000);
 		}
 
-		assertEquals(RuntimeVariables.replace("Home"),
+		assertEquals(RuntimeVariables.replace("Dashboard"),
 			selenium.getText("//li[contains(@class, 'selected')]/a/span"));
 
 		for (int second = 0;; second++) {
@@ -106,13 +106,13 @@ public class SOUs_ViewSitesSiteTest extends BaseTestCase {
 			RuntimeVariables.replace("Members"));
 		selenium.waitForPageToLoad("30000");
 		loadRequiredJavaScriptModules();
-		assertEquals(RuntimeVariables.replace("Joe Bloggs"),
-			selenium.getText("xPath=(//div[@class='lfr-user-data-name']/a)[1]"));
+		assertEquals(RuntimeVariables.replace("Bloggs, Joe"),
+			selenium.getText("xPath=(//div[@class='lfr-contact-name']/a)[1]"));
 		assertEquals(RuntimeVariables.replace("test@liferay.com"),
-			selenium.getText("xPath=(//div[@class='lfr-user-data-extra'])[1]"));
-		assertEquals(RuntimeVariables.replace("Social01 Office01 User01"),
-			selenium.getText("xPath=(//div[@class='lfr-user-data-name']/a)[2]"));
+			selenium.getText("xPath=(//div[@class='lfr-contact-extra'])[1]"));
+		assertEquals(RuntimeVariables.replace("User01, Social01"),
+			selenium.getText("xPath=(//div[@class='lfr-contact-name']/a)[2]"));
 		assertEquals(RuntimeVariables.replace("socialoffice01@liferay.com"),
-			selenium.getText("xPath=(//div[@class='lfr-user-data-extra'])[2]"));
+			selenium.getText("xPath=(//div[@class='lfr-contact-extra'])[2]"));
 	}
 }

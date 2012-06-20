@@ -99,8 +99,6 @@ public class TabsTag extends IncludeTag {
 	@Override
 	public int doStartTag() throws JspException {
 		try {
-			HttpServletRequest request = getServletRequest();
-
 			request.setAttribute("liferay-ui:tabs:names", _names);
 
 			if ((_tabsValues == null) || (_tabsValues.length < _names.length)) {
@@ -225,7 +223,7 @@ public class TabsTag extends IncludeTag {
 	public boolean getSectionSelected() {
 		if ((_names.length == 0) ||
 			((_names.length > _namesPos) &&
-			 (_names[_namesPos].equals(_value)))) {
+			 _names[_namesPos].equals(_value))) {
 
 			return true;
 		}

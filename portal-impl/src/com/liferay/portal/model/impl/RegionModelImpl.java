@@ -34,7 +34,9 @@ import java.io.Serializable;
 import java.sql.Types;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The base model implementation for the Region service. Represents a row in the &quot;Region&quot; database table, with each column mapped to a property of this class.
@@ -83,6 +85,7 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 			true);
 	public static long ACTIVE_COLUMN_BITMASK = 1L;
 	public static long COUNTRYID_COLUMN_BITMASK = 2L;
+	public static long REGIONCODE_COLUMN_BITMASK = 4L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -148,6 +151,52 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 		return Region.class.getName();
 	}
 
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("regionId", getRegionId());
+		attributes.put("countryId", getCountryId());
+		attributes.put("regionCode", getRegionCode());
+		attributes.put("name", getName());
+		attributes.put("active", getActive());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		Long regionId = (Long)attributes.get("regionId");
+
+		if (regionId != null) {
+			setRegionId(regionId);
+		}
+
+		Long countryId = (Long)attributes.get("countryId");
+
+		if (countryId != null) {
+			setCountryId(countryId);
+		}
+
+		String regionCode = (String)attributes.get("regionCode");
+
+		if (regionCode != null) {
+			setRegionCode(regionCode);
+		}
+
+		String name = (String)attributes.get("name");
+
+		if (name != null) {
+			setName(name);
+		}
+
+		Boolean active = (Boolean)attributes.get("active");
+
+		if (active != null) {
+			setActive(active);
+		}
+	}
+
 	@JSON
 	public long getRegionId() {
 		return _regionId;
@@ -189,7 +238,17 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 	}
 
 	public void setRegionCode(String regionCode) {
+		_columnBitmask |= REGIONCODE_COLUMN_BITMASK;
+
+		if (_originalRegionCode == null) {
+			_originalRegionCode = _regionCode;
+		}
+
 		_regionCode = regionCode;
+	}
+
+	public String getOriginalRegionCode() {
+		return GetterUtil.getString(_originalRegionCode);
 	}
 
 	@JSON
@@ -250,17 +309,15 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(0,
-					Region.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(0,
+			Region.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -327,6 +384,8 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 		regionModelImpl._originalCountryId = regionModelImpl._countryId;
 
 		regionModelImpl._setOriginalCountryId = false;
+
+		regionModelImpl._originalRegionCode = regionModelImpl._regionCode;
 
 		regionModelImpl._originalActive = regionModelImpl._active;
 
@@ -425,11 +484,11 @@ public class RegionModelImpl extends BaseModelImpl<Region>
 	private long _originalCountryId;
 	private boolean _setOriginalCountryId;
 	private String _regionCode;
+	private String _originalRegionCode;
 	private String _name;
 	private boolean _active;
 	private boolean _originalActive;
 	private boolean _setOriginalActive;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private Region _escapedModelProxy;
 }

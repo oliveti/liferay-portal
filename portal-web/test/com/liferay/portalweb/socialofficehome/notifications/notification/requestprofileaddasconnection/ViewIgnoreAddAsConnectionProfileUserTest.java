@@ -23,7 +23,7 @@ import com.liferay.portalweb.portal.util.RuntimeVariables;
 public class ViewIgnoreAddAsConnectionProfileUserTest extends BaseTestCase {
 	public void testViewIgnoreAddAsConnectionProfileUser()
 		throws Exception {
-		selenium.open("/web/joebloggs/profile/");
+		selenium.open("/web/joebloggs/so/profile/");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -51,7 +51,7 @@ public class ViewIgnoreAddAsConnectionProfileUserTest extends BaseTestCase {
 			selenium.getText("//div[@class='lfr-contact-extra']"));
 		assertEquals(RuntimeVariables.replace("Joe Bloggs has no contacts."),
 			selenium.getText("//div[@class='portlet-msg-info']"));
-		selenium.open("/user/joebloggs/home1/");
+		selenium.open("/user/joebloggs/so/dashboard/");
 		loadRequiredJavaScriptModules();
 
 		for (int second = 0;; second++) {
@@ -111,7 +111,8 @@ public class ViewIgnoreAddAsConnectionProfileUserTest extends BaseTestCase {
 			}
 
 			try {
-				if (selenium.isVisible("//div[@class='contacts-profile']")) {
+				if (selenium.isVisible(
+							"//div[contains(@class, 'contacts-profile')]")) {
 					break;
 				}
 			}
@@ -123,13 +124,13 @@ public class ViewIgnoreAddAsConnectionProfileUserTest extends BaseTestCase {
 
 		assertEquals(RuntimeVariables.replace("Social01 Office01 User01"),
 			selenium.getText(
-				"//div[@class='contacts-profile']/div/div[2]/div/a"));
+				"//div[contains(@class, 'contacts-profile')]/div/div[2]/div/a"));
 		assertEquals(RuntimeVariables.replace("socialoffice01@liferay.com"),
 			selenium.getText(
-				"//div[@class='contacts-profile']/div/div[2]/div[3]"));
+				"//div[contains(@class, 'contacts-profile')]/div/div[2]/div[3]"));
 		assertFalse(selenium.isElementPresent(
 				"//div[contains(@class, 'contacts-center-home-content')]"));
-		assertEquals(RuntimeVariables.replace("Add as Connection"),
+		assertEquals(RuntimeVariables.replace("Add Connection"),
 			selenium.getText(
 				"//button[@id='_1_WAR_contactsportlet_addConnectionButton']"));
 		assertFalse(selenium.isVisible(

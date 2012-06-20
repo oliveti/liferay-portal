@@ -33,6 +33,9 @@ import java.io.Serializable;
 
 import java.sql.Types;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The base model implementation for the UserIdMapper service. Represents a row in the &quot;UserIdMapper&quot; database table, with each column mapped to a property of this class.
  *
@@ -106,6 +109,52 @@ public class UserIdMapperModelImpl extends BaseModelImpl<UserIdMapper>
 
 	public String getModelClassName() {
 		return UserIdMapper.class.getName();
+	}
+
+	@Override
+	public Map<String, Object> getModelAttributes() {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+
+		attributes.put("userIdMapperId", getUserIdMapperId());
+		attributes.put("userId", getUserId());
+		attributes.put("type", getType());
+		attributes.put("description", getDescription());
+		attributes.put("externalUserId", getExternalUserId());
+
+		return attributes;
+	}
+
+	@Override
+	public void setModelAttributes(Map<String, Object> attributes) {
+		Long userIdMapperId = (Long)attributes.get("userIdMapperId");
+
+		if (userIdMapperId != null) {
+			setUserIdMapperId(userIdMapperId);
+		}
+
+		Long userId = (Long)attributes.get("userId");
+
+		if (userId != null) {
+			setUserId(userId);
+		}
+
+		String type = (String)attributes.get("type");
+
+		if (type != null) {
+			setType(type);
+		}
+
+		String description = (String)attributes.get("description");
+
+		if (description != null) {
+			setDescription(description);
+		}
+
+		String externalUserId = (String)attributes.get("externalUserId");
+
+		if (externalUserId != null) {
+			setExternalUserId(externalUserId);
+		}
 	}
 
 	public long getUserIdMapperId() {
@@ -220,17 +269,15 @@ public class UserIdMapperModelImpl extends BaseModelImpl<UserIdMapper>
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		if (_expandoBridge == null) {
-			_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(0,
-					UserIdMapper.class.getName(), getPrimaryKey());
-		}
-
-		return _expandoBridge;
+		return ExpandoBridgeFactoryUtil.getExpandoBridge(0,
+			UserIdMapper.class.getName(), getPrimaryKey());
 	}
 
 	@Override
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
-		getExpandoBridge().setAttributes(serviceContext);
+		ExpandoBridge expandoBridge = getExpandoBridge();
+
+		expandoBridge.setAttributes(serviceContext);
 	}
 
 	@Override
@@ -408,7 +455,6 @@ public class UserIdMapperModelImpl extends BaseModelImpl<UserIdMapper>
 	private String _description;
 	private String _externalUserId;
 	private String _originalExternalUserId;
-	private transient ExpandoBridge _expandoBridge;
 	private long _columnBitmask;
 	private UserIdMapper _escapedModelProxy;
 }

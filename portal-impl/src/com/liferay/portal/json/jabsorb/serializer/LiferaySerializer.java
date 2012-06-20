@@ -14,6 +14,9 @@
 
 package com.liferay.portal.json.jabsorb.serializer;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import java.io.Serializable;
 
 import java.lang.reflect.Constructor;
@@ -23,8 +26,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import org.apache.commons.beanutils.BeanUtils;
 
 import org.jabsorb.JSONSerializer;
 import org.jabsorb.serializer.AbstractSerializer;
@@ -332,15 +333,19 @@ public class LiferaySerializer extends AbstractSerializer {
 
 					try {
 						value = ser.unmarshall(
-							serializerState, null,
+							serializerState, field.getType(),
 							serializableJSONObject.get(fieldName));
 					}
 					catch (Exception e) {
 					}
 
 					if (value != null) {
-						BeanUtils.copyProperty(
-							javaClassInstance, fieldName, value);
+						try {
+							field.set(javaClassInstance, value);
+						}
+						catch (Exception e) {
+							_log.error(e, e);
+						}
 					}
 				}
 
@@ -359,5 +364,7 @@ public class LiferaySerializer extends AbstractSerializer {
 
 	private static final Class<?>[] _SERIALIZABLE_CLASSES =
 		{Serializable.class};
+
+	private static Log _log = LogFactoryUtil.getLog(LiferaySerializer.class);
 
 }

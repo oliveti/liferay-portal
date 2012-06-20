@@ -95,9 +95,6 @@ public class RoleFinderImpl
 	public static final String FIND_BY_C_N_S_P_A =
 		RoleFinder.class.getName() + ".findByC_N_S_P_A";
 
-	public static final String JOIN_BY_ROLES_PERMISSIONS =
-		RoleFinder.class.getName() + ".joinByRolesPermissions";
-
 	public static final String JOIN_BY_USERS_ROLES =
 		RoleFinder.class.getName() + ".joinByUsersRoles";
 
@@ -690,11 +687,7 @@ public class RoleFinderImpl
 
 		StringBundler sb = new StringBundler(params.size());
 
-		Iterator<Map.Entry<String, Object>> itr = params.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<String, Object> entry = itr.next();
-
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 
@@ -709,10 +702,7 @@ public class RoleFinderImpl
 	protected String getJoin(String key) {
 		String join = StringPool.BLANK;
 
-		if (key.equals("permissionsResourceId")) {
-			join = CustomSQLUtil.get(JOIN_BY_ROLES_PERMISSIONS);
-		}
-		else if (key.equals("usersRoles")) {
+		if (key.equals("usersRoles")) {
 			join = CustomSQLUtil.get(JOIN_BY_USERS_ROLES);
 		}
 
@@ -756,11 +746,7 @@ public class RoleFinderImpl
 
 		StringBundler sb = new StringBundler(params.size());
 
-		Iterator<Map.Entry<String, Object>> itr = params.entrySet().iterator();
-
-		while (itr.hasNext()) {
-			Map.Entry<String, Object> entry = itr.next();
-
+		for (Map.Entry<String, Object> entry : params.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 
@@ -775,10 +761,7 @@ public class RoleFinderImpl
 	protected String getWhere(String key) {
 		String join = StringPool.BLANK;
 
-		if (key.equals("permissionsResourceId")) {
-			join = CustomSQLUtil.get(JOIN_BY_ROLES_PERMISSIONS);
-		}
-		else if (key.equals("usersRoles")) {
+		if (key.equals("usersRoles")) {
 			join = CustomSQLUtil.get(JOIN_BY_USERS_ROLES);
 		}
 

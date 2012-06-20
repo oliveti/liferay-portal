@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.security.lang.PortalSecurityManagerThreadLocal;
 import com.liferay.portal.tools.LangBuilder;
 
 import java.io.InputStream;
@@ -102,7 +103,7 @@ public class LanguageResources {
 			Locale priorityLocale = LanguageUtil.getLocale(
 				locale.getLanguage());
 
-			if ((priorityLocale != null) && (!locale.equals(priorityLocale))) {
+			if ((priorityLocale != null) && !locale.equals(priorityLocale)) {
 				return new Locale(
 					priorityLocale.getLanguage(), priorityLocale.getCountry());
 			}
@@ -184,7 +185,11 @@ public class LanguageResources {
 	private static Properties _loadProperties(String name) {
 		Properties properties = new Properties();
 
+		boolean enabled = PortalSecurityManagerThreadLocal.isEnabled();
+
 		try {
+			PortalSecurityManagerThreadLocal.setEnabled(false);
+
 			ClassLoader classLoader = LanguageResources.class.getClassLoader();
 
 			URL url = classLoader.getResource(name);
@@ -211,6 +216,9 @@ public class LanguageResources {
 			if (_log.isWarnEnabled()) {
 				_log.warn(e, e);
 			}
+		}
+		finally {
+			PortalSecurityManagerThreadLocal.setEnabled(enabled);
 		}
 
 		return properties;
