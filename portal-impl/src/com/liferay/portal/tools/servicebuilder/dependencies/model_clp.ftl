@@ -8,6 +8,7 @@ package ${packagePath}.model;
 	import ${packagePath}.service.persistence.${entity.name}PK;
 </#if>
 
+import com.liferay.portal.LocaleException;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -124,6 +125,7 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 		);
 	}
 
+	@Override
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
@@ -134,6 +136,7 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 		return attributes;
 	}
 
+	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
 		<#list entity.regularColList as column>
 			<#if column.isPrimitiveType()>
@@ -335,6 +338,51 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 		</#if>
 	</#list>
 
+	<#if entity.isContainerModel()>
+		<#assign hasParentContainerModelId = entity.hasColumn("parentContainerModelId")>
+
+		<#list entity.columnList as column>
+			<#if column.isContainerModel() && (column.name != "containerModelId")>
+				public long getContainerModelId() {
+					return get${column.methodName}();
+				}
+
+				public void setContainerModelId(long containerModelId) {
+					_${column.name} = containerModelId;
+				}
+			</#if>
+
+			<#if column.isParentContainerModel() && (column.name != "parentContainerModelId")>
+				<#assign hasParentContainerModelId = true>
+
+				public long getParentContainerModelId() {
+					return get${column.methodName}();
+				}
+
+				public void setParentContainerModelId(long parentContainerModelId) {
+					_${column.name} = parentContainerModelId;
+				}
+			</#if>
+		</#list>
+
+		public String getContainerModelName() {
+			<#if entity.hasColumn("name")>
+				return String.valueOf(getName());
+			<#else>
+				return String.valueOf(getContainerModelId());
+			</#if>
+		}
+
+		<#if !hasParentContainerModelId>
+			public long getParentContainerModelId() {
+				return 0;
+			}
+
+			public void setParentContainerModelId(long parentContainerModelId) {
+			}
+		</#if>
+	</#if>
+
 	<#if entity.isWorkflowEnabled()>
 		/**
 		 * @deprecated {@link #isApproved}
@@ -345,6 +393,15 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 
 		public boolean isApproved() {
 			if (getStatus() == WorkflowConstants.STATUS_APPROVED) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
+		public boolean isDenied() {
+			if (getStatus() == WorkflowConstants.STATUS_DENIED) {
 				return true;
 			}
 			else {
@@ -370,6 +427,24 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 			}
 		}
 
+		public boolean isInactive() {
+			if (getStatus() == WorkflowConstants.STATUS_INACTIVE) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
+		public boolean isIncomplete() {
+			if (getStatus() == WorkflowConstants.STATUS_INCOMPLETE) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
 		public boolean isInTrash() {
 			if (getStatus() == WorkflowConstants.STATUS_IN_TRASH) {
 				return true;
@@ -381,6 +456,15 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 
 		public boolean isPending() {
 			if (getStatus() == WorkflowConstants.STATUS_PENDING) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+
+		public boolean isScheduled() {
+			if (getStatus() == WorkflowConstants.STATUS_SCHEDULED) {
 				return true;
 			}
 			else {
@@ -405,6 +489,18 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 			else {
 				${entity.name}LocalServiceUtil.update${entity.name}(this);
 			}
+		}
+	</#if>
+
+	<#if entity.hasLocalizedColumn()>
+		@SuppressWarnings("unused")
+		public void prepareLocalizedFieldsForImport(Locale defaultImportLocale) throws LocaleException {
+
+			<#list entity.regularColList as column>
+				<#if column.localized>
+					set${column.methodName}(get${column.methodName}(defaultImportLocale), defaultImportLocale, defaultImportLocale);
+				</#if>
+			</#list>
 		}
 	</#if>
 

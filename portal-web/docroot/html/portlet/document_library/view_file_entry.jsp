@@ -128,11 +128,9 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 	<aui:layout>
 		<aui:column columnWidth="<%= 65 %>" cssClass="lfr-asset-column-details" first="<%= true %>">
 			<c:if test="<%= showActions %>">
-				<div class="lfr-header-row">
-					<div class="lfr-header-row-content">
-						<aui:button-row cssClass="edit-toolbar" id='<%= renderResponse.getNamespace() + "fileEntryToolbar" %>' />
-					</div>
-				</div>
+				<liferay-ui:app-view-toolbar>
+					<aui:button-row cssClass="edit-toolbar" id='<%= renderResponse.getNamespace() + "fileEntryToolbar" %>' />
+				</liferay-ui:app-view-toolbar>
 			</c:if>
 
 			<c:if test="<%= (fileEntry.getLock() != null) && DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.UPDATE) %>">
@@ -170,7 +168,7 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 								<c:when test="<%= versionSpecific %>">
 									<%= fileVersion.getTitle() %>
 
-									(<liferay-ui:message key="version" /> <%= fileVersion.getVersion() %>)
+									(<liferay-ui:message key="version" /> <%= HtmlUtil.escape(fileVersion.getVersion()) %>)
 								</c:when>
 								<c:otherwise>
 									<%= title %>
@@ -181,9 +179,7 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 						<span class="document-thumbnail">
 
 							<%
-							DLFileShortcut dlFileShortcut = null;
-
-							String thumbnailSrc = DLUtil.getThumbnailSrc(fileEntry, fileVersion, dlFileShortcut, themeDisplay);
+							String thumbnailSrc = DLUtil.getThumbnailSrc(fileEntry, fileVersion, null, themeDisplay);
 
 							if (layoutAssetEntry != null) {
 								AssetEntry incrementAssetEntry = AssetEntryServiceUtil.incrementViewCounter(layoutAssetEntry.getClassName(), fileEntry.getFileEntryId());
@@ -432,20 +428,20 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 
 		<aui:column columnWidth="<%= 35 %>" cssClass="lfr-asset-column-details context-pane" last="<%= true %>">
 			<c:if test="<%= showActions %>">
-				<div class="lfr-header-row">
-					<div class="lfr-header-row-content"></div>
-				</div>
+				<liferay-ui:app-view-toolbar>
+					<aui:button-row cssClass="edit-toolbar" id='<%= renderResponse.getNamespace() + "fileEntryToolbar" %>' />
+				</liferay-ui:app-view-toolbar>
 			</c:if>
 
 			<div class="body-row asset-details">
 				<c:if test="<%= showAssetMetadata %>">
 					<div class="asset-details-content">
 						<h3 class="version <%= fileEntry.isCheckedOut() ? "document-locked" : StringPool.BLANK %>">
-							<liferay-ui:message key="version" /> <%= fileVersion.getVersion() %>
+							<liferay-ui:message key="version" /> <%= HtmlUtil.escape(fileVersion.getVersion()) %>
 						</h3>
 
 						<div class="lfr-asset-icon lfr-asset-author">
-							<liferay-ui:message arguments="<%= HtmlUtil.escape(fileVersion.getUserName()) %>" key="last-updated-by-x" />
+							<liferay-ui:message arguments="<%= HtmlUtil.escape(fileVersion.getStatusByUserName()) %>" key="last-updated-by-x" />
 						</div>
 
 						<div class="lfr-asset-icon lfr-asset-date">
@@ -561,7 +557,7 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 													}
 						%>
 
-									<liferay-ui:panel collapsible="<%= true %>" cssClass="metadata" extended="<%= true %>" id="documentLibraryMetadataPanel" persistState="<%= true %>" title="<%= ddmStructure.getName(LocaleUtil.getDefault()) %>">
+									<liferay-ui:panel collapsible="<%= true %>" cssClass="metadata" extended="<%= true %>" id="documentLibraryMetadataPanel" persistState="<%= true %>" title="<%= HtmlUtil.escape(ddmStructure.getName(LocaleUtil.getDefault())) %>">
 
 										<%=DDMXSDUtil.getHTML(pageContext, ddmStructure.getXsd(), fields, String.valueOf(ddmStructure.getPrimaryKey()), true, locale) %>
 
@@ -867,7 +863,7 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 
 					<portlet:renderURL var="moveURL">
 						<portlet:param name="struts_action" value="/document_library/move_file_entry" />
-						<portlet:param name="redirect" value="<%= currentURL %>" />
+						<portlet:param name="redirect" value="<%= redirect %>" />
 						<portlet:param name="fileEntryId" value="<%= String.valueOf(fileEntry.getFileEntryId()) %>" />
 					</portlet:renderURL>
 
@@ -936,7 +932,7 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 			);
 		</c:if>
 
-		<c:if test="<%= DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.DELETE) && (fileEntry.getModel() instanceof DLFileEntry) %>">
+		<c:if test="<%= DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.DELETE) && (fileEntry.getModel() instanceof DLFileEntry) && TrashUtil.isTrashEnabled(scopeGroupId) %>">
 			fileEntryToolbarChildren.push(
 				{
 					<portlet:renderURL var="viewFolderURL">
@@ -945,11 +941,9 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 					</portlet:renderURL>
 
 					handler: function(event) {
-						if (confirm('<%= UnicodeLanguageUtil.get(pageContext, "are-you-sure-you-want-to-move-this-entry-to-the-recycle-bin") %>')) {
-							document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = '<%= Constants.MOVE_TO_TRASH %>';
-							document.<portlet:namespace />fm.<portlet:namespace />redirect.value = '<%= viewFolderURL.toString() %>';
-							submitForm(document.<portlet:namespace />fm);
-						}
+						document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = '<%= Constants.MOVE_TO_TRASH %>';
+						document.<portlet:namespace />fm.<portlet:namespace />redirect.value = '<%= viewFolderURL.toString() %>';
+						submitForm(document.<portlet:namespace />fm);
 					},
 					icon: 'delete',
 					label: '<%= UnicodeLanguageUtil.get(pageContext, "move-to-the-recycle-bin") %>'
@@ -957,7 +951,7 @@ request.setAttribute("view_file_entry.jsp-fileEntry", fileEntry);
 			);
 		</c:if>
 
-		<c:if test="<%= DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.DELETE) && !(fileEntry.getModel() instanceof DLFileEntry) %>">
+		<c:if test="<%= DLFileEntryPermission.contains(permissionChecker, fileEntry, ActionKeys.DELETE) && (!(fileEntry.getModel() instanceof DLFileEntry) || !TrashUtil.isTrashEnabled(scopeGroupId)) %>">
 			fileEntryToolbarChildren.push(
 				{
 					<portlet:renderURL var="viewFolderURL">

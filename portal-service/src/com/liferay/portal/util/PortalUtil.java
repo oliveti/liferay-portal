@@ -252,6 +252,15 @@ public class PortalUtil {
 		return getPortal().getCanonicalURL(completeURL, themeDisplay, layout);
 	}
 
+	public static String getCanonicalURL(
+			String completeURL, ThemeDisplay themeDisplay, Layout layout,
+			boolean forceLayoutFriendlyURL)
+		throws PortalException, SystemException {
+
+		return getPortal().getCanonicalURL(
+			completeURL, themeDisplay, layout, forceLayoutFriendlyURL);
+	}
+
 	/**
 	 * @deprecated {@link #getCDNHost(boolean)}
 	 */
@@ -339,6 +348,18 @@ public class PortalUtil {
 		return getPortal().getControlPanelFullURL(scopeGroupId, ppid, params);
 	}
 
+	public static long getControlPanelPlid(long companyId)
+		throws PortalException, SystemException {
+
+		return getPortal().getControlPanelPlid(companyId);
+	}
+
+	public static long getControlPanelPlid(PortletRequest portletRequest)
+		throws PortalException, SystemException {
+
+		return getPortal().getControlPanelPlid(portletRequest);
+	}
+
 	public static Set<Portlet> getControlPanelPortlets(
 			long companyId, String category)
 		throws SystemException {
@@ -385,31 +406,36 @@ public class PortalUtil {
 	}
 
 	public static Date getDate(
-			int month, int day, int year, int hour, int min, PortalException pe)
+			int month, int day, int year,
+			Class<? extends PortalException> clazz)
 		throws PortalException {
 
-		return getPortal().getDate(month, day, year, hour, min, pe);
+		return getPortal().getDate(month, day, year, clazz);
+	}
+
+	public static Date getDate(
+			int month, int day, int year, int hour, int min,
+			Class<? extends PortalException> clazz)
+		throws PortalException {
+
+		return getPortal().getDate(month, day, year, hour, min, clazz);
 	}
 
 	public static Date getDate(
 			int month, int day, int year, int hour, int min, TimeZone timeZone,
-			PortalException pe)
+			Class<? extends PortalException> clazz)
 		throws PortalException {
 
-		return getPortal().getDate(month, day, year, hour, min, timeZone, pe);
-	}
-
-	public static Date getDate(int month, int day, int year, PortalException pe)
-		throws PortalException {
-
-		return getPortal().getDate(month, day, year, pe);
+		return getPortal().getDate(
+			month, day, year, hour, min, timeZone, clazz);
 	}
 
 	public static Date getDate(
-			int month, int day, int year, TimeZone timeZone, PortalException pe)
+			int month, int day, int year, TimeZone timeZone,
+			Class<? extends PortalException> clazz)
 		throws PortalException {
 
-		return getPortal().getDate(month, day, year, timeZone, pe);
+		return getPortal().getDate(month, day, year, timeZone, clazz);
 	}
 
 	/**
@@ -752,10 +778,6 @@ public class PortalUtil {
 		return getPortal().getOriginalServletRequest(request);
 	}
 
-	public static String getOuterPortletId(HttpServletRequest request) {
-		return getPortal().getOuterPortletId(request);
-	}
-
 	public static long getParentGroupId(long scopeGroupId)
 		throws PortalException, SystemException {
 
@@ -993,6 +1015,10 @@ public class PortalUtil {
 		return getPortal().getPortletTitle(portlet, user);
 	}
 
+	public static String getPortletTitle(RenderRequest renderRequest) {
+		return getPortal().getPortletTitle(renderRequest);
+	}
+
 	public static String getPortletTitle(RenderResponse renderResponse) {
 		return getPortal().getPortletTitle(renderResponse);
 	}
@@ -1097,6 +1123,18 @@ public class PortalUtil {
 		return getPortal().getSelectedUser(portletRequest, checkPermission);
 	}
 
+	public static long[] getSiteAndCompanyGroupIds(long groupId)
+		throws PortalException, SystemException {
+
+		return getPortal().getSiteAndCompanyGroupIds(groupId);
+	}
+
+	public static long[] getSiteAndCompanyGroupIds(ThemeDisplay themeDisplay)
+		throws PortalException, SystemException {
+
+		return getPortal().getSiteAndCompanyGroupIds(themeDisplay);
+	}
+
 	public static String getSiteLoginURL(ThemeDisplay themeDisplay)
 		throws PortalException, SystemException {
 
@@ -1150,13 +1188,15 @@ public class PortalUtil {
 	}
 
 	public static String getUniqueElementId(
-		HttpServletRequest request, String id) {
+		HttpServletRequest request, String namespace, String id) {
 
-		return getPortal().getUniqueElementId(request, id);
+		return getPortal().getUniqueElementId(request, namespace, id);
 	}
 
-	public static String getUniqueElementId(PortletRequest request, String id) {
-		return getPortal().getUniqueElementId(request, id);
+	public static String getUniqueElementId(
+		PortletRequest request, String namespace, String id) {
+
+		return getPortal().getUniqueElementId(request, namespace, id);
 	}
 
 	public static UploadPortletRequest getUploadPortletRequest(
@@ -1203,6 +1243,10 @@ public class PortalUtil {
 
 	public static long getUserId(PortletRequest portletRequest) {
 		return getPortal().getUserId(portletRequest);
+	}
+
+	public static String getUserName(BaseModel<?> baseModel) {
+		return getPortal().getUserName(baseModel);
 	}
 
 	public static String getUserName(long userId, String defaultUserName) {
@@ -1355,13 +1399,13 @@ public class PortalUtil {
 	}
 
 	public static boolean isGroupAdmin(User user, long groupId)
-			throws Exception {
+		throws Exception {
 
 		return getPortal().isGroupAdmin(user, groupId);
 	}
 
 	public static boolean isGroupOwner(User user, long groupId)
-			throws Exception {
+		throws Exception {
 
 		return getPortal().isGroupOwner(user, groupId);
 	}
@@ -1418,6 +1462,10 @@ public class PortalUtil {
 
 	public static boolean isReservedParameter(String name) {
 		return getPortal().isReservedParameter(name);
+	}
+
+	public static boolean isRSSFeedsEnabled() {
+		return getPortal().isRSSFeedsEnabled();
 	}
 
 	public static boolean isSecure(HttpServletRequest request) {
@@ -1492,6 +1540,20 @@ public class PortalUtil {
 		throws IOException, ServletException {
 
 		getPortal().sendError(status, e, request, response);
+	}
+
+	public static void sendRSSFeedsDisabledError(
+			HttpServletRequest request, HttpServletResponse response)
+		throws IOException, ServletException {
+
+		getPortal().sendRSSFeedsDisabledError(request, response);
+	}
+
+	public static void sendRSSFeedsDisabledError(
+			PortletRequest portletRequest, PortletResponse portletResponse)
+		throws IOException, ServletException {
+
+		getPortal().sendRSSFeedsDisabledError(portletRequest, portletResponse);
 	}
 
 	/**

@@ -17,10 +17,21 @@
 <%@ include file="/html/portlet/wiki/init.jsp" %>
 
 <%
+String redirect = ParamUtil.getString(request, "redirect");
+
+boolean viewTrashAttachments = ParamUtil.getBoolean(request, "viewTrashAttachments");
+
 WikiNode node = (WikiNode)request.getAttribute(WebKeys.WIKI_NODE);
 WikiPage wikiPage = (WikiPage)request.getAttribute(WebKeys.WIKI_PAGE);
 
-String[] attachments = wikiPage.getAttachmentsFiles();
+String[] attachments = null;
+
+if (viewTrashAttachments) {
+	attachments = wikiPage.getDeletedAttachmentsFiles();
+}
+else {
+	attachments = wikiPage.getAttachmentsFiles();
+}
 
 PortletURL portletURL = renderResponse.createActionURL();
 
@@ -36,20 +47,43 @@ portletURL.setParameter("struts_action", "/wiki/view_page_attachments");
 PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(pageContext, "attachments"), portletURL.toString());
 %>
 
+<portlet:actionURL var="undoTrashURL">
+	<portlet:param name="struts_action" value="/wiki/edit_page_attachment" />
+	<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.RESTORE %>" />
+</portlet:actionURL>
+
+<liferay-ui:trash-undo portletURL="<%= undoTrashURL %>" />
+
 <liferay-util:include page="/html/portlet/wiki/top_links.jsp" />
 
 <liferay-util:include page="/html/portlet/wiki/page_tabs.jsp">
 	<liferay-util:param name="tabs1" value="attachments" />
 </liferay-util:include>
 
+<c:if test="<%= viewTrashAttachments %>">
+	<liferay-ui:header
+		backURL="<%= redirect %>"
+		title="removed-attachments"
+	/>
+</c:if>
+
 <%
-	List<String> headerNames = new ArrayList<String>();
+List<String> headerNames = new ArrayList<String>();
 
 headerNames.add("file-name");
 headerNames.add("size");
 headerNames.add(StringPool.BLANK);
 
-SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, currentURLObj, headerNames, "this-page-does-not-have-any-file-attachments");
+String emptyResultsMessage = null;
+
+if (viewTrashAttachments) {
+	emptyResultsMessage = "this-page-does-not-have-file-attachments-in-the-recycle-bin";
+}
+else {
+	emptyResultsMessage = "this-page-does-not-have-file-attachments";
+}
+
+SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, currentURLObj, headerNames, emptyResultsMessage);
 
 int total = attachments.length;
 
@@ -83,12 +117,18 @@ for (int i = 0; i < results.size(); i++) {
 
 	// File name
 
+	if (viewTrashAttachments) {
+		shortFileName = TrashUtil.stripTrashNamespace(shortFileName, TrashUtil.TRASH_TIME_SEPARATOR);
+	}
+
+	String extension = FileUtil.getExtension(shortFileName);
+
 	StringBundler sb = new StringBundler(6);
 
 	sb.append("<img align=\"left\" border=\"0\" src=\"");
 	sb.append(themeDisplay.getPathThemeImages());
 	sb.append("/file_system/small/");
-	sb.append(DLUtil.getFileIcon(shortFileName));
+	sb.append(DLUtil.getFileIcon(extension));
 	sb.append(".png\">&nbsp;");
 	sb.append(shortFileName);
 
@@ -109,9 +149,50 @@ for (int i = 0; i < results.size(); i++) {
 %>
 
 <c:if test="<%= WikiNodePermission.contains(permissionChecker, node.getNodeId(), ActionKeys.ADD_ATTACHMENT) %>">
-	<div>
-		<input type="button" value="<liferay-ui:message key="add-attachments" />" onClick="location.href = '<portlet:renderURL><portlet:param name="struts_action" value="/wiki/edit_page_attachment" /><portlet:param name="nodeId" value="<%= String.valueOf(node.getNodeId()) %>" /><portlet:param name="title" value="<%= wikiPage.getTitle() %>" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>';" />
-	</div>
+	<c:choose>
+		<c:when test="<%= viewTrashAttachments %>">
+			<portlet:actionURL var="emptyTrashURL">
+				<portlet:param name="struts_action" value="/wiki/edit_page_attachment" />
+				<portlet:param name="nodeId" value="<%= String.valueOf(node.getPrimaryKey()) %>" />
+				<portlet:param name="title" value="<%= wikiPage.getTitle() %>" />
+			</portlet:actionURL>
+
+			<liferay-ui:trash-empty
+				confirmMessage="are-you-sure-you-want-to-remove-the-attachments-for-this-page"
+				emptyMessage="remove-the-attachments-for-this-page"
+				portletURL="<%= emptyTrashURL.toString() %>"
+				totalEntries="<%= attachments.length %>"
+			/>
+		</c:when>
+		<c:otherwise>
+			<portlet:renderURL var="viewTrashAttachmentsURL">
+				<portlet:param name="struts_action" value="/wiki/view_page_attachments" />
+				<portlet:param name="tabs1" value="attachments" />
+				<portlet:param name="redirect" value="<%= currentURL %>" />
+				<portlet:param name="nodeId" value="<%= String.valueOf(node.getNodeId()) %>" />
+				<portlet:param name="title" value="<%= wikiPage.getTitle() %>" />
+				<portlet:param name="viewTrashAttachments" value="<%= Boolean.TRUE.toString() %>" />
+			</portlet:renderURL>
+
+			<%
+			String[] deletedAttachments = wikiPage.getDeletedAttachmentsFiles();
+			%>
+
+			<c:if test="<%= deletedAttachments.length > 0 %>">
+				<liferay-ui:icon
+					cssClass="trash-attachments"
+					image="delete"
+					label="<%= true %>"
+					message='<%= LanguageUtil.format(pageContext, "x-recent-removed-attachments", deletedAttachments.length) %>'
+					url="<%= viewTrashAttachmentsURL %>"
+				/>
+			</c:if>
+
+			<div>
+				<input type="button" value="<liferay-ui:message key="add-attachments" />" onClick="location.href = '<portlet:renderURL><portlet:param name="struts_action" value="/wiki/edit_page_attachment" /><portlet:param name="nodeId" value="<%= String.valueOf(node.getNodeId()) %>" /><portlet:param name="title" value="<%= wikiPage.getTitle() %>" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>';" />
+			</div>
+		</c:otherwise>
+	</c:choose>
 
 	<br />
 </c:if>

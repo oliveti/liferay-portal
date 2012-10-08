@@ -896,6 +896,7 @@
 			<basic name="groupId" />
 			<basic name="repositoryId" />
 			<basic name="mappedId" />
+			<basic name="manualCheckInRequired" />
 			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
@@ -1860,6 +1861,7 @@
 			<basic name="largeImageId" />
 			<basic name="custom1ImageId" />
 			<basic name="custom2ImageId" />
+			<basic name="manualCheckInRequired" />
 			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
@@ -2029,6 +2031,9 @@
 				<temporal>TIMESTAMP</temporal>
 			</basic>
 			<basic name="defaultFileEntryTypeId" />
+			<basic name="hidden">
+				<column name="HIDDEN_" />
+			</basic>
 			<basic name="overrideFileEntryTypes" />
 			<basic name="status" />
 			<basic name="statusByUserId" />
@@ -2036,7 +2041,9 @@
 			<basic name="statusDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<transient name="containerModelId" />
 			<transient name="modelAttributes" />
+			<transient name="parentContainerModelId" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
 			<transient name="statusByUserUuid" />
@@ -2216,6 +2223,7 @@
 			<basic name="modifiedDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<basic name="parentStructureId" />
 			<basic name="classNameId" />
 			<basic name="structureKey" />
 			<basic name="name" />
@@ -2229,6 +2237,7 @@
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
 			<transient name="document" />
+			<transient name="localizedFieldsMap" />
 			<transient name="modelAttributes" />
 			<transient name="nameCurrentLanguageId" />
 			<transient name="nameMap" />
@@ -2311,6 +2320,9 @@
 				<column name="ROWID_" />
 			</id>
 			<basic name="companyId" />
+			<basic name="modifiedDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
 			<basic name="tableId" />
 			<basic name="classPK" />
 			<transient name="modelAttributes" />
@@ -3589,9 +3601,16 @@
 			<basic name="lastPostDate">
 				<temporal>TIMESTAMP</temporal>
 			</basic>
+			<basic name="status" />
+			<basic name="statusByUserId" />
+			<basic name="statusByUserName" />
+			<basic name="statusDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
 			<transient name="modelAttributes" />
 			<transient name="primaryKey" />
 			<transient name="primaryKeyObj" />
+			<transient name="statusByUserUuid" />
 			<transient name="userUuid" />
 		</attributes>
 	</mapped-superclass>
@@ -3844,6 +3863,7 @@
 			<transient name="portletApp" />
 			<transient name="portletClass" />
 			<transient name="portletDataHandlerClass" />
+			<transient name="portletDisplayTemplateHandlerClass" />
 			<transient name="portletFilters" />
 			<transient name="portletInfo" />
 			<transient name="portletLayoutListenerClass" />
@@ -4401,6 +4421,7 @@
 	<entity class="com.liferay.portlet.trash.model.impl.TrashEntryImpl" name="TrashEntry">
 		<table name="TrashEntry" />
 		<attributes>
+			<transient name="rootEntry" />
 			<transient name="typeSettingsProperties" />
 		</attributes>
 	</entity>
@@ -4416,6 +4437,7 @@
 		<table name="WikiPage" />
 		<attributes>
 			<transient name="attachmentsDir" />
+			<transient name="deletedAttachmentsDir" />
 		</attributes>
 	</entity>
 	<entity class="com.liferay.portlet.wiki.model.impl.WikiPageResourceImpl" name="WikiPageResource">

@@ -25,8 +25,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.LocaleThreadLocal;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -217,7 +215,7 @@ public class SitesUtil {
 
 		parameterMap.put(
 			PortletDataHandlerKeys.DELETE_MISSING_LAYOUTS,
-			new String[]{Boolean.FALSE.toString()});
+			new String[] {Boolean.FALSE.toString()});
 
 		File file = LayoutLocalServiceUtil.exportLayoutsAsFile(
 			sourceLayout.getGroupId(), sourceLayout.isPrivateLayout(),
@@ -354,12 +352,10 @@ public class SitesUtil {
 			ServiceContext serviceContext =
 				ServiceContextThreadLocal.getServiceContext();
 
-			Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
-
 			updateLayoutScopes(
 				serviceContext.getUserId(), sourceLayout, targetLayout,
 				sourcePreferences, targetPreferences, sourcePortletId,
-				LocaleUtil.toLanguageId(locale));
+				serviceContext.getLanguageId());
 		}
 	}
 
@@ -540,7 +536,7 @@ public class SitesUtil {
 			new String[] {Boolean.TRUE.toString()});
 		parameterMap.put(
 			PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
-			new String[] {Boolean.FALSE.toString()});
+			new String[] {Boolean.TRUE.toString()});
 		parameterMap.put(
 			PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE,
 			new String[] {
@@ -549,7 +545,7 @@ public class SitesUtil {
 			});
 		parameterMap.put(
 			PortletDataHandlerKeys.LOGO,
-			new String[] {Boolean.FALSE.toString()});
+			new String[] {Boolean.TRUE.toString()});
 		parameterMap.put(
 			PortletDataHandlerKeys.PERFORM_DIRECT_BINARY_IMPORT,
 			new String[] {Boolean.TRUE.toString()});
@@ -799,6 +795,19 @@ public class SitesUtil {
 		if (mergeFailCount >
 			PropsValues.LAYOUT_PROTOTYPE_MERGE_FAIL_THRESHOLD) {
 
+			if (_log.isWarnEnabled()) {
+				StringBundler sb = new StringBundler(6);
+
+				sb.append("Merge not performed because the fail threshold ");
+				sb.append("was reached for layoutPrototypeId ");
+				sb.append(layoutPrototype.getLayoutPrototypeId());
+				sb.append(" and layoutId ");
+				sb.append(layoutPrototypeLayout.getLayoutId());
+				sb.append(". Update the count in the database to try again.");
+
+				_log.warn(sb.toString());
+			}
+
 			return;
 		}
 
@@ -904,8 +913,8 @@ public class SitesUtil {
 			if (_log.isWarnEnabled()) {
 				StringBundler sb = new StringBundler(6);
 
-				sb.append("Merge not performed because the fail threshold was");
-				sb.append("reached for layoutSetPrototypeId ");
+				sb.append("Merge not performed because the fail threshold ");
+				sb.append("was reached for layoutSetPrototypeId ");
 				sb.append(layoutSetPrototype.getLayoutSetPrototypeId());
 				sb.append(" and layoutId ");
 				sb.append(layoutSetPrototypeLayoutSet.getLayoutSetId());
@@ -956,15 +965,17 @@ public class SitesUtil {
 		}
 
 		try {
-			Map<String, String[]> parameterMap = null;
-
 			boolean importData = true;
 
-			if (lastMergeTime > 0) {
+			long lastResetTime = GetterUtil.getLong(
+				settingsProperties.getProperty("last-reset-time"));
+
+			if ((lastMergeTime > 0) || (lastResetTime > 0)) {
 				importData = false;
 			}
 
-			parameterMap = getLayoutSetPrototypesParameters(importData);
+			Map<String, String[]> parameterMap =
+				getLayoutSetPrototypesParameters(importData);
 
 			importLayoutSetPrototype(
 				layoutSetPrototype, layoutSet.getGroupId(),
@@ -1009,6 +1020,9 @@ public class SitesUtil {
 			layoutSet.getSettingsProperties();
 
 		settingsProperties.remove("last-merge-time");
+
+		settingsProperties.setProperty(
+			"last-reset-time", String.valueOf(System.currentTimeMillis()));
 
 		LayoutSetLocalServiceUtil.updateLayoutSet(layoutSet, false);
 	}
@@ -1093,6 +1107,9 @@ public class SitesUtil {
 			PortletDataHandlerKeys.IGNORE_LAST_PUBLISH_DATE,
 			new String[] {Boolean.TRUE.toString()});
 		parameterMap.put(
+			PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
+			new String[] {Boolean.TRUE.toString()});
+		parameterMap.put(
 			PortletDataHandlerKeys.LAYOUT_SET_PROTOTYPE_LINK_ENABLED,
 			new String[] {Boolean.TRUE.toString()});
 		parameterMap.put(
@@ -1101,6 +1118,9 @@ public class SitesUtil {
 				PortletDataHandlerKeys.
 					LAYOUTS_IMPORT_MODE_CREATED_FROM_PROTOTYPE
 			});
+		parameterMap.put(
+			PortletDataHandlerKeys.LOGO,
+			new String[] {Boolean.TRUE.toString()});
 		parameterMap.put(
 			PortletDataHandlerKeys.PERMISSIONS,
 			new String[] {Boolean.TRUE.toString()});
@@ -1157,7 +1177,7 @@ public class SitesUtil {
 
 		File file = null;
 
-		StringBundler sb = new StringBundler(importData ? 4 : 4);
+		StringBundler sb = new StringBundler(importData ? 4 : 3);
 
 		sb.append(_TEMP_DIR);
 		sb.append(layoutSetPrototype.getUuid());

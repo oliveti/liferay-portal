@@ -32,12 +32,17 @@
 		entry = TrashEntryLocalServiceUtil.getEntry(entryId);
 	}
 	else if (Validator.isNotNull(className) && (classPK > 0)) {
-		entry = TrashEntryLocalServiceUtil.getEntry(className, classPK);
+		entry = TrashEntryLocalServiceUtil.fetchEntry(className, classPK);
 	}
 
-	TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(entry.getClassName());
+	if (entry != null) {
+		className = entry.getClassName();
+		classPK = entry.getClassPK();
+	}
 
-	TrashRenderer trashRenderer = trashHandler.getTrashRenderer(entry.getClassPK());
+	TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(className);
+
+	TrashRenderer trashRenderer = trashHandler.getTrashRenderer(classPK);
 
 	String path = trashRenderer.render(renderRequest, renderResponse, AssetRenderer.TEMPLATE_FULL_CONTENT);
 	%>
@@ -47,6 +52,15 @@
 		localizeTitle="<%= false %>"
 		title="<%= trashRenderer.getTitle(locale) %>"
 	/>
+
+	<c:if test="<%= ((entry != null) && (entry.getRootEntry() == null)) || Validator.isNotNull(trashRenderer.renderActions(renderRequest, renderResponse)) %>">
+
+		<%
+		request.setAttribute(WebKeys.TRASH_ENTRY, entry);
+		%>
+
+		<liferay-util:include page='<%= (entry != null) && (entry.getRootEntry() == null) ? "/html/portlet/trash/entry_action.jsp" : trashRenderer.renderActions(renderRequest, renderResponse) %>' />
+	</c:if>
 
 	<c:choose>
 		<c:when test="<%= Validator.isNotNull(path) %>">
@@ -103,3 +117,13 @@
 		</c:if>
 	</c:if>
 </div>
+
+<aui:script use="liferay-restore-entry">
+	new Liferay.RestoreEntry(
+		{
+			checkEntryURL: '<portlet:actionURL><portlet:param name="<%= Constants.CMD %>" value="checkEntry" /><portlet:param name="struts_action" value="/trash/edit_entry" /></portlet:actionURL>',
+			namespace: '<portlet:namespace />',
+			restoreEntryURL: '<portlet:renderURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="struts_action" value="/trash/restore_entry" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>'
+		}
+	);
+</aui:script>

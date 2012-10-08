@@ -298,7 +298,7 @@ public class DLFileEntryTypeLocalServiceImpl
 		}
 
 		List<DLFileEntryType> dlFileEntryTypes = getFolderFileEntryTypes(
-			DLUtil.getGroupIds(groupId), folderId, true);
+			PortalUtil.getSiteAndCompanyGroupIds(groupId), folderId, true);
 
 		List<Long> fileEntryTypeIds = getFileEntryTypeIds(dlFileEntryTypes);
 
@@ -486,7 +486,7 @@ public class DLFileEntryTypeLocalServiceImpl
 	}
 
 	protected long getFileEntryTypesPrimaryFolderId(long folderId)
-		throws SystemException, NoSuchFolderException {
+		throws NoSuchFolderException, SystemException {
 
 		while (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 			DLFolder dlFolder = dlFolderPersistence.findByPrimaryKey(folderId);
@@ -535,6 +535,7 @@ public class DLFileEntryTypeLocalServiceImpl
 			if (ddmStructure == null) {
 				ddmStructure = ddmStructureLocalService.addStructure(
 					userId, groupId,
+					DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID,
 					PortalUtil.getClassNameId(DLFileEntryMetadata.class),
 					ddmStructureKey, nameMap, descriptionMap, xsd, "xml",
 					DDMStructureConstants.TYPE_AUTO, serviceContext);
@@ -545,8 +546,9 @@ public class DLFileEntryTypeLocalServiceImpl
 				}
 
 				ddmStructure = ddmStructureLocalService.updateStructure(
-					ddmStructure.getStructureId(), nameMap, descriptionMap, xsd,
-					serviceContext);
+					ddmStructure.getStructureId(),
+					ddmStructure.getParentStructureId(), nameMap,
+					descriptionMap, xsd, serviceContext);
 			}
 
 			return ddmStructure.getStructureId();

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.test;
 
+import com.liferay.portal.kernel.test.TestContext;
 import com.liferay.portal.servlet.MainServlet;
 
 import java.io.File;
@@ -29,13 +30,6 @@ import org.springframework.mock.web.MockServletContext;
  */
 public class MainServletExecutionTestListener
 	extends EnvironmentExecutionTestListener {
-
-	@Override
-	public void runAfterClass(TestContext testContext) {
-		super.runAfterClass(testContext);
-
-		_mainServlet.destroy();
-	}
 
 	@Override
 	public void runBeforeClass(TestContext testContext) {
@@ -61,7 +55,7 @@ public class MainServletExecutionTestListener
 	protected String getResourceBasePath() {
 		File file = new File("portal-web/docroot");
 
-		return "file://" + file.getAbsolutePath();
+		return "file:" + file.getAbsolutePath();
 	}
 
 	private MainServlet _mainServlet;

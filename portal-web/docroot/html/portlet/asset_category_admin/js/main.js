@@ -1002,12 +1002,12 @@ AUI.add(
 					_getCategory: function(categoryId) {
 						var instance = this;
 
-						var categorySelector = '#' + STR_CATEGORY_NODE + categoryId;
+						var categoryNode = instance._categoriesContainer.one('#' + STR_CATEGORY_NODE + categoryId);
 
-						var category = A.Widget.getByNode(categorySelector);
+						var category = categoryNode.getData('tree-node');
 
-						if (!A.instanceOf(category, A.Component)) {
-							category = instance._categoriesContainer.one(categorySelector);
+						if (!A.instanceOf(category, A.TreeNode)) {
+							category = categoryNode;
 						}
 
 						return category;
@@ -1830,7 +1830,7 @@ AUI.add(
 						var dragNode = event.drag.get(STR_NODE);
 						var dropNode = event.drop.get(STR_NODE);
 
-						var node = A.Widget.getByNode(dragNode);
+						var node = dragNode.getData('tree-node');
 
 						var vocabularyId = dropNode.attr('data-vocabularyid');
 						var fromCategoryId = instance._getCategoryId(node);

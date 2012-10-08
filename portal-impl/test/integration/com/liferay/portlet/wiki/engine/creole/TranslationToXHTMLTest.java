@@ -43,6 +43,14 @@ public class TranslationToXHTMLTest extends AbstractWikiParserTests {
 	}
 
 	@Test
+	public void testParseCorrectlyComplexNestedList() {
+		Assert.assertEquals(
+			"<ul><li>a<ul><li>a.1</li></ul></li><li>b<ul><li>b.1</li>" +
+				"<li>b.2</li><li>b.3</li></ul></li><li>c</li></ul>",
+			translate("list-4.creole"));
+	}
+
+	@Test
 	public void testParseCorrectlyItalicContentInListItems() {
 		Assert.assertEquals(
 			"<ul><li> <em>abcdefg</em></li></ul>", translate("list-5.creole"));
@@ -83,7 +91,7 @@ public class TranslationToXHTMLTest extends AbstractWikiParserTests {
 	}
 
 	@Test
-	public void testParseCorrectlyNoWikiBlockWitBraces() {
+	public void testParseCorrectlyNoWikiBlockWithBraces() {
 		Assert.assertEquals(
 			"<pre>{" + _NEW_LINE + "foo" + _NEW_LINE + "}" + _NEW_LINE +
 				"</pre>",
@@ -91,8 +99,7 @@ public class TranslationToXHTMLTest extends AbstractWikiParserTests {
 	}
 
 	@Test
-	public void testParseCorrectlyNoWikiBlockWitMultipleAndText() {
-
+	public void testParseCorrectlyNoWikiBlockWithMultipleAndText() {
 		Assert.assertEquals(
 			"<pre>public interface Foo {" + _NEW_LINE + "void foo();" +
 				_NEW_LINE + "}" + _NEW_LINE + "</pre><p>Outside preserve </p>",
@@ -100,7 +107,7 @@ public class TranslationToXHTMLTest extends AbstractWikiParserTests {
 	}
 
 	@Test
-	public void testParseCorrectlyNoWikiBlockWitMultipleBraces() {
+	public void testParseCorrectlyNoWikiBlockWithMultipleBraces() {
 		Assert.assertEquals(
 			"<pre>public interface Foo {" + _NEW_LINE + "void foo();" +
 				_NEW_LINE + "}" + _NEW_LINE + "</pre>",
@@ -152,14 +159,14 @@ public class TranslationToXHTMLTest extends AbstractWikiParserTests {
 	}
 
 	@Test
-	public void testParseCorrectlyOneNonEmptyNoWikiBlockWitBraces() {
+	public void testParseCorrectlyOneNonEmptyNoWikiBlockWithBraces() {
 		Assert.assertEquals(
 			"<p>Preserving </p><pre>.lfr-helper{span}</pre>",
 			translate("nowikiblock-6.creole"));
 	}
 
 	@Test
-	public void testParseCorrectlyOneNonEmptyNoWikiBlockWitMultipleLines() {
+	public void testParseCorrectlyOneNonEmptyNoWikiBlockWithMultipleLines() {
 		Assert.assertEquals(
 			"<pre>Multiple" + _NEW_LINE + "lines</pre>",
 			toUnix(translate("nowikiblock-5.creole")));
@@ -186,8 +193,8 @@ public class TranslationToXHTMLTest extends AbstractWikiParserTests {
 	@Test
 	public void testParseCorrectlyOrderedNestedLevels() {
 		Assert.assertEquals(
-			"<ol><li>a</li><ol><li>a.1</li></ol><li>b</li><ol><li>b.1</li>" +
-				"<li>b.2</li><li>b.3</li></ol><li>c</li></ol>",
+			"<ol><li>a<ol><li>a.1</li></ol></li><li>b<ol><li>b.1</li>" +
+				"<li>b.2</li><li>b.3</li></ol></li><li>c</li></ol>",
 			translate("list-10.creole"));
 	}
 
@@ -288,6 +295,32 @@ public class TranslationToXHTMLTest extends AbstractWikiParserTests {
 	}
 
 	@Test
+	public void testParseMixedList1() {
+		Assert.assertEquals(
+			"<ul><li> U1</li></ul><ol><li> O1</li></ol>",
+			translate("mixed-list-1.creole"));
+	}
+
+	@Test
+	public void testParseMixedList2() {
+		Assert.assertEquals(
+			"<ol><li> 1<ol><li> 1.1</li><li> 1.2</li><li> 1.3</li></ol></li>" +
+				"</ol><ul><li> A<ul><li> A.A</li><li> A.B</li></ul></li></ul>",
+			translate("mixed-list-2.creole"));
+	}
+
+	@Test
+	public void testParseMixedList3() {
+		Assert.assertEquals(
+			"<ol><li> T1<ol><li> T1.1</li></ol></li><li> T2</li><li> T3" +
+				"</li></ol><ul><li> Divider 1<ul><li> Divider 2a</li>" +
+					"<li> Divider 2b<ul><li> Divider 3</li></ul></li>" +
+						"</ul></li></ul><ol><li> T3.2</li>" +
+							"<li> T3.3</li></ol>",
+		translate("mixed-list-3.creole"));
+	}
+
+	@Test
 	public void testParseMultilineTextParagraph() {
 		Assert.assertEquals(
 			"<p>Simple P0 Simple P1 Simple P2 Simple P3 Simple P4 Simple P5 " +
@@ -315,10 +348,10 @@ public class TranslationToXHTMLTest extends AbstractWikiParserTests {
 	@Test
 	public void testParseNestedLists() {
 		Assert.assertEquals(
-			"<ul><li> 1</li><li> 2</li><ul><li> 2.1</li><ul><li> 2.1.1</li>" +
-				"<ul><li> 2.1.1.1</li><li> 2.1.1.2</li></ul><li> 2.1.2</li>" +
-					"<li> 2.1.3</li></ul><li> 2.2</li><li> 2.3</li></ul><li>3" +
-						"</li></ul>",
+			"<ul><li> 1</li><li> 2<ul><li> 2.1<ul><li> 2.1.1<ul>" +
+				"<li> 2.1.1.1</li><li> 2.1.1.2</li></ul></li><li> 2.1.2</li>" +
+					"<li> 2.1.3</li></ul></li><li> 2.2</li><li> 2.3</li></ul>" +
+						"</li><li>3</li></ul>",
 			translate("list-18.creole"));
 	}
 

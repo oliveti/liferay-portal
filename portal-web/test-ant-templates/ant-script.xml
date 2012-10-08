@@ -3,6 +3,15 @@
 <project name="portal-test-${test.ant.script.command}" basedir="../../." default="test" xmlns:antelope="antlib:ise.antelope.tasks">
 	<import file="../../build-test.xml" />
 
+	<if>
+		<not>
+			<equals arg1="$${test.pacl}" arg2="true" />
+		</not>
+		<then>
+			<property name="test.pacl" value="false" />
+		</then>
+	</if>
+
 	<target name="test-${test.ant.script.command}-geronimo-mysql-firefox">
 		<antcall target="prepare-mysql">
 			${test.ant.script.file.properties}
@@ -17,7 +26,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -36,7 +47,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -54,7 +67,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -73,7 +88,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -91,7 +108,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -110,7 +129,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -128,7 +149,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -147,7 +170,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -165,7 +190,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -184,7 +211,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -209,7 +238,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -239,7 +270,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -261,7 +294,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -280,7 +315,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -298,7 +335,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -316,8 +355,10 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.browser" value="googlechrome" />
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -335,8 +376,10 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.browser" value="iehta" />
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -355,7 +398,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -374,8 +419,10 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.browser" value="googlechrome" />
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -394,8 +441,10 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.browser" value="iehta" />
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -420,7 +469,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -450,7 +501,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -479,7 +532,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -509,7 +564,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -538,7 +595,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -568,7 +627,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -597,7 +658,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -627,7 +690,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -656,7 +721,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -686,7 +753,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -715,7 +784,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -745,7 +816,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -774,7 +847,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -804,7 +879,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 
 		<antcall target="stop-vm">
@@ -826,7 +903,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -845,7 +924,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -864,7 +945,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -884,6 +967,7 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
 		</ant>
 	</target>
@@ -891,7 +975,6 @@
 	<target name="test-${test.ant.script.command}-websphere-7.0-mysql-firefox">
 		<antcall target="prepare-mysql">
 			${test.ant.script.file.properties}
-			<param name="vm.vmdk.suffix" value="websphere-7.0.0.7" />
 		</antcall>
 
 		<ant antfile="build-test-websphere-7.0.xml" target="run-selenium-websphere-7.0">
@@ -903,7 +986,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -922,14 +1007,15 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
 	<target name="test-${test.ant.script.command}-websphere-7.0-mysql-minimal-firefox">
 		<antcall target="prepare-mysql">
 			${test.ant.script.file.properties}
-			<param name="vm.vmdk.suffix" value="websphere-7.0.0.7" />
 		</antcall>
 
 		<ant antfile="build-test-websphere-7.0.xml" target="run-selenium-websphere-7.0">
@@ -942,7 +1028,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 
@@ -962,7 +1050,9 @@
 			${test.ant.script.file.plugin.portlets.properties}
 			${test.ant.script.file.plugin.themes}
 			${test.ant.script.file.plugin.webs}
+			${test.ant.script.file.selenium.implementation}
 			<property name="test.name" value="${test.ant.script.suite}" />
+			<property name="test.pacl" value="$${test.pacl}" />
 		</ant>
 	</target>
 </project>

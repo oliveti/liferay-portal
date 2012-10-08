@@ -72,26 +72,6 @@ public class SearchContainer<R> {
 	}
 
 	public SearchContainer(
-		PortletRequest portletRequest, PortletURL iteratorURL,
-		List<String> headerNames, String emptyResultsMessage) {
-
-		this(
-			portletRequest, null, null, DEFAULT_CUR_PARAM, DEFAULT_DELTA,
-			iteratorURL, headerNames, emptyResultsMessage);
-	}
-
-	public SearchContainer(
-		PortletRequest portletRequest, DisplayTerms displayTerms,
-		DisplayTerms searchTerms, String curParam, int delta,
-		PortletURL iteratorURL, List<String> headerNames,
-		String emptyResultsMessage) {
-
-		this (
-			portletRequest, displayTerms, searchTerms, curParam, 0, delta,
-			iteratorURL, headerNames, emptyResultsMessage);
-	}
-
-	public SearchContainer(
 		PortletRequest portletRequest, DisplayTerms displayTerms,
 		DisplayTerms searchTerms, String curParam, int cur, int delta,
 		PortletURL iteratorURL, List<String> headerNames,
@@ -158,10 +138,26 @@ public class SearchContainer<R> {
 		}
 
 		_emptyResultsMessage = emptyResultsMessage;
+	}
 
-		if (Validator.isNotNull(_id)) {
-			_id = PortalUtil.getUniqueElementId(portletRequest, _id);
-		}
+	public SearchContainer(
+		PortletRequest portletRequest, DisplayTerms displayTerms,
+		DisplayTerms searchTerms, String curParam, int delta,
+		PortletURL iteratorURL, List<String> headerNames,
+		String emptyResultsMessage) {
+
+		this (
+			portletRequest, displayTerms, searchTerms, curParam, 0, delta,
+			iteratorURL, headerNames, emptyResultsMessage);
+	}
+
+	public SearchContainer(
+		PortletRequest portletRequest, PortletURL iteratorURL,
+		List<String> headerNames, String emptyResultsMessage) {
+
+		this(
+			portletRequest, null, null, DEFAULT_CUR_PARAM, DEFAULT_DELTA,
+			iteratorURL, headerNames, emptyResultsMessage);
 	}
 
 	public String getClassName() {
@@ -207,8 +203,15 @@ public class SearchContainer<R> {
 		return _headerNames;
 	}
 
-	public String getId(HttpServletRequest request) {
+	public String getId(HttpServletRequest request, String namespace) {
+		if (_uniqueId) {
+			return _id;
+		}
+
 		if (Validator.isNotNull(_id)) {
+			_id = PortalUtil.getUniqueElementId(request, namespace, _id);
+			_uniqueId = true;
+
 			return _id;
 		}
 
@@ -228,14 +231,18 @@ public class SearchContainer<R> {
 
 			id = TextFormatter.formatPlural(variableCasingSimpleClassName);
 
-			_id = id.concat("SearchContainer");
+			id = id.concat("SearchContainer");
 
-			return PortalUtil.getUniqueElementId(request, _id);
+			_id = PortalUtil.getUniqueElementId(request, namespace, id);
+			_uniqueId = true;
+
+			return _id;
 		}
 		else {
 			id = DeterminateKeyGenerator.generate("taglib_search_container");
 
 			_id = id.concat("SearchContainer");
+			_uniqueId = true;
 
 			return _id;
 		}
@@ -488,5 +495,6 @@ public class SearchContainer<R> {
 	private DisplayTerms _searchTerms;
 	private int _start;
 	private int _total;
+	private boolean _uniqueId;
 
 }

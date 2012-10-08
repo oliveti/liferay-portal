@@ -14,12 +14,16 @@
 
 package com.liferay.portlet.dynamicdatamapping.service.impl;
 
+import com.liferay.portal.LocaleException;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringPool;
@@ -64,10 +68,10 @@ public class DDMStructureLocalServiceImpl
 	extends DDMStructureLocalServiceBaseImpl {
 
 	public DDMStructure addStructure(
-			long userId, long groupId, long classNameId, String structureKey,
-			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String xsd, String storageType, int type,
-			ServiceContext serviceContext)
+			long userId, long groupId, long parentStructureId, long classNameId,
+			String structureKey, Map<Locale, String> nameMap,
+			Map<Locale, String> descriptionMap, String xsd, String storageType,
+			int type, ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
 		// Structure
@@ -100,6 +104,7 @@ public class DDMStructureLocalServiceImpl
 		structure.setUserName(user.getFullName());
 		structure.setCreateDate(serviceContext.getCreateDate(now));
 		structure.setModifiedDate(serviceContext.getModifiedDate(now));
+		structure.setParentStructureId(parentStructureId);
 		structure.setClassNameId(classNameId);
 		structure.setStructureKey(structureKey);
 		structure.setNameMap(nameMap);
@@ -159,9 +164,10 @@ public class DDMStructureLocalServiceImpl
 		DDMStructure structure = getStructure(structureId);
 
 		return addStructure(
-			userId, structure.getGroupId(), structure.getClassNameId(), null,
-			nameMap, descriptionMap, structure.getXsd(),
-			structure.getStorageType(), structure.getType(), serviceContext);
+			userId, structure.getGroupId(), structure.getParentStructureId(),
+			structure.getClassNameId(), null, nameMap, descriptionMap,
+			structure.getXsd(), structure.getStorageType(), structure.getType(),
+			serviceContext);
 	}
 
 	public void deleteStructure(DDMStructure structure)
@@ -381,29 +387,31 @@ public class DDMStructureLocalServiceImpl
 	}
 
 	public DDMStructure updateStructure(
-			long structureId, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String xsd,
-			ServiceContext serviceContext)
+			long structureId, long parentStructureId,
+			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+			String xsd, ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
 		DDMStructure structure = ddmStructurePersistence.findByPrimaryKey(
 			structureId);
 
 		return doUpdateStructure(
-			nameMap, descriptionMap, xsd, serviceContext, structure);
+			parentStructureId, nameMap, descriptionMap, xsd, serviceContext,
+			structure);
 	}
 
 	public DDMStructure updateStructure(
-			long groupId, String structureKey, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String xsd,
-			ServiceContext serviceContext)
+			long groupId, long parentStructureId, String structureKey,
+			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+			String xsd, ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
 		DDMStructure structure = ddmStructurePersistence.findByG_S(
 			groupId, structureKey);
 
 		return doUpdateStructure(
-			nameMap, descriptionMap, xsd, serviceContext, structure);
+			parentStructureId, nameMap, descriptionMap, xsd, serviceContext,
+			structure);
 	}
 
 	protected void appendNewStructureRequiredFields(
@@ -437,8 +445,10 @@ public class DDMStructureLocalServiceImpl
 
 			String name = element.attributeValue("name");
 
+			name = HtmlUtil.escapeXPathAttribute(name);
+
 			XPath templateXPath = SAXReaderUtil.createXPath(
-				"//dynamic-element[@name=\"" + name + "\"]");
+				"//dynamic-element[@name=" + name + "]");
 
 			if (!templateXPath.booleanValueOf(templateDocument)) {
 				templateElement.add(element.createCopy());
@@ -447,8 +457,9 @@ public class DDMStructureLocalServiceImpl
 	}
 
 	protected DDMStructure doUpdateStructure(
-			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String xsd, ServiceContext serviceContext, DDMStructure structure)
+			long parentStructureId, Map<Locale, String> nameMap,
+			Map<Locale, String> descriptionMap, String xsd,
+			ServiceContext serviceContext, DDMStructure structure)
 		throws PortalException, SystemException {
 
 		try {
@@ -461,6 +472,7 @@ public class DDMStructureLocalServiceImpl
 		validate(nameMap, xsd);
 
 		structure.setModifiedDate(serviceContext.getModifiedDate(null));
+		structure.setParentStructureId(parentStructureId);
 		structure.setNameMap(nameMap);
 		structure.setDescriptionMap(descriptionMap);
 		structure.setXsd(xsd);
@@ -642,8 +654,6 @@ public class DDMStructureLocalServiceImpl
 	protected void validate(Map<Locale, String> nameMap, String xsd)
 		throws PortalException {
 
-		validateName(nameMap);
-
 		if (Validator.isNull(xsd)) {
 			throw new StructureXsdException();
 		}
@@ -659,14 +669,25 @@ public class DDMStructureLocalServiceImpl
 					throw new StructureXsdException();
 				}
 
+				Locale contentDefaultLocale = LocaleUtil.fromLanguageId(
+					rootElement.attributeValue("default-locale"));
+
+				validateLanguages(nameMap, contentDefaultLocale);
+
 				elements.addAll(rootElement.elements());
 
 				Set<String> elNames = new HashSet<String>();
 
 				validate(elements, elNames);
 			}
+			catch (LocaleException le) {
+				throw le;
+			}
 			catch (StructureDuplicateElementException sdee) {
 				throw sdee;
+			}
+			catch (StructureNameException sne) {
+				throw sne;
 			}
 			catch (StructureXsdException sxe) {
 				throw sxe;
@@ -677,13 +698,25 @@ public class DDMStructureLocalServiceImpl
 		}
 	}
 
-	protected void validateName(Map<Locale, String> nameMap)
+	protected void validateLanguages(
+			Map<Locale, String> nameMap, Locale contentDefaultLocale)
 		throws PortalException {
 
-		String name = nameMap.get(LocaleUtil.getDefault());
+		String name = nameMap.get(contentDefaultLocale);
 
 		if (Validator.isNull(name)) {
 			throw new StructureNameException();
+		}
+
+		Locale[] availableLocales = LanguageUtil.getAvailableLocales();
+
+		if (!ArrayUtil.contains(availableLocales, contentDefaultLocale)) {
+			LocaleException le = new LocaleException();
+
+			le.setSourceAvailableLocales(new Locale[] {contentDefaultLocale});
+			le.setTargetAvailableLocales(availableLocales);
+
+			throw le;
 		}
 	}
 

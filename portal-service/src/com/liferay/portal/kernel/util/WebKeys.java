@@ -51,6 +51,8 @@ public interface WebKeys {
 
 	public static final String INVOKER_FILTER_URI = "INVOKER_FILTER_URI";
 
+	public static final String JAVASCRIPT_CONTEXT = "JAVASCRIPT_CONTEXT";
+
 	public static final String JOURNAL_ARTICLE_DISPLAY = "JOURNAL_ARTICLE_DISPLAY";
 
 	public static final String LAST_PATH = "LAST_PATH";
@@ -71,11 +73,11 @@ public interface WebKeys {
 
 	public static final String OUTPUT_DATA = "LIFERAY_SHARED_OUTPUT_DATA";
 
-	public static final String PAGE_BODY_BOTTOM = "LIFERAY_SHARED_PAGE_BODY_BOTTOM";
+	public static final String PAGE_BODY_BOTTOM = "PAGE_BODY_BOTTOM";
 
-	public static final String PAGE_BODY_TOP = "LIFERAY_SHARED_PAGE_BODY_TOP";
+	public static final String PAGE_BODY_TOP = "PAGE_BODY_TOP";
 
-	public static final String PAGE_BOTTOM = "LIFERAY_SHARED_PAGE_BOTTOM";
+	public static final String PAGE_BOTTOM = "PAGE_BOTTOM";
 
 	public static final String PAGE_DESCRIPTION = "LIFERAY_SHARED_PAGE_DESCRIPTION";
 
@@ -85,7 +87,7 @@ public interface WebKeys {
 
 	public static final String PAGE_TITLE = "LIFERAY_SHARED_PAGE_TITLE";
 
-	public static final String PAGE_TOP = "LIFERAY_SHARED_PAGE_TOP";
+	public static final String PAGE_TOP = "PAGE_TOP";
 
 	public static final String PARALLEL_RENDERING_MERGE_LOCK = "PARALLEL_RENDERING_MERGE_LOCK";
 
@@ -114,8 +116,6 @@ public interface WebKeys {
 	public static final String RENDER_PORTLET_COLUMN_POS = "RENDER_PORTLET_COLUMN_POS";
 
 	public static final String RENDER_PORTLET_RESOURCE = "RENDER_PORTLET_RESOURCE";
-
-	public static final String RUNTIME_PORTLET_IDS = "LIFERAY_SHARED_RUNTIME_PORTLET_IDS";
 
 	public static final String SEARCH_CONTAINER = "SEARCH_CONTAINER";
 

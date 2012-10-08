@@ -258,6 +258,18 @@ public class Validator {
 		}
 	}
 
+	public static boolean isBlank(String s) {
+		if (s == null) {
+			return true;
+		}
+
+		if (s.length() == 0) {
+			return true;
+		}
+
+		return false;
+	}
+
 	/**
 	 * Returns <code>true</code> if the character is an upper or lower case
 	 * English letter.
@@ -440,13 +452,87 @@ public class Validator {
 
 		// LEP-1445
 
-		for (int i = 0; i < _EMAIL_ADDRESS_SPECIAL_CHAR.length; i++) {
-			if (c == _EMAIL_ADDRESS_SPECIAL_CHAR[i]) {
+		for (char specialChar : _EMAIL_ADDRESS_SPECIAL_CHAR) {
+			if (c == specialChar) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns <code>true</code> if the file extension is valid.
+	 *
+	 * @param  fileExtension file extension
+	 * @return <code>true</code> if the extension is valid; <code>false</code>
+	 *         otherwise
+	 */
+	public static boolean isFileExtension(String fileExtension) {
+		if (isNull(fileExtension) ||
+			fileExtension.contains(StringPool.BACK_SLASH) ||
+			fileExtension.contains(StringPool.NULL_CHAR) ||
+			fileExtension.contains(StringPool.SLASH)) {
+
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isFileName(String name) {
+		if (isNull(name) || name.equals(StringPool.PERIOD) ||
+			name.equals(StringPool.DOUBLE_PERIOD) ||
+			name.contains(StringPool.BACK_SLASH) ||
+			name.contains(StringPool.NULL_CHAR) ||
+			name.contains(StringPool.SLASH)) {
+
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isFilePath(String path, boolean isParentDirAllowed) {
+		if (Validator.isNull(path)) {
+			return false;
+		}
+
+		if (path.contains(StringPool.NULL_CHAR)) {
+			return false;
+		}
+
+		if (isParentDirAllowed) {
+			return true;
+		}
+
+		if (path.equals(StringPool.DOUBLE_PERIOD)) {
+			return false;
+		}
+
+		String normalizedPath = path.replace(
+			CharPool.BACK_SLASH, CharPool.SLASH);
+
+		if (normalizedPath.startsWith(
+				StringPool.DOUBLE_PERIOD.concat(StringPool.SLASH))) {
+
+			return false;
+		}
+
+		if (normalizedPath.endsWith(
+				StringPool.SLASH.concat(StringPool.DOUBLE_PERIOD))) {
+
+			return false;
+		}
+
+		if (normalizedPath.contains(
+				StringPool.SLASH.concat(
+					StringPool.DOUBLE_PERIOD).concat(StringPool.SLASH))) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -525,8 +611,9 @@ public class Validator {
 		}
 
 		for (char c : nameCharArray) {
-			if (!isChar(c) && !isDigit(c) && (c != CharPool.DASH) &&
-				(c != CharPool.PERIOD)) {
+			if (!isChar(c) && !isDigit(c) && (c != CharPool.CLOSE_BRACKET) &&
+				(c != CharPool.COLON) && (c != CharPool.DASH) &&
+				(c != CharPool.OPEN_BRACKET) && (c != CharPool.PERIOD)) {
 
 				return false;
 			}
@@ -548,8 +635,8 @@ public class Validator {
 			return false;
 		}
 
-		if (((s.indexOf("<html>") != -1) || (s.indexOf("<HTML>") != -1)) &&
-			((s.indexOf("</html>") != -1) || (s.indexOf("</HTML>") != -1))) {
+		if ((s.contains("<html>") || s.contains("<HTML>")) &&
+			(s.contains("</html>") || s.contains("</HTML>"))) {
 
 			return true;
 		}
@@ -625,17 +712,18 @@ public class Validator {
 			int x = 0;
 
 			if (((i + 1) % 2) == 0) {
-				x = Integer.parseInt(number.substring(i, i + 1)) * 2;
+				x = GetterUtil.getInteger(number.substring(i, i + 1)) * 2;
 
 				if (x >= 10) {
 					String s = String.valueOf(x);
 
-					x = Integer.parseInt(s.substring(0, 1)) +
-						Integer.parseInt(s.substring(1, 2));
+					x =
+						GetterUtil.getInteger(s.substring(0, 1)) +
+							GetterUtil.getInteger(s.substring(1, 2));
 				}
 			}
 			else {
-				x = Integer.parseInt(number.substring(i, i + 1));
+				x = GetterUtil.getInteger(number.substring(i, i + 1));
 			}
 
 			total = total + x;

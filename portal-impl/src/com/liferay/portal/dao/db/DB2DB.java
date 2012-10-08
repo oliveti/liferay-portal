@@ -52,6 +52,7 @@ public class DB2DB extends BaseDB {
 		template = removeLongInserts(template);
 		template = removeNull(template);
 		template = StringUtil.replace(template, "\\'", "''");
+		template = StringUtil.replace(template, "\\n", "'||CHR(10)||'");
 
 		return template;
 	}
@@ -162,7 +163,7 @@ public class DB2DB extends BaseDB {
 					"alter table @table@ drop column @old-column@",
 					REWORD_TEMPLATE, template);
 			}
-			else if (line.indexOf(DROP_INDEX) != -1) {
+			else if (line.contains(DROP_INDEX)) {
 				String[] tokens = StringUtil.split(line, ' ');
 
 				line = StringUtil.replace(
@@ -217,7 +218,7 @@ public class DB2DB extends BaseDB {
 	private static final String[] _DB2 = {
 		"--", "1", "0", "'1970-01-01-00.00.00.000000'", "current timestamp",
 		" blob", " blob", " smallint", " timestamp", " double", " integer",
-		" bigint", " varchar(600)", " clob", " varchar",
+		" bigint", " varchar(750)", " clob", " varchar",
 		" generated always as identity", "commit"
 	};
 

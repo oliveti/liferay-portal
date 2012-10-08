@@ -41,6 +41,7 @@ import com.liferay.portal.model.User;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
+import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.mobiledevicerules.model.MDRRuleGroupInstance;
 
 import java.io.Serializable;
@@ -84,6 +85,33 @@ public class ThemeDisplay
 
 	public Account getAccount() {
 		return _account;
+	}
+
+	public String getCDNBaseURL() {
+		if (_cdnBaseURL != null) {
+			return _cdnBaseURL;
+		}
+
+		String host = getCDNHost();
+
+		String portalURL = getPortalURL();
+
+		if (getServerName() != null) {
+			try {
+				portalURL = PortalUtil.getPortalURL(getLayout(), this);
+			}
+			catch (Exception e) {
+				_log.error(e, e);
+			}
+		}
+
+		if (Validator.isNull(host)) {
+			host = portalURL;
+		}
+
+		_cdnBaseURL = host;
+
+		return _cdnBaseURL;
 	}
 
 	public String getCDNDynamicResourcesHost() {
@@ -323,6 +351,10 @@ public class ThemeDisplay
 	 */
 	public long getPortletGroupId() {
 		return getScopeGroupId();
+	}
+
+	public String getPpid() {
+		return _ppid;
 	}
 
 	public String getRealCompanyLogo() {
@@ -583,6 +615,10 @@ public class ThemeDisplay
 		return _lifecycleAction;
 	}
 
+	public boolean isLifecycleEvent() {
+		return _lifecycleEvent;
+	}
+
 	public boolean isLifecycleRender() {
 		return _lifecycleRender;
 	}
@@ -725,6 +761,10 @@ public class ThemeDisplay
 		_ajax = ajax;
 	}
 
+	public void setCDNBaseURL(String cdnBase) {
+		_cdnBaseURL = cdnBase;
+	}
+
 	public void setCDNDynamicResourcesHost(String cdnDynamicResourcesHost) {
 		_cdnDynamicResourcesHost = cdnDynamicResourcesHost;
 	}
@@ -852,6 +892,10 @@ public class ThemeDisplay
 		_lifecycleAction = lifecycleAction;
 	}
 
+	public void setLifecycleEvent(boolean lifecycleEvent) {
+		_lifecycleEvent = lifecycleEvent;
+	}
+
 	public void setLifecycleRender(boolean lifecycleRender) {
 		_lifecycleRender = lifecycleRender;
 	}
@@ -873,20 +917,27 @@ public class ThemeDisplay
 		if ((theme != null) && (colorScheme != null)) {
 			String themeStaticResourcePath = theme.getStaticResourcePath();
 
-			String host = getCDNHost();
-
-			if (Validator.isNull(host)) {
-				host = getPortalURL();
-			}
+			String cdnBaseURL = getCDNBaseURL();
 
 			setPathColorSchemeImages(
-				host + themeStaticResourcePath +
+				cdnBaseURL + themeStaticResourcePath +
 					colorScheme.getColorSchemeImagesPath());
 
 			String dynamicResourcesHost = getCDNDynamicResourcesHost();
 
 			if (Validator.isNull(dynamicResourcesHost)) {
-				dynamicResourcesHost = getPortalURL();
+				String portalURL = getPortalURL();
+
+				if (getServerName() != null) {
+					try {
+						portalURL = PortalUtil.getPortalURL(getLayout(), this);
+					}
+					catch (Exception e) {
+						_log.error(e, e);
+					}
+				}
+
+				dynamicResourcesHost = portalURL;
 			}
 
 			setPathThemeCss(
@@ -894,12 +945,14 @@ public class ThemeDisplay
 					theme.getCssPath());
 
 			setPathThemeImages(
-				host + themeStaticResourcePath + theme.getImagesPath());
+				cdnBaseURL + themeStaticResourcePath + theme.getImagesPath());
 			setPathThemeJavaScript(
-				host + themeStaticResourcePath + theme.getJavaScriptPath());
+				cdnBaseURL + themeStaticResourcePath +
+					theme.getJavaScriptPath());
 			setPathThemeRoot(themeStaticResourcePath + theme.getRootPath());
 			setPathThemeTemplates(
-				host + themeStaticResourcePath + theme.getTemplatesPath());
+				cdnBaseURL + themeStaticResourcePath +
+					theme.getTemplatesPath());
 		}
 	}
 
@@ -1011,6 +1064,10 @@ public class ThemeDisplay
 
 	public void setPortalURL(String portalURL) {
 		_portalURL = portalURL;
+	}
+
+	public void setPpid(String ppid) {
+		_ppid = ppid;
 	}
 
 	public void setRealCompanyLogo(String realCompanyLogo) {
@@ -1279,6 +1336,7 @@ public class ThemeDisplay
 	private Account _account;
 	private boolean _addSessionIdToURL;
 	private boolean _ajax;
+	private String _cdnBaseURL;
 	private String _cdnDynamicResourcesHost = StringPool.BLANK;
 	private String _cdnHost = StringPool.BLANK;
 	private ColorScheme _colorScheme;
@@ -1310,6 +1368,7 @@ public class ThemeDisplay
 	private LayoutTypePortlet _layoutTypePortlet;
 	private String _lifecycle;
 	private boolean _lifecycleAction;
+	private boolean _lifecycleEvent;
 	private boolean _lifecycleRender;
 	private boolean _lifecycleResource;
 	private Locale _locale;
@@ -1337,6 +1396,7 @@ public class ThemeDisplay
 	private long _plid;
 	private String _portalURL = StringPool.BLANK;
 	private PortletDisplay _portletDisplay = new PortletDisplay();
+	private String _ppid = StringPool.BLANK;
 	private String _realCompanyLogo = StringPool.BLANK;
 	private int _realCompanyLogoHeight;
 	private int _realCompanyLogoWidth;

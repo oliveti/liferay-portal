@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -35,6 +36,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.LayoutTemplate;
 import com.liferay.portal.model.LayoutTemplateConstants;
 import com.liferay.portal.model.Portlet;
+import com.liferay.portal.model.PortletConstants;
 import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
 import com.liferay.portal.service.LayoutTemplateLocalServiceUtil;
 import com.liferay.portal.servlet.ThreadLocalFacadeServletRequestWrapperUtil;
@@ -42,12 +44,13 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.layoutconfiguration.util.velocity.CustomizationSettingsProcessor;
 import com.liferay.portlet.layoutconfiguration.util.velocity.TemplateProcessor;
+import com.liferay.portlet.layoutconfiguration.util.xml.ActionURLLogic;
+import com.liferay.portlet.layoutconfiguration.util.xml.PortletLogic;
+import com.liferay.portlet.layoutconfiguration.util.xml.RenderURLLogic;
 import com.liferay.portlet.layoutconfiguration.util.xml.RuntimeLogic;
 import com.liferay.taglib.util.VelocityTaglib;
 
 import java.io.Closeable;
-
-import java.lang.reflect.Constructor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +66,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.portlet.PortletResponse;
+import javax.portlet.RenderResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -98,6 +104,32 @@ public class RuntimePageImpl implements RuntimePage {
 		throws Exception {
 
 		processTemplate(pageContext, null, templateResource);
+	}
+
+	public String processXML(
+			HttpServletRequest request, HttpServletResponse response,
+			String content)
+		throws Exception {
+
+		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
+			JavaConstants.JAVAX_PORTLET_RESPONSE);
+
+		if (!(portletResponse instanceof RenderResponse)) {
+			throw new IllegalArgumentException(
+				"processXML can only be invoked in the render phase");
+		}
+
+		RenderResponse renderResponse = (RenderResponse)portletResponse;
+
+		RuntimeLogic portletLogic = new PortletLogic(request, response);
+		RuntimeLogic actionURLLogic = new ActionURLLogic(renderResponse);
+		RuntimeLogic renderURLLogic = new RenderURLLogic(renderResponse);
+
+		content = processXML(request, content, portletLogic);
+		content = processXML(request, content, actionURLLogic);
+		content = processXML(request, content, renderURLLogic);
+
+		return content;
 	}
 
 	public String processXML(
@@ -150,7 +182,15 @@ public class RuntimePageImpl implements RuntimePage {
 					x = close2 + runtimeLogic.getClose2Tag().length();
 				}
 
-				sb.append(runtimeLogic.processXML(content.substring(y, x)));
+				String runtimePortletTag = content.substring(y, x);
+
+				if ((renderPortlet != null) &&
+					runtimePortletTag.contains(renderPortlet.getPortletId())) {
+
+					return StringPool.BLANK;
+				}
+
+				sb.append(runtimeLogic.processXML(runtimePortletTag));
 
 				y = content.indexOf(runtimeLogic.getOpenTag(), x);
 			}
@@ -178,31 +218,12 @@ public class RuntimePageImpl implements RuntimePage {
 		}
 	}
 
-	protected Object buildVelocityTaglib(
-			HttpServletRequest request, HttpServletResponse response,
-			PageContext pageContext)
-		throws Exception {
-
-		// We have to load this class from the plugin class loader (context
-		// class loader) or we will throw a ClassCastException
-
-		Class<?> clazz = Class.forName(VelocityTaglib.class.getName());
-
-		Constructor<?> constructor = clazz.getConstructor(
-			ServletContext.class, HttpServletRequest.class,
-			HttpServletResponse.class, PageContext.class);
-
-		return constructor.newInstance(
-			pageContext.getServletContext(), request, response, pageContext);
-
-	}
-
 	protected void doDispatch(
 			PageContext pageContext, String portletId,
 			TemplateResource templateResource, boolean processTemplate)
 		throws Exception {
 
-		LayoutTemplate layoutTemplate = getLayoutTemlpate(
+		LayoutTemplate layoutTemplate = getLayoutTemplate(
 			templateResource.getTemplateId());
 
 		String pluginServletContextName = GetterUtil.getString(
@@ -211,9 +232,13 @@ public class RuntimePageImpl implements RuntimePage {
 		ServletContext pluginServletContext = ServletContextPool.get(
 			pluginServletContextName);
 
-		ClassLoader pluginClassLoader =
-			(ClassLoader)pluginServletContext.getAttribute(
-				PluginContextListener.PLUGIN_CLASS_LOADER);
+		ClassLoader pluginClassLoader = null;
+
+		if (pluginServletContext != null) {
+			pluginClassLoader =
+				(ClassLoader)pluginServletContext.getAttribute(
+					PluginContextListener.PLUGIN_CLASS_LOADER);
+		}
 
 		ClassLoader contextClassLoader =
 			PACLClassLoaderUtil.getContextClassLoader();
@@ -274,8 +299,9 @@ public class RuntimePageImpl implements RuntimePage {
 
 		// liferay:include tag library
 
-		Object velocityTaglib = buildVelocityTaglib(
-			request, response, pageContext);
+		VelocityTaglib velocityTaglib = new VelocityTaglib(
+			pageContext.getServletContext(), request, response, pageContext,
+			template);
 
 		template.put("taglibLiferay", velocityTaglib);
 		template.put("theme", velocityTaglib);
@@ -317,9 +343,10 @@ public class RuntimePageImpl implements RuntimePage {
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
-		Object velocityTaglib = buildVelocityTaglib(
-			request, new PipingServletResponse(response, unsyncStringWriter),
-			pageContext);
+		VelocityTaglib velocityTaglib = new VelocityTaglib(
+			pageContext.getServletContext(), request,
+			new PipingServletResponse(response, unsyncStringWriter),
+			pageContext, template);
 
 		template.put("taglibLiferay", velocityTaglib);
 		template.put("theme", velocityTaglib);
@@ -439,7 +466,7 @@ public class RuntimePageImpl implements RuntimePage {
 		sb.writeTo(pageContext.getOut());
 	}
 
-	protected LayoutTemplate getLayoutTemlpate(String velocityTemplateId) {
+	protected LayoutTemplate getLayoutTemplate(String velocityTemplateId) {
 		String separator = LayoutTemplateConstants.CUSTOM_SEPARATOR;
 		boolean standard = false;
 
@@ -461,6 +488,17 @@ public class RuntimePageImpl implements RuntimePage {
 				pos + separator.length());
 
 			themeId = velocityTemplateId.substring(0, pos);
+		}
+
+		pos = layoutTemplateId.indexOf(PortletConstants.INSTANCE_SEPARATOR);
+
+		if (pos != -1) {
+			layoutTemplateId = layoutTemplateId.substring(
+				pos + PortletConstants.INSTANCE_SEPARATOR.length() + 1);
+
+			pos = layoutTemplateId.indexOf(StringPool.UNDERLINE);
+
+			layoutTemplateId = layoutTemplateId.substring(pos + 1);
 		}
 
 		return LayoutTemplateLocalServiceUtil.getLayoutTemplate(

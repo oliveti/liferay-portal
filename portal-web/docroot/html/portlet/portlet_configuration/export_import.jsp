@@ -87,6 +87,16 @@ if (layout.isTypeControlPanel()) {
 		<liferay-ui:error exception="<%= LARFileException.class %>" message="please-specify-a-lar-file-to-import" />
 		<liferay-ui:error exception="<%= LARTypeException.class %>" message="please-import-a-lar-file-of-the-correct-type" />
 		<liferay-ui:error exception="<%= LayoutImportException.class %>" message="an-unexpected-error-occurred-while-importing-your-file" />
+
+		<liferay-ui:error exception="<%= LocaleException.class %>">
+
+			<%
+			LocaleException le = (LocaleException)errorException;
+			%>
+
+			<liferay-ui:message arguments="<%= new String[] {StringUtil.merge(le.getSourceAvailableLocales(), StringPool.COMMA_AND_SPACE), StringUtil.merge(le.getTargetAvailableLocales(), StringPool.COMMA_AND_SPACE)} %>" key="the-available-languages-in-the-lar-file-x-do-not-match-the-portal's-available-languages-x" />
+		</liferay-ui:error>
+
 		<liferay-ui:error exception="<%= NoSuchLayoutException.class %>" message="an-error-occurred-because-the-live-group-does-not-have-the-current-page" />
 		<liferay-ui:error exception="<%= PortletIdException.class %>" message="please-import-a-lar-file-for-the-current-portlet" />
 
@@ -116,7 +126,6 @@ if (layout.isTypeControlPanel()) {
 		<aui:form action="<%= exportImportPagesURL %>" method="post" name="fm">
 			<aui:input name="tabs1" type="hidden" value="export_import" />
 			<aui:input name="tabs2" type="hidden" value="<%= tabs2 %>" />
-			<aui:input name="<%= Constants.CMD %>" type="hidden" />
 			<aui:input name="plid" type="hidden" value="<%= layout.getPlid() %>" />
 			<aui:input name="groupId" type="hidden" value="<%= themeDisplay.getScopeGroupId() %>" />
 			<aui:input name="portletResource" type="hidden" value="<%= portletResource %>" />
@@ -226,33 +235,25 @@ if (layout.isTypeControlPanel()) {
 <aui:script>
 	function <portlet:namespace />copyFromLive() {
 		if (confirm('<%= UnicodeLanguageUtil.get(pageContext, "are-you-sure-you-want-to-copy-from-live-and-update-the-existing-staging-portlet-information") %>')) {
-			document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = "copy_from_live";
-
-			submitForm(document.<portlet:namespace />fm);
+			submitForm(document.<portlet:namespace />fm, '<portlet:actionURL><portlet:param name="struts_action" value="/portlet_configuration/export_import" /><portlet:param name="<%= Constants.CMD %>" value="copy_from_live" /></portlet:actionURL>');
 		}
 	}
 
 	function <portlet:namespace />exportData() {
 		document.<portlet:namespace />fm.encoding = "multipart/form-data";
 
-		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = "export";
-
-		submitForm(document.<portlet:namespace />fm, '<portlet:actionURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="struts_action" value="/portlet_configuration/export_import" /></portlet:actionURL>&etag=0&strip=0', false);
+		submitForm(document.<portlet:namespace />fm, '<portlet:actionURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="struts_action" value="/portlet_configuration/export_import" /><portlet:param name="<%= Constants.CMD %>" value="<%= Constants.EXPORT %>" /></portlet:actionURL>&etag=0&strip=0', false);
 	}
 
 	function <portlet:namespace />importData() {
 		document.<portlet:namespace />fm.encoding = "multipart/form-data";
 
-		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = "import";
-
-		submitForm(document.<portlet:namespace />fm);
+		submitForm(document.<portlet:namespace />fm, '<portlet:actionURL><portlet:param name="struts_action" value="/portlet_configuration/export_import" /><portlet:param name="<%= Constants.CMD %>" value="<%= Constants.IMPORT %>" /></portlet:actionURL>');
 	}
 
 	function <portlet:namespace />publishToLive() {
 		if (confirm('<%= UnicodeLanguageUtil.get(pageContext, "are-you-sure-you-want-to-publish-to-live-and-update-the-existing-portlet-data") %>')) {
-			document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = "publish_to_live";
-
-			submitForm(document.<portlet:namespace />fm);
+			submitForm(document.<portlet:namespace />fm, '<portlet:actionURL><portlet:param name="struts_action" value="/portlet_configuration/export_import" /><portlet:param name="<%= Constants.CMD %>" value="publish_to_live" /></portlet:actionURL>');
 		}
 	}
 </aui:script>

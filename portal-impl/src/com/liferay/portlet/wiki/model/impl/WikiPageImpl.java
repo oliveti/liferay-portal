@@ -22,8 +22,10 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.CompanyConstants;
 import com.liferay.portlet.documentlibrary.NoSuchDirectoryException;
 import com.liferay.portlet.documentlibrary.store.DLStoreUtil;
+import com.liferay.portlet.trash.util.TrashUtil;
 import com.liferay.portlet.wiki.model.WikiNode;
 import com.liferay.portlet.wiki.model.WikiPage;
+import com.liferay.portlet.wiki.model.WikiPageConstants;
 import com.liferay.portlet.wiki.service.WikiNodeLocalServiceUtil;
 import com.liferay.portlet.wiki.service.WikiPageLocalServiceUtil;
 
@@ -41,7 +43,8 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 
 	public String getAttachmentsDir() {
 		if (_attachmentDirs == null) {
-			_attachmentDirs = "wiki/" + getResourcePrimKey();
+			_attachmentDirs =
+				WikiPageConstants.BASE_ATTACHMENTS_DIR + getResourcePrimKey();
 		}
 
 		return _attachmentDirs;
@@ -76,6 +79,32 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 		}
 
 		return pages;
+	}
+
+	public String getDeletedAttachmentsDir() {
+		if (_deletedAttachmentDirs == null) {
+			_deletedAttachmentDirs =
+				WikiPageConstants.BASE_ATTACHMENTS_DIR +
+					TrashUtil.TRASH_ATTACHMENTS_DIR + getResourcePrimKey();
+		}
+
+		return _deletedAttachmentDirs;
+	}
+
+	public String[] getDeletedAttachmentsFiles()
+		throws PortalException, SystemException {
+
+		String[] fileNames = new String[0];
+
+		try {
+			fileNames = DLStoreUtil.getFileNames(
+				getCompanyId(), CompanyConstants.SYSTEM,
+				getDeletedAttachmentsDir());
+		}
+		catch (NoSuchDirectoryException nsde) {
+		}
+
+		return fileNames;
 	}
 
 	public WikiNode getNode() {
@@ -142,6 +171,16 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 		return page;
 	}
 
+	public boolean isInTrashFolder() {
+		WikiNode node = getNode();
+
+		if (node != null) {
+			return node.isInTrash();
+		}
+
+		return false;
+	}
+
 	@Override
 	public boolean isResourceMain() {
 		return isHead();
@@ -151,8 +190,13 @@ public class WikiPageImpl extends WikiPageBaseImpl {
 		_attachmentDirs = attachmentsDir;
 	}
 
+	public void setDeletedAttachmentsDir(String deletedAttachmentsDir) {
+		_deletedAttachmentDirs = deletedAttachmentsDir;
+	}
+
 	private static Log _log = LogFactoryUtil.getLog(WikiPageImpl.class);
 
 	private String _attachmentDirs;
+	private String _deletedAttachmentDirs;
 
 }

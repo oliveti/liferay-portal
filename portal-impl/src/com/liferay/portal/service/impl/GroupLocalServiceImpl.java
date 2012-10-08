@@ -30,7 +30,7 @@ import com.liferay.portal.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
-import com.liferay.portal.kernel.scheduler.SchedulerEngineUtil;
+import com.liferay.portal.kernel.scheduler.SchedulerEngineHelperUtil;
 import com.liferay.portal.kernel.scheduler.StorageType;
 import com.liferay.portal.kernel.spring.aop.Skip;
 import com.liferay.portal.kernel.staging.StagingUtil;
@@ -44,6 +44,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.UniqueList;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.Account;
 import com.liferay.portal.model.Company;
@@ -81,7 +82,6 @@ import com.liferay.portal.util.comparator.GroupNameComparator;
 import com.liferay.portlet.blogs.model.BlogsEntry;
 import com.liferay.portlet.journal.model.JournalArticle;
 import com.liferay.portlet.messageboards.model.MBCategoryConstants;
-import com.liferay.util.UniqueList;
 
 import java.io.File;
 
@@ -271,7 +271,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		}
 
 		if (className.equals(Group.class.getName())) {
-			if (!site && (liveGroupId == 0)) {
+			if (!site && (liveGroupId == 0) &&
+				!name.equals(GroupConstants.CONTROL_PANEL)) {
+
 				throw new IllegalArgumentException();
 			}
 		}
@@ -452,8 +454,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			groupLocalService.addGroup(
 				defaultUserId, GroupConstants.DEFAULT_PARENT_GROUP_ID,
-				Company.class.getName(), companyId, null, null, 0, null, false,
-				true, null);
+				Company.class.getName(), companyId, GroupConstants.GLOBAL, null,
+				0, GroupConstants.GLOBAL_FRIENDLY_URL, false, true, null);
 		}
 	}
 
@@ -500,6 +502,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 				if (name.equals(GroupConstants.CONTROL_PANEL)) {
 					type = GroupConstants.TYPE_SITE_PRIVATE;
 					friendlyURL = GroupConstants.CONTROL_PANEL_FRIENDLY_URL;
+					site = false;
 				}
 				else if (name.equals(GroupConstants.GUEST)) {
 					friendlyURL = "/guest";
@@ -639,7 +642,14 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		unscheduleStaging(group);
 
 		if (group.hasStagingGroup()) {
-			deleteGroup(group.getStagingGroup().getGroupId());
+			try {
+				StagingUtil.disableStaging(group, serviceContext);
+			}
+			catch (Exception e) {
+				_log.error(
+					"Unable to disable staging for group " +
+						group.getGroupId());
+			}
 		}
 
 		// Themes
@@ -743,7 +753,9 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		// Group
 
-		if (group.isOrganization() && group.isSite()) {
+		if (!group.isStagingGroup() && group.isOrganization() &&
+			group.isSite()) {
+
 			group.setSite(false);
 
 			groupPersistence.update(group, false);
@@ -1028,6 +1040,23 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
+	 * Returns all the sites that are children of the parent group.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  site whether the group is to be associated with a main site
+	 * @return the matching groups, or <code>null</code> if no matches were
+	 *         found
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> getGroups(
+			long companyId, long parentGroupId, boolean site)
+		throws SystemException {
+
+		return groupPersistence.findByC_P_S(companyId, parentGroupId, site);
+	}
+
+	/**
 	 * Returns the groups with the matching primary keys.
 	 *
 	 * @param  groupIds the primary keys of the groups
@@ -1101,6 +1130,55 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		return groupPersistence.findByC_C_C(
 			companyId, classNameId, layoutSetPrototypeId);
+	}
+
+	/**
+	 * Returns a range of all groups that are children of the parent group and
+	 * that have at least one layout.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  site whether the group is to be associated with a main site
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the range of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> getLayoutsGroups(
+			long companyId, long parentGroupId, boolean site, int start,
+			int end)
+		throws SystemException {
+
+		return groupFinder.findByLayouts(
+			companyId, parentGroupId, site, start, end);
+	}
+
+	/**
+	 * Returns the number of groups that are children or the parent group and
+	 * that have at least one layout
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  site whether the group is to be associated with a main site
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getLayoutsGroupsCount(
+			long companyId, long parentGroupId, boolean site)
+		throws SystemException {
+
+		return groupFinder.countByLayouts(companyId, parentGroupId, site);
 	}
 
 	/**
@@ -1319,7 +1397,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns a name ordered range of all the user's site groups and immediate
+	 * Returns an ordered range of all the user's site groups and immediate
 	 * organization groups, optionally including the user's inherited
 	 * organization groups and user groups. System and staged groups are not
 	 * included.
@@ -1366,7 +1444,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns a name ordered range of all the user's site groups and immediate
+	 * Returns an ordered range of all the user's site groups and immediate
 	 * organization groups. System and staged groups are not included.
 	 *
 	 * <p>
@@ -1598,7 +1676,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns a name ordered range of all the company's groups, optionally
+	 * Returns an ordered range of all the company's groups, optionally
 	 * including the user's inherited organization groups and user groups.
 	 * System and staged groups are not included.
 	 *
@@ -1636,8 +1714,519 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	/**
-	 * Returns a name ordered range of all the groups that match the class name
-	 * IDs, name, and description, optionally including the user's inherited
+	 * Returns an ordered range of all the groups belonging to the parent group
+	 * that match the keywords, optionally including the user's inherited
+	 * organization groups and user groups. System and staged groups are not
+	 * included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organizations and user groups in the
+	 *         search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the matching groups ordered by name
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long parentGroupId, String keywords,
+			LinkedHashMap<String, Object> params, int start, int end)
+		throws SystemException {
+
+		return search(
+			companyId, parentGroupId, keywords, params, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups belonging to the parent group
+	 * that match the keywords, optionally including the user's inherited
+	 * organization groups and user groups. System and staged groups are not
+	 * included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organizations and user groups in the
+	 *         search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the matching groups ordered by comparator <code>obc</code>
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long parentGroupId, String keywords,
+			LinkedHashMap<String, Object> params, int start, int end,
+			OrderByComparator obc)
+		throws SystemException {
+
+		String parentGroupIdComparator = StringPool.EQUAL;
+
+		if (parentGroupId == GroupConstants.ANY_PARENT_GROUP_ID) {
+			parentGroupIdComparator = StringPool.NOT_EQUAL;
+		}
+
+		if (obc == null) {
+			obc = new GroupNameComparator(true);
+		}
+
+		return groupFinder.findByKeywords(
+			companyId, parentGroupId, parentGroupIdComparator, keywords, params,
+			start, end, obc);
+	}
+
+	/**
+	 * Returns an ordered range of all the site groups belonging to the parent
+	 * group and organization groups that match the name and description,
+	 * optionally including the user's inherited organization groups and user
+	 * groups. System and staged groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organizations and user groups in the
+	 *         search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the matching groups ordered by name
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long parentGroupId, String name, String description,
+			LinkedHashMap<String, Object> params, boolean andOperator,
+			int start, int end)
+		throws SystemException {
+
+		return search(
+			companyId, parentGroupId, name, description, params, andOperator,
+			start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the site groups belonging to the parent
+	 * group and organization groups that match the name and description,
+	 * optionally including the user's inherited organization groups and user
+	 * groups. System and staged groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organizations and user groups in the
+	 *         search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the matching groups ordered by comparator <code>obc</code>
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long parentGroupId, String name, String description,
+			LinkedHashMap<String, Object> params, boolean andOperator,
+			int start, int end, OrderByComparator obc)
+		throws SystemException {
+
+		String parentGroupIdComparator = StringPool.EQUAL;
+
+		if (parentGroupId == GroupConstants.ANY_PARENT_GROUP_ID) {
+			parentGroupIdComparator = StringPool.NOT_EQUAL;
+		}
+
+		if (obc == null) {
+			obc = new GroupNameComparator(true);
+		}
+
+		String realName = getRealName(companyId, name);
+
+		return groupFinder.findByC_PG_N_D(
+			companyId, parentGroupId, parentGroupIdComparator, name, realName,
+			description, params, andOperator, start, end, obc);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups belonging to the parent group
+	 * that match the class name IDs and keywords, optionally including the
+	 * user's inherited organization groups and user groups. System and staged
+	 * groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the class names of entities to include in the search
+	 *         (optionally <code>null</code>)
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include a user's organizations, inherited organizations, and user
+	 *         groups in the search, add an entry with key
+	 *         &quot;usersGroups&quot; mapped to the user's ID and an entry with
+	 *         key &quot;inherit&quot; mapped to a non-<code>null</code> object.
+	 *         For more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the matching groups ordered by name
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long[] classNameIds, long parentGroupId,
+			String keywords, LinkedHashMap<String, Object> params, int start,
+			int end)
+		throws SystemException {
+
+		return search(
+			companyId, classNameIds, parentGroupId, keywords, params, start,
+			end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups belonging to the parent group
+	 * that match the class name IDs and keywords, optionally including the
+	 * user's inherited organization groups and user groups. System and staged
+	 * groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the group's class name IDs (optionally
+	 *         <code>null</code>)
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include a user's organizations, inherited organizations, and user
+	 *         groups in the search, add an entry with key
+	 *         &quot;usersGroups&quot; mapped to the user's ID and an entry with
+	 *         key &quot;inherit&quot; mapped to a non-<code>null</code> object.
+	 *         For more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the matching groups ordered by comparator <code>obc</code>
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long[] classNameIds, long parentGroupId,
+			String keywords, LinkedHashMap<String, Object> params, int start,
+			int end, OrderByComparator obc)
+		throws SystemException {
+
+		String parentGroupIdComparator = StringPool.EQUAL;
+
+		if (parentGroupId == GroupConstants.ANY_PARENT_GROUP_ID) {
+			parentGroupIdComparator = StringPool.NOT_EQUAL;
+		}
+
+		if (obc == null) {
+			obc = new GroupNameComparator(true);
+		}
+
+		return groupFinder.findByKeywords(
+			companyId, classNameIds, parentGroupId, parentGroupIdComparator,
+			keywords, params, start, end, obc);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups belonging to the parent group
+	 * that match the class name IDs, name, and description, optionally
+	 * including the user's inherited organization groups and user groups.
+	 * System and staged groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the class names of entities to include in the search
+	 *         (optionally <code>null</code>)
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include a user's organizations, inherited organizations, and user
+	 *         groups in the search, add an entry with key
+	 *         &quot;usersGroups&quot; mapped to the user's ID and an entry with
+	 *         key &quot;inherit&quot; mapped to a non-<code>null</code> object.
+	 *         For more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the matching groups ordered by name
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long[] classNameIds, long parentGroupId,
+			String name, String description,
+			LinkedHashMap<String, Object> params, boolean andOperator,
+			int start, int end)
+		throws SystemException {
+
+		return search(
+			companyId, classNameIds, parentGroupId, name, description, params,
+			andOperator, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups belonging to the parent group
+	 * that match the class name IDs, name, and description, optionally
+	 * including the user's inherited organization groups and user groups.
+	 * System and staged groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the group's class name IDs (optionally
+	 *         <code>null</code>)
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include a user's organizations, inherited organizations, and user
+	 *         groups in the search, add an entry with key
+	 *         &quot;usersGroups&quot; mapped to the user's ID and an entry with
+	 *         key &quot;inherit&quot; mapped to a non-<code>null</code> object.
+	 *         For more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the matching groups ordered by comparator <code>obc</code>
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long[] classNameIds, long parentGroupId,
+			String name, String description,
+			LinkedHashMap<String, Object> params, boolean andOperator,
+			int start, int end, OrderByComparator obc)
+		throws SystemException {
+
+		String parentGroupIdComparator = StringPool.EQUAL;
+
+		if (parentGroupId == GroupConstants.ANY_PARENT_GROUP_ID) {
+			parentGroupIdComparator = StringPool.NOT_EQUAL;
+		}
+
+		if (obc == null) {
+			obc = new GroupNameComparator(true);
+		}
+
+		String realName = getRealName(companyId, name);
+
+		return groupFinder.findByC_C_PG_N_D(
+			companyId, classNameIds, parentGroupId, parentGroupIdComparator,
+			name, realName, description, params, andOperator, start, end, obc);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups that match the class name IDs
+	 * and keywords, optionally including the user's inherited organization
+	 * groups and user groups. System and staged groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the class names of entities to include in the search
+	 *         (optionally <code>null</code>)
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include a user's organizations, inherited organizations, and user
+	 *         groups in the search, add an entry with key
+	 *         &quot;usersGroups&quot; mapped to the user's ID and an entry with
+	 *         key &quot;inherit&quot; mapped to a non-<code>null</code> object.
+	 *         For more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the matching groups ordered by name
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long[] classNameIds, String keywords,
+			LinkedHashMap<String, Object> params, int start, int end)
+		throws SystemException {
+
+		return search(
+			companyId, classNameIds, keywords, params, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups that match the class name IDs
+	 * and keywords, optionally including the user's inherited organization
+	 * groups and user groups. System and staged groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the group's class name IDs (optionally
+	 *         <code>null</code>)
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include a user's organizations, inherited organizations, and user
+	 *         groups in the search, add an entry with key
+	 *         &quot;usersGroups&quot; mapped to the user's ID and an entry with
+	 *         key &quot;inherit&quot; mapped to a non-<code>null</code> object.
+	 *         For more information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the matching groups ordered by comparator <code>obc</code>
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, long[] classNameIds, String keywords,
+			LinkedHashMap<String, Object> params, int start, int end,
+			OrderByComparator obc)
+		throws SystemException {
+
+		if (obc == null) {
+			obc = new GroupNameComparator(true);
+		}
+
+		return groupFinder.findByKeywords(
+			companyId, classNameIds, keywords, params, start, end, obc);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups that match the class name IDs,
+	 * name, and description, optionally including the user's inherited
 	 * organization groups and user groups. System and staged groups are not
 	 * included.
 	 *
@@ -1664,6 +2253,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *         key &quot;inherit&quot; mapped to a non-<code>null</code> object.
 	 *         For more information see {@link
 	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
 	 * @param  start the lower bound of the range of groups to return
 	 * @param  end the upper bound of the range of groups to return (not
 	 *         inclusive)
@@ -1672,13 +2263,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 */
 	public List<Group> search(
 			long companyId, long[] classNameIds, String name,
-			String description, LinkedHashMap<String, Object> params, int start,
-			int end)
+			String description, LinkedHashMap<String, Object> params,
+			boolean andOperator, int start, int end)
 		throws SystemException {
 
 		return search(
-			companyId, classNameIds, name, description, params, start, end,
-			null);
+			companyId, classNameIds, name, description, params, andOperator,
+			start, end, null);
 	}
 
 	/**
@@ -1710,6 +2301,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *         key &quot;inherit&quot; mapped to a non-<code>null</code> object.
 	 *         For more information see {@link
 	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
 	 * @param  start the lower bound of the range of groups to return
 	 * @param  end the upper bound of the range of groups to return (not
 	 *         inclusive)
@@ -1720,8 +2313,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 */
 	public List<Group> search(
 			long companyId, long[] classNameIds, String name,
-			String description, LinkedHashMap<String, Object> params, int start,
-			int end, OrderByComparator obc)
+			String description, LinkedHashMap<String, Object> params,
+			boolean andOperator, int start, int end, OrderByComparator obc)
 		throws SystemException {
 
 		if (obc == null) {
@@ -1731,15 +2324,14 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		String realName = getRealName(companyId, name);
 
 		return groupFinder.findByC_C_N_D(
-			companyId, classNameIds, name, realName, description, params, start,
-			end, obc);
+			companyId, classNameIds, name, realName, description, params,
+			andOperator, start, end, obc);
 	}
 
 	/**
-	 * Returns a name ordered range of all the site groups and organization
-	 * groups that match the name and description, optionally including the
-	 * user's inherited organization groups and user groups. System and staged
-	 * groups are not included.
+	 * Returns an ordered range of all the groups that match the keywords,
+	 * optionally including the user's inherited organization groups and user
+	 * groups. System and staged groups are not included.
 	 *
 	 * <p>
 	 * Useful when paginating results. Returns a maximum of <code>end -
@@ -1752,9 +2344,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 * </p>
 	 *
 	 * @param  companyId the primary key of the company
-	 * @param  name the group's name (optionally <code>null</code>)
-	 * @param  description the group's description (optionally
-	 *         <code>null</code>)
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
 	 * @param  params the finder params (optionally <code>null</code>). To
 	 *         include the user's inherited organizations and user groups in the
 	 *         search, add entries having &quot;usersGroups&quot; and
@@ -1768,11 +2359,57 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 * @throws SystemException if a system exception occurred
 	 */
 	public List<Group> search(
-			long companyId, String name, String description,
+			long companyId, String keywords,
 			LinkedHashMap<String, Object> params, int start, int end)
 		throws SystemException {
 
-		return search(companyId, name, description, params, start, end, null);
+		return search(companyId, keywords, params, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the groups that match the keywords,
+	 * optionally including the user's inherited organization groups and user
+	 * groups. System and staged groups are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organizations and user groups in the
+	 *         search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @param  obc the comparator to order the groups (optionally
+	 *         <code>null</code>)
+	 * @return the matching groups ordered by comparator <code>obc</code>
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, String keywords,
+			LinkedHashMap<String, Object> params, int start, int end,
+			OrderByComparator obc)
+		throws SystemException {
+
+		if (obc == null) {
+			obc = new GroupNameComparator(true);
+		}
+
+		return groupFinder.findByKeywords(
+			companyId, keywords, params, start, end, obc);
 	}
 
 	/**
@@ -1801,6 +2438,53 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
 	 *         information see {@link
 	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
+	 * @param  start the lower bound of the range of groups to return
+	 * @param  end the upper bound of the range of groups to return (not
+	 *         inclusive)
+	 * @return the matching groups ordered by name
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> search(
+			long companyId, String name, String description,
+			LinkedHashMap<String, Object> params, boolean andOperator,
+			int start, int end)
+		throws SystemException {
+
+		return search(
+			companyId, name, description, params, andOperator, start, end,
+			null);
+	}
+
+	/**
+	 * Returns an ordered range of all the site groups and organization groups
+	 * that match the name and description, optionally including the user's
+	 * inherited organization groups and user groups. System and staged groups
+	 * are not included.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end -
+	 * start</code> instances. <code>start</code> and <code>end</code> are not
+	 * primary keys, they are indexes in the result set. Thus, <code>0</code>
+	 * refers to the first result in the set. Setting both <code>start</code>
+	 * and <code>end</code> to {@link
+	 * com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full
+	 * result set.
+	 * </p>
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organizations and user groups in the
+	 *         search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
 	 * @param  start the lower bound of the range of groups to return
 	 * @param  end the upper bound of the range of groups to return (not
 	 *         inclusive)
@@ -1811,8 +2495,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 */
 	public List<Group> search(
 			long companyId, String name, String description,
-			LinkedHashMap<String, Object> params, int start, int end,
-			OrderByComparator obc)
+			LinkedHashMap<String, Object> params, boolean andOperator,
+			int start, int end, OrderByComparator obc)
 		throws SystemException {
 
 		if (obc == null) {
@@ -1822,7 +2506,195 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		String realName = getRealName(companyId, name);
 
 		return groupFinder.findByC_N_D(
-			companyId, name, realName, description, params, start, end, obc);
+			companyId, name, realName, description, params, andOperator, start,
+			end, obc);
+	}
+
+	/**
+	 * Returns the number of groups belonging to the parent group that match the
+	 * keywords, optionally including the user's inherited organization groups
+	 * and user groups. System and staged groups are not included.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organization groups and user groups
+	 *         in the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
+	@ThreadLocalCachable
+	public int searchCount(
+			long companyId, long parentGroupId, String keywords,
+			LinkedHashMap<String, Object> params)
+		throws SystemException {
+
+		String parentGroupIdComparator = StringPool.EQUAL;
+
+		if (parentGroupId == GroupConstants.ANY_PARENT_GROUP_ID) {
+			parentGroupIdComparator = StringPool.NOT_EQUAL;
+		}
+
+		return groupFinder.countByKeywords(
+			companyId, parentGroupId, parentGroupIdComparator, keywords,
+			params);
+	}
+
+	/**
+	 * Returns the number of groups belonging to the parent group and immediate
+	 * organization groups that match the name and description, optionally
+	 * including the user's inherited organization groups and user groups.
+	 * System and staged groups are not included.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organization groups and user groups
+	 *         in the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
+	@ThreadLocalCachable
+	public int searchCount(
+			long companyId, long parentGroupId, String name, String description,
+			LinkedHashMap<String, Object> params, boolean andOperator)
+		throws SystemException {
+
+		String parentGroupIdComparator = StringPool.EQUAL;
+
+		if (parentGroupId == GroupConstants.ANY_PARENT_GROUP_ID) {
+			parentGroupIdComparator = StringPool.NOT_EQUAL;
+		}
+
+		String realName = getRealName(companyId, name);
+
+		return groupFinder.countByC_PG_N_D(
+			companyId, parentGroupId, parentGroupIdComparator, name, realName,
+			description, params, andOperator);
+	}
+
+	/**
+	 * Returns the number of groups belonging to the parent group that match the
+	 * class name IDs, and keywords, optionally including the user's inherited
+	 * organization groups and user groups. System and staged groups are not
+	 * included.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the class names of entities to include in the search
+	 *         (optionally <code>null</code>)
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organization groups and user groups
+	 *         in the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
+	@ThreadLocalCachable
+	public int searchCount(
+			long companyId, long[] classNameIds, long parentGroupId,
+			String keywords, LinkedHashMap<String, Object> params)
+		throws SystemException {
+
+		String parentGroupIdComparator = StringPool.EQUAL;
+
+		if (parentGroupId == GroupConstants.ANY_PARENT_GROUP_ID) {
+			parentGroupIdComparator = StringPool.NOT_EQUAL;
+		}
+
+		return groupFinder.countByKeywords(
+			companyId, classNameIds, parentGroupId, parentGroupIdComparator,
+			keywords, params);
+	}
+
+	/**
+	 * Returns the number of groups belonging to the parent group that match the
+	 * class name IDs, name, and description, optionally including the user's
+	 * inherited organization groups and user groups. System and staged groups
+	 * are not included.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the class names of entities to include in the search
+	 *         (optionally <code>null</code>)
+	 * @param  parentGroupId the primary key of the parent group
+	 * @param  name the group's name (optionally <code>null</code>)
+	 * @param  description the group's description (optionally
+	 *         <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organization groups and user groups
+	 *         in the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
+	@ThreadLocalCachable
+	public int searchCount(
+			long companyId, long[] classNameIds, long parentGroupId,
+			String name, String description,
+			LinkedHashMap<String, Object> params, boolean andOperator)
+		throws SystemException {
+
+		String parentGroupIdComparator = StringPool.EQUAL;
+
+		if (parentGroupId == GroupConstants.ANY_PARENT_GROUP_ID) {
+			parentGroupIdComparator = StringPool.NOT_EQUAL;
+		}
+
+		String realName = getRealName(companyId, name);
+
+		return groupFinder.countByC_C_PG_N_D(
+			companyId, classNameIds, parentGroupId, parentGroupIdComparator,
+			name, realName, description, params, andOperator);
+	}
+
+	/**
+	 * Returns the number of groups that match the class name IDs, and keywords,
+	 * optionally including the user's inherited organization groups and user
+	 * groups. System and staged groups are not included.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  classNameIds the class names of entities to include in the search
+	 *         (optionally <code>null</code>)
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organization groups and user groups
+	 *         in the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
+	@ThreadLocalCachable
+	public int searchCount(
+			long companyId, long[] classNameIds, String keywords,
+			LinkedHashMap<String, Object> params)
+		throws SystemException {
+
+		return groupFinder.countByKeywords(
+			companyId, classNameIds, keywords, params);
 	}
 
 	/**
@@ -1842,19 +2714,49 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
 	 *         information see {@link
 	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
 	 * @return the number of matching groups
 	 * @throws SystemException if a system exception occurred
 	 */
 	@ThreadLocalCachable
 	public int searchCount(
 			long companyId, long[] classNameIds, String name,
-			String description, LinkedHashMap<String, Object> params)
+			String description, LinkedHashMap<String, Object> params,
+			boolean andOperator)
 		throws SystemException {
 
 		String realName = getRealName(companyId, name);
 
 		return groupFinder.countByC_C_N_D(
-			companyId, classNameIds, name, realName, description, params);
+			companyId, classNameIds, name, realName, description, params,
+			andOperator);
+	}
+
+	/**
+	 * Returns the number of groups that match the keywords, optionally
+	 * including the user's inherited organization groups and user groups.
+	 * System and staged groups are not included.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         sites's name, or description (optionally <code>null</code>)
+	 * @param  params the finder params (optionally <code>null</code>). To
+	 *         include the user's inherited organization groups and user groups
+	 *         in the search, add entries having &quot;usersGroups&quot; and
+	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
+	 *         information see {@link
+	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @return the number of matching groups
+	 * @throws SystemException if a system exception occurred
+	 */
+	@ThreadLocalCachable
+	public int searchCount(
+			long companyId, String keywords,
+			LinkedHashMap<String, Object> params)
+		throws SystemException {
+
+		return groupFinder.countByKeywords(companyId, keywords, params);
 	}
 
 	/**
@@ -1873,19 +2775,21 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 *         &quot;inherit&quot; as keys mapped to the the user's ID. For more
 	 *         information see {@link
 	 *         com.liferay.portal.service.persistence.GroupFinder}
+	 * @param  andOperator whether every field must match its keywords, or just
+	 *         one field.
 	 * @return the number of matching groups
 	 * @throws SystemException if a system exception occurred
 	 */
 	@ThreadLocalCachable
 	public int searchCount(
 			long companyId, String name, String description,
-			LinkedHashMap<String, Object> params)
+			LinkedHashMap<String, Object> params, boolean andOperator)
 		throws SystemException {
 
 		String realName = getRealName(companyId, name);
 
 		return groupFinder.countByC_N_D(
-			companyId, name, realName, description, params);
+			companyId, name, realName, description, params, andOperator);
 	}
 
 	/**
@@ -1962,7 +2866,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		assetEntryLocalService.updateEntry(
 			userId, companyGroup.getGroupId(), Group.class.getName(),
 			group.getGroupId(), null, 0, assetCategoryIds, assetTagNames, false,
-			null, null, null, null, null, group.getDescriptiveName(),
+			null, null, null, null, group.getDescriptiveName(),
 			group.getDescription(), null, null, null, 0, 0, null, false);
 	}
 
@@ -2369,9 +3273,10 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			name = StringUtil.replace(
 				name, StringPool.PERCENT, StringPool.BLANK);
 
-			if (companyName.indexOf(name) != -1) {
-				realName = StringPool.PERCENT + GroupConstants.GUEST +
-					StringPool.PERCENT;
+			if (companyName.contains(name)) {
+				realName =
+					StringPool.PERCENT + GroupConstants.GUEST +
+						StringPool.PERCENT;
 			}
 		}
 		catch (PortalException pe) {
@@ -2538,7 +3443,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			String groupName = StagingUtil.getSchedulerGroupName(
 				DestinationNames.LAYOUTS_REMOTE_PUBLISHER, group.getGroupId());
 
-			SchedulerEngineUtil.delete(groupName, StorageType.PERSISTED);
+			SchedulerEngineHelperUtil.delete(groupName, StorageType.PERSISTED);
 
 			long liveGroupId = 0;
 			long stagingGroupId = 0;
@@ -2561,14 +3466,16 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 				groupName = StagingUtil.getSchedulerGroupName(
 					DestinationNames.LAYOUTS_LOCAL_PUBLISHER, liveGroupId);
 
-				SchedulerEngineUtil.delete(groupName, StorageType.PERSISTED);
+				SchedulerEngineHelperUtil.delete(
+					groupName, StorageType.PERSISTED);
 
 				// Copy from live
 
 				groupName = StagingUtil.getSchedulerGroupName(
 					DestinationNames.LAYOUTS_LOCAL_PUBLISHER, stagingGroupId);
 
-				SchedulerEngineUtil.delete(groupName, StorageType.PERSISTED);
+				SchedulerEngineHelperUtil.delete(
+					groupName, StorageType.PERSISTED);
 			}
 		}
 		catch (Exception e) {

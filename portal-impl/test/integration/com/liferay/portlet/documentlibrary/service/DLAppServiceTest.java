@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
+import com.liferay.portal.kernel.test.ExecutionTestListeners;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -36,7 +37,6 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceTestUtil;
 import com.liferay.portal.test.AssertUtils;
 import com.liferay.portal.test.EnvironmentExecutionTestListener;
-import com.liferay.portal.test.ExecutionTestListeners;
 import com.liferay.portal.test.LiferayIntegrationJUnitTestRunner;
 import com.liferay.portal.util.TestPropsValues;
 import com.liferay.portlet.asset.model.AssetEntry;
@@ -372,12 +372,12 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 
 	@Test
 	public void testSearchFileInRootFolder() throws Exception {
-		testSearchFile(true);
+		searchFile(true);
 	}
 
 	@Test
 	public void testSearchFileInSubFolder() throws Exception {
-		testSearchFile(false);
+		searchFile(false);
 	}
 
 	@Test
@@ -415,6 +415,7 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 
 		SearchContext searchContext = new SearchContext();
 
+		searchContext.setAttribute("paginationType", "regular");
 		searchContext.setCompanyId(_fileEntry.getCompanyId());
 		searchContext.setFolderIds(new long[] {_fileEntry.getFolderId()});
 		searchContext.setGroupIds(new long[] {_fileEntry.getRepositoryId()});
@@ -466,7 +467,7 @@ public class DLAppServiceTest extends BaseDLAppTestCase {
 		}
 	}
 
-	protected void testSearchFile(boolean rootFolder) throws Exception {
+	protected void searchFile(boolean rootFolder) throws Exception {
 		addFileEntry(rootFolder);
 
 		Thread.sleep(1000 * TestPropsValues.JUNIT_DELAY_FACTOR);

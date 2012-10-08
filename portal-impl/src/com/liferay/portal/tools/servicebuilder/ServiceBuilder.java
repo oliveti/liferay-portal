@@ -357,9 +357,7 @@ public class ServiceBuilder {
 
 		Convention convention = Convention.getInstance();
 
-		String classMask = "/**\n" +
-			" * @author $author$\n" +
-			"*/";
+		String classMask = "/**\n * @author $author$\n*/";
 
 		convention.put(
 			ConventionKeys.COMMENT_JAVADOC_TEMPLATE_CLASS,
@@ -856,7 +854,7 @@ public class ServiceBuilder {
 	}
 
 	public String getDimensions(String dims) {
-		return getDimensions(Integer.parseInt(dims));
+		return getDimensions(GetterUtil.getInteger(dims));
 	}
 
 	public Entity getEntity(String name) throws IOException {
@@ -1300,7 +1298,7 @@ public class ServiceBuilder {
 			return false;
 		}
 
-		if (genericsName.indexOf(".model.") == -1) {
+		if (!genericsName.contains(".model.")) {
 			return false;
 		}
 
@@ -1317,7 +1315,7 @@ public class ServiceBuilder {
 			return false;
 		}
 
-		if (parameterTypeValue.indexOf(".model.") == -1) {
+		if (!parameterTypeValue.contains(".model.")) {
 			return false;
 		}
 
@@ -1570,12 +1568,8 @@ public class ServiceBuilder {
 			return false;
 		}
 
-		String methodName = method.getName();
-
-		for (String txRequired : txRequiredList) {
-			if (methodName.equals(txRequired)) {
-				return true;
-			}
+		if (txRequiredList.contains(method.getName())) {
+			return true;
 		}
 
 		return false;
@@ -4335,7 +4329,7 @@ public class ServiceBuilder {
 			if (found) {
 				String property = matcher.group();
 
-				if (property.indexOf("get") != -1) {
+				if (property.contains("get")) {
 					property = property.substring(
 						property.indexOf("get") + 3, property.length() - 1);
 				}
@@ -4560,11 +4554,16 @@ public class ServiceBuilder {
 				columnElement.attributeValue("localized"));
 			boolean colJsonEnabled = GetterUtil.getBoolean(
 				columnElement.attributeValue("json-enabled"), jsonEnabled);
+			boolean containerModel = GetterUtil.getBoolean(
+				columnElement.attributeValue("container-model"));
+			boolean parentContainerModel = GetterUtil.getBoolean(
+				columnElement.attributeValue("parent-container-model"));
 
 			EntityColumn col = new EntityColumn(
 				columnName, columnDBName, columnType, primary, accessor,
 				filterPrimary, collectionEntity, mappingKey, mappingTable,
-				idType, idParam, convertNull, lazy, localized, colJsonEnabled);
+				idType, idParam, convertNull, lazy, localized, colJsonEnabled,
+				containerModel, parentContainerModel);
 
 			if (primary) {
 				pkList.add(col);
@@ -4740,7 +4739,7 @@ public class ServiceBuilder {
 				for (EntityColumn column : columnList) {
 					String name = column.getName();
 
-					if (finderWhere.indexOf(name) != -1) {
+					if (finderWhere.contains(name)) {
 						finderWhere = finderWhere.replaceAll(
 							name, alias + "." + name);
 					}

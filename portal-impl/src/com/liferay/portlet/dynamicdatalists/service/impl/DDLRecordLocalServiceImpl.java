@@ -148,6 +148,8 @@ public class DDLRecordLocalServiceImpl extends DDLRecordLocalServiceBaseImpl {
 
 		// Record
 
+		String dirName = DDMUtil.getFileUploadPath(record);
+
 		ddlRecordPersistence.remove(record);
 
 		// Record Versions
@@ -180,8 +182,7 @@ public class DDLRecordLocalServiceImpl extends DDLRecordLocalServiceBaseImpl {
 
 		try {
 			DLStoreUtil.deleteDirectory(
-				record.getCompanyId(), CompanyConstants.SYSTEM,
-				DDMUtil.getFileUploadPath(record));
+				record.getCompanyId(), CompanyConstants.SYSTEM, dirName);
 		}
 		catch (NoSuchDirectoryException nsde) {
 			if (_log.isDebugEnabled()) {
@@ -411,7 +412,7 @@ public class DDLRecordLocalServiceImpl extends DDLRecordLocalServiceBaseImpl {
 			assetEntryLocalService.updateEntry(
 				userId, record.getGroupId(), DDLRecordConstants.getClassName(),
 				recordVersion.getRecordVersionId(), record.getUuid(), 0,
-				assetCategoryIds, assetTagNames, false, null, null, null, null,
+				assetCategoryIds, assetTagNames, false, null, null, null,
 				ContentTypes.TEXT_HTML, title, null, StringPool.BLANK, null,
 				null, 0, 0, null, false);
 		}
@@ -419,7 +420,7 @@ public class DDLRecordLocalServiceImpl extends DDLRecordLocalServiceBaseImpl {
 			assetEntryLocalService.updateEntry(
 				userId, record.getGroupId(), DDLRecordConstants.getClassName(),
 				record.getRecordId(), record.getUuid(), 0, assetCategoryIds,
-				assetTagNames, visible, null, null, null, null,
+				assetTagNames, visible, null, null, null,
 				ContentTypes.TEXT_HTML, title, null, StringPool.BLANK, null,
 				null, 0, 0, null, false);
 		}

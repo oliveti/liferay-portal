@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
@@ -82,7 +83,6 @@ import com.liferay.portal.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.service.permission.PortletPermissionUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.theme.ThemeDisplayFactory;
-import com.liferay.portal.util.CookieKeys;
 import com.liferay.portal.util.LayoutClone;
 import com.liferay.portal.util.LayoutCloneFactory;
 import com.liferay.portal.util.PortalUtil;
@@ -106,6 +106,7 @@ import com.liferay.portlet.sites.util.SitesUtil;
 import java.io.File;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -334,7 +335,25 @@ public class ServicePreAction extends Action {
 				// Get locale from the request
 
 				if ((locale == null) && PropsValues.LOCALE_DEFAULT_REQUEST) {
-					locale = request.getLocale();
+					Enumeration<Locale> locales = request.getLocales();
+
+					while (locales.hasMoreElements()) {
+						Locale requestLocale = locales.nextElement();
+
+						if (Validator.isNull(requestLocale.getCountry())) {
+
+							// Locales must contain a country code
+
+							requestLocale = LanguageUtil.getLocale(
+								requestLocale.getLanguage());
+						}
+
+						if (LanguageUtil.isAvailableLocale(requestLocale)) {
+							locale = requestLocale;
+
+							break;
+						}
+					}
 				}
 
 				// Get locale from the default user
@@ -423,6 +442,8 @@ public class ServicePreAction extends Action {
 			}
 		}
 
+		String ppid = ParamUtil.getString(request, "p_p_id");
+
 		Boolean redirectToDefaultLayout = (Boolean)request.getAttribute(
 			WebKeys.REDIRECT_TO_DEFAULT_LAYOUT);
 
@@ -436,8 +457,6 @@ public class ServicePreAction extends Action {
 			if (!signedIn && PropsValues.AUTH_FORWARD_BY_REDIRECT) {
 				request.setAttribute(WebKeys.REQUESTED_LAYOUT, layout);
 			}
-
-			String ppid = ParamUtil.getString(request, "p_p_id");
 
 			if (Validator.isNull(controlPanelCategory) &&
 				Validator.isNotNull(ppid) &&
@@ -680,6 +699,11 @@ public class ServicePreAction extends Action {
 		// Scope
 
 		long scopeGroupId = PortalUtil.getScopeGroupId(request);
+
+		if ((scopeGroupId <= 0) && (doAsGroupId > 0)) {
+			scopeGroupId = doAsGroupId;
+		}
+
 		long parentGroupId = PortalUtil.getParentGroupId(scopeGroupId);
 
 		// Theme and color scheme
@@ -778,6 +802,7 @@ public class ServicePreAction extends Action {
 		themeDisplay.setLayouts(layouts);
 		themeDisplay.setUnfilteredLayouts(unfilteredLayouts);
 		themeDisplay.setPlid(plid);
+		themeDisplay.setPpid(ppid);
 		themeDisplay.setLayoutTypePortlet(layoutTypePortlet);
 		themeDisplay.setScopeGroupId(scopeGroupId);
 		themeDisplay.setParentGroupId(parentGroupId);
@@ -795,9 +820,10 @@ public class ServicePreAction extends Action {
 		themeDisplay.setThemeJsFastLoad(themeJsFastLoad);
 		themeDisplay.setServerName(request.getServerName());
 		themeDisplay.setServerPort(request.getServerPort());
-		themeDisplay.setSecure(PortalUtil.isSecure(request));
+		themeDisplay.setSecure(request.isSecure());
 		themeDisplay.setLifecycle(lifecycle);
 		themeDisplay.setLifecycleAction(lifecycle.equals("1"));
+		themeDisplay.setLifecycleEvent(lifecycle.equals("3"));
 		themeDisplay.setLifecycleRender(lifecycle.equals("0"));
 		themeDisplay.setLifecycleResource(lifecycle.equals("2"));
 		themeDisplay.setStateExclusive(LiferayWindowState.isExclusive(request));
@@ -833,11 +859,7 @@ public class ServicePreAction extends Action {
 		long controlPanelPlid = 0;
 
 		if (signedIn) {
-			Group controlPanelGroup = GroupLocalServiceUtil.getGroup(
-				companyId, GroupConstants.CONTROL_PANEL);
-
-			controlPanelPlid = LayoutLocalServiceUtil.getDefaultPlid(
-				controlPanelGroup.getGroupId(), true);
+			controlPanelPlid = PortalUtil.getControlPanelPlid(companyId);
 
 			List<Portlet> siteContentPortlets =
 				PortalUtil.getControlPanelPortlets(

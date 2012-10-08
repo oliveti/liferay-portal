@@ -403,6 +403,8 @@ public class GroupServiceUtil {
 	* @param groupId the primary key of the group
 	* @return <code>true</code> if the user is associated with the group;
 	<code>false</code> otherwise
+	* @throws PortalException if the current user did not have permission to
+	view the user or group members
 	* @throws SystemException if a system exception occurred
 	*/
 	public static boolean hasUserGroup(long userId, long groupId)
@@ -412,10 +414,10 @@ public class GroupServiceUtil {
 	}
 
 	/**
-	* Returns a name ordered range of all the site groups and organization
-	* groups that match the name and description, optionally including the
-	* user's inherited organization groups and user groups. System and staged
-	* groups are not included.
+	* Returns an ordered range of all the site groups and organization groups
+	* that match the name and description, optionally including the user's
+	* inherited organization groups and user groups. System and staged groups
+	* are not included.
 	*
 	* <p>
 	* Useful when paginating results. Returns a maximum of <code>end -

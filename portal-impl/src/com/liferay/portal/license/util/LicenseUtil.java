@@ -310,8 +310,10 @@ public class LicenseUtil {
 				catch (Exception e) {
 					_log.error(e, e);
 
+					InetAddress inetAddress = clusterNode.getInetAddress();
+
 					String message =
-						"Error contacting " + clusterNode.getHostName();
+						"Error contacting " + inetAddress.getHostName();
 
 					if (clusterNode.getPort() != -1) {
 						message += StringPool.COLON + clusterNode.getPort();
@@ -419,7 +421,7 @@ public class LicenseUtil {
 				}
 			}
 			else {
-				 connection = url.openConnection();
+				connection = url.openConnection();
 			}
 
 			connection.setDoOutput(true);

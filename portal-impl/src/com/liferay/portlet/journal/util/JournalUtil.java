@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.templateparser.TransformerListener;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -68,7 +70,6 @@ import com.liferay.portlet.journal.model.JournalFolderConstants;
 import com.liferay.portlet.journal.model.JournalStructure;
 import com.liferay.portlet.journal.model.JournalStructureConstants;
 import com.liferay.portlet.journal.model.JournalTemplate;
-import com.liferay.portlet.journal.service.JournalArticleImageLocalServiceUtil;
 import com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.portlet.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.portlet.journal.service.JournalTemplateLocalServiceUtil;
@@ -81,7 +82,6 @@ import com.liferay.portlet.journal.util.comparator.ArticleTitleComparator;
 import com.liferay.portlet.journal.util.comparator.ArticleVersionComparator;
 import com.liferay.util.ContentUtil;
 import com.liferay.util.FiniteUniqueStack;
-import com.liferay.util.JS;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -251,17 +251,17 @@ public class JournalUtil {
 
 	public static void addPortletBreadcrumbEntries(
 			JournalFolder folder, HttpServletRequest request,
-			RenderResponse renderResponse)
+			LiferayPortletResponse liferayPortletResponse)
 		throws Exception {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			com.liferay.portal.kernel.util.WebKeys.THEME_DISPLAY);
 
 		String strutsAction = ParamUtil.getString(request, "struts_action");
 
-		PortletURL portletURL = renderResponse.createRenderURL();
+		PortletURL portletURL = liferayPortletResponse.createRenderURL();
 
 		if (strutsAction.equals("/journal/select_folder")) {
-			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
 			portletURL.setWindowState(LiferayWindowState.POP_UP);
 
 			portletURL.setParameter("struts_action", "/journal/select_folder");
@@ -271,29 +271,63 @@ public class JournalUtil {
 		}
 		else {
 			portletURL.setParameter("struts_action", "/journal/view");
+
+			Map<String, Object> data = new HashMap<String, Object>();
+
+			data.put("direction-right", Boolean.TRUE.toString());
+			data.put(
+				"folder-id", JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+			PortalUtil.addPortletBreadcrumbEntry(
+				request, themeDisplay.translate("home"), portletURL.toString(),
+				data);
 		}
 
-		List<JournalFolder> ancestorFolders = folder.getAncestors();
+		if (folder != null) {
+			List<JournalFolder> ancestorFolders = folder.getAncestors();
 
-		Collections.reverse(ancestorFolders);
+			Collections.reverse(ancestorFolders);
 
-		for (JournalFolder ancestorFolder : ancestorFolders) {
+			for (JournalFolder ancestorFolder : ancestorFolders) {
+				portletURL.setParameter(
+					"folderId", String.valueOf(ancestorFolder.getFolderId()));
+
+				Map<String, Object> data = new HashMap<String, Object>();
+
+				data.put("direction-right", Boolean.TRUE.toString());
+				data.put("folder-id", ancestorFolder.getFolderId());
+
+				PortalUtil.addPortletBreadcrumbEntry(
+					request, ancestorFolder.getName(), portletURL.toString(),
+					data);
+			}
+
 			portletURL.setParameter(
-				"folderId", String.valueOf(ancestorFolder.getFolderId()));
+				"folderId", String.valueOf(folder.getFolderId()));
 
-			PortalUtil.addPortletBreadcrumbEntry(
-				request, ancestorFolder.getName(), portletURL.toString());
+			if (folder.getFolderId() !=
+				JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+
+				Map<String, Object> data = new HashMap<String, Object>();
+
+				data.put("direction-right", Boolean.TRUE.toString());
+				data.put("folder-id", folder.getFolderId());
+
+				PortalUtil.addPortletBreadcrumbEntry(
+					request, folder.getName(), portletURL.toString(), data);
+			}
 		}
+	}
 
-		portletURL.setParameter(
-			"folderId", String.valueOf(folder.getFolderId()));
+	public static void addPortletBreadcrumbEntries(
+			JournalFolder folder, HttpServletRequest request,
+			RenderResponse renderResponse)
+		throws Exception {
 
-		if (folder.getFolderId() !=
-			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+		LiferayPortletResponse liferayPortletResponse =
+			(LiferayPortletResponse)renderResponse;
 
-			PortalUtil.addPortletBreadcrumbEntry(
-				request, folder.getName(), portletURL.toString());
-		}
+		addPortletBreadcrumbEntries(folder, request, liferayPortletResponse);
 	}
 
 	public static void addPortletBreadcrumbEntries(
@@ -478,8 +512,8 @@ public class JournalUtil {
 			return emailArticleAddedBody;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_ADDED_BODY));
+			return ContentUtil.get(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_ADDED_BODY));
 		}
 	}
 
@@ -493,8 +527,8 @@ public class JournalUtil {
 			return GetterUtil.getBoolean(emailArticleAddedEnabled);
 		}
 		else {
-			return GetterUtil.getBoolean(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_ADDED_ENABLED));
+			return GetterUtil.getBoolean(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_ADDED_ENABLED));
 		}
 	}
 
@@ -508,8 +542,8 @@ public class JournalUtil {
 			return emailArticleAddedSubject;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_ADDED_SUBJECT));
+			return ContentUtil.get(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_ADDED_SUBJECT));
 		}
 	}
 
@@ -523,8 +557,9 @@ public class JournalUtil {
 			return emailArticleApprovalDeniedBody;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_DENIED_BODY));
+			return ContentUtil.get(
+				PropsUtil.get(
+					PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_DENIED_BODY));
 		}
 	}
 
@@ -538,8 +573,9 @@ public class JournalUtil {
 			return GetterUtil.getBoolean(emailArticleApprovalDeniedEnabled);
 		}
 		else {
-			return GetterUtil.getBoolean(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_DENIED_ENABLED));
+			return GetterUtil.getBoolean(
+				PropsUtil.get(
+					PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_DENIED_ENABLED));
 		}
 	}
 
@@ -553,8 +589,9 @@ public class JournalUtil {
 			return emailArticleApprovalDeniedSubject;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_DENIED_SUBJECT));
+			return ContentUtil.get(
+				PropsUtil.get(
+					PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_DENIED_SUBJECT));
 		}
 	}
 
@@ -568,8 +605,9 @@ public class JournalUtil {
 			return emailArticleApprovalGrantedBody;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_GRANTED_BODY));
+			return ContentUtil.get(
+				PropsUtil.get(
+					PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_GRANTED_BODY));
 		}
 	}
 
@@ -583,8 +621,9 @@ public class JournalUtil {
 			return GetterUtil.getBoolean(emailArticleApprovalGrantedEnabled);
 		}
 		else {
-			return GetterUtil.getBoolean(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_GRANTED_ENABLED));
+			return GetterUtil.getBoolean(
+				PropsUtil.get(
+					PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_GRANTED_ENABLED));
 		}
 	}
 
@@ -598,8 +637,9 @@ public class JournalUtil {
 			return emailArticleApprovalGrantedSubject;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_GRANTED_SUBJECT));
+			return ContentUtil.get(
+				PropsUtil.get(
+					PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_GRANTED_SUBJECT));
 		}
 	}
 
@@ -613,8 +653,9 @@ public class JournalUtil {
 			return emailArticleApprovalRequestedBody;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_REQUESTED_BODY));
+			return ContentUtil.get(
+				PropsUtil.get(
+					PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_REQUESTED_BODY));
 		}
 	}
 
@@ -628,8 +669,10 @@ public class JournalUtil {
 			return GetterUtil.getBoolean(emailArticleApprovalRequestedEnabled);
 		}
 		else {
-			return GetterUtil.getBoolean(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_REQUESTED_ENABLED));
+			return GetterUtil.getBoolean(
+				PropsUtil.get(
+					PropsKeys.
+						JOURNAL_EMAIL_ARTICLE_APPROVAL_REQUESTED_ENABLED));
 		}
 	}
 
@@ -643,8 +686,10 @@ public class JournalUtil {
 			return emailArticleApprovalRequestedSubject;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_APPROVAL_REQUESTED_SUBJECT));
+			return ContentUtil.get(
+				PropsUtil.get(
+					PropsKeys.
+						JOURNAL_EMAIL_ARTICLE_APPROVAL_REQUESTED_SUBJECT));
 		}
 	}
 
@@ -658,8 +703,8 @@ public class JournalUtil {
 			return emailArticleReviewBody;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_REVIEW_BODY));
+			return ContentUtil.get(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_REVIEW_BODY));
 		}
 	}
 
@@ -673,8 +718,8 @@ public class JournalUtil {
 			return GetterUtil.getBoolean(emailArticleReviewEnabled);
 		}
 		else {
-			return GetterUtil.getBoolean(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_REVIEW_ENABLED));
+			return GetterUtil.getBoolean(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_REVIEW_ENABLED));
 		}
 	}
 
@@ -688,8 +733,8 @@ public class JournalUtil {
 			return emailArticleReviewSubject;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_REVIEW_SUBJECT));
+			return ContentUtil.get(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_REVIEW_SUBJECT));
 		}
 	}
 
@@ -703,8 +748,8 @@ public class JournalUtil {
 			return emailArticleUpdatedBody;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_UPDATED_BODY));
+			return ContentUtil.get(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_UPDATED_BODY));
 		}
 	}
 
@@ -718,8 +763,8 @@ public class JournalUtil {
 			return GetterUtil.getBoolean(emailArticleUpdatedEnabled);
 		}
 		else {
-			return GetterUtil.getBoolean(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_UPDATED_ENABLED));
+			return GetterUtil.getBoolean(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_UPDATED_ENABLED));
 		}
 	}
 
@@ -733,8 +778,8 @@ public class JournalUtil {
 			return emailArticleUpdatedSubject;
 		}
 		else {
-			return ContentUtil.get(PropsUtil.get(
-				PropsKeys.JOURNAL_EMAIL_ARTICLE_UPDATED_SUBJECT));
+			return ContentUtil.get(
+				PropsUtil.get(PropsKeys.JOURNAL_EMAIL_ARTICLE_UPDATED_SUBJECT));
 		}
 	}
 
@@ -957,27 +1002,6 @@ public class JournalUtil {
 		return curContent;
 	}
 
-	public static String processXMLAttributes(String xsd)
-		throws PortalException {
-
-		try {
-			Document document = SAXReaderUtil.read(xsd);
-
-			Element rootElement = document.getRootElement();
-
-			List<Element> elements = new ArrayList<Element>();
-
-			elements.addAll(rootElement.elements());
-
-			_decodeXMLAttributes(elements);
-
-			return document.asXML();
-		}
-		catch (Exception e) {
-			throw new StructureXsdException();
-		}
-	}
-
 	public static void removeArticleLocale(Element element, String languageId)
 		throws PortalException, SystemException {
 
@@ -1134,6 +1158,17 @@ public class JournalUtil {
 			themeDisplay, tokens, viewMode, languageId, xml, script, langType);
 	}
 
+	public static String validateXSD(String xsd) throws PortalException {
+		try {
+			Document document = SAXReaderUtil.read(xsd);
+
+			return document.asXML();
+		}
+		catch (Exception e) {
+			throw new StructureXsdException();
+		}
+	}
+
 	private static void _addElementOptions(
 		Element curContentElement, Element newContentElement) {
 
@@ -1148,32 +1183,12 @@ public class JournalUtil {
 		}
 	}
 
-	private static void _decodeXMLAttributes(List<Element> elements) {
-		for (Element element : elements) {
-			String elName = element.attributeValue("name", StringPool.BLANK);
-			String elType = element.attributeValue("type", StringPool.BLANK);
-
-			if (Validator.isNotNull(elName)) {
-				elName = JS.decodeURIComponent(elName);
-
-				element.addAttribute("name", elName);
-			}
-
-			if (Validator.isNotNull(elType)) {
-				elType = JS.decodeURIComponent(elType);
-
-				element.addAttribute("type", elType);
-			}
-
-			_decodeXMLAttributes(element.elements());
-		}
-	}
-
 	private static Element _getElementByInstanceId(
 		Document document, String instanceId) {
 
 		XPath xPathSelector = SAXReaderUtil.createXPath(
-			"//dynamic-element[@instance-id='" + instanceId + "']");
+			"//dynamic-element[@instance-id=" +
+				HtmlUtil.escapeXPathAttribute(instanceId) + "]");
 
 		List<Node> nodes = xPathSelector.selectNodes(document);
 
@@ -1204,26 +1219,7 @@ public class JournalUtil {
 
 			if (newElement == null) {
 				curElement.detach();
-
-				String type = curElement.attributeValue("type");
-
-				if (type.equals("image")) {
-					_mergeArticleContentDeleteImages(
-						curElement.elements("dynamic-content"));
-				}
 			}
-		}
-	}
-
-	private static void _mergeArticleContentDeleteImages(List<Element> elements)
-		throws Exception {
-
-		for (Element element : elements) {
-			long articleImageId = GetterUtil.getLong(
-				element.attributeValue("id"));
-
-			JournalArticleImageLocalServiceUtil.deleteArticleImage(
-				articleImageId);
 		}
 	}
 
@@ -1602,7 +1598,9 @@ public class JournalUtil {
 			return;
 		}
 
-		String localPath = "dynamic-element[@name='" + name + "']";
+		String localPath =
+			"dynamic-element[@name=" + HtmlUtil.escapeXPathAttribute(name) +
+				"]";
 
 		String fullPath = elementPath + "/" + localPath;
 

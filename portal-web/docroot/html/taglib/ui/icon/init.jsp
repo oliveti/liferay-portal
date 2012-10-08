@@ -16,6 +16,8 @@
 
 <%@ include file="/html/taglib/init.jsp" %>
 
+<%@ page import="java.net.URL" %>
+
 <%
 String id = (String)request.getAttribute("liferay-ui:icon:id");
 
@@ -144,5 +146,5 @@ else {
 %>
 
 <%!
-private static String _AUI_PATH = "../aui/";
+private static final String _AUI_PATH = "../aui/";
 %>

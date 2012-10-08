@@ -24,6 +24,8 @@ import com.liferay.portal.kernel.cal.TZSRecurrence;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedOutputStream;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.mail.MailMessage;
@@ -124,6 +126,7 @@ import net.fortuna.ical4j.model.property.Version;
  * @author Samuel Kong
  * @author Ganesh Ram
  * @author Brett Swaim
+ * @author Mate Thurzo
  */
 public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
@@ -131,8 +134,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 	public CalEvent addEvent(
 			long userId, String title, String description, String location,
 			int startDateMonth, int startDateDay, int startDateYear,
-			int startDateHour, int startDateMinute, int endDateMonth,
-			int endDateDay, int endDateYear, int durationHour,
+			int startDateHour, int startDateMinute, int durationHour,
 			int durationMinute, boolean allDay, boolean timeZoneSensitive,
 			String type, boolean repeating, TZSRecurrence recurrence,
 			int remindBy, int firstReminder, int secondReminder,
@@ -167,16 +169,6 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		startDate.set(Calendar.SECOND, 0);
 		startDate.set(Calendar.MILLISECOND, 0);
 
-		Calendar endDate = CalendarFactoryUtil.getCalendar(timeZone, locale);
-
-		endDate.set(Calendar.MONTH, endDateMonth);
-		endDate.set(Calendar.DATE, endDateDay);
-		endDate.set(Calendar.YEAR, endDateYear);
-		endDate.set(Calendar.HOUR_OF_DAY, 23);
-		endDate.set(Calendar.MINUTE, 59);
-		endDate.set(Calendar.SECOND, 59);
-		endDate.set(Calendar.MILLISECOND, 990);
-
 		if (allDay) {
 			startDate.set(Calendar.HOUR_OF_DAY, 0);
 			startDate.set(Calendar.MINUTE, 0);
@@ -186,9 +178,8 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		}
 
 		validate(
-			title, startDateMonth, startDateDay, startDateYear, endDateMonth,
-			endDateDay, endDateYear, durationHour, durationMinute, allDay,
-			repeating, recurrence);
+			title, startDateMonth, startDateDay, startDateYear, durationHour,
+			durationMinute, allDay, repeating, recurrence);
 
 		long eventId = counterLocalService.increment();
 
@@ -205,7 +196,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		event.setDescription(description);
 		event.setLocation(location);
 		event.setStartDate(startDate.getTime());
-		event.setEndDate(endDate.getTime());
+		event.setEndDate(getEndDate(recurrence));
 		event.setDurationHour(durationHour);
 		event.setDurationMinute(durationMinute);
 		event.setAllDay(allDay);
@@ -252,15 +243,44 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 		// Social
 
+		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
+
+		extraDataJSONObject.put("title", event.getTitle());
+
 		socialActivityLocalService.addActivity(
 			userId, groupId, CalEvent.class.getName(), eventId,
-			CalendarActivityKeys.ADD_EVENT, StringPool.BLANK, 0);
+			CalendarActivityKeys.ADD_EVENT, extraDataJSONObject.toString(), 0);
 
 		// Pool
 
 		CalEventLocalUtil.clearEventsPool(event.getGroupId());
 
 		return event;
+	}
+
+	/**
+	 * @deprecated {@link #addEvent(long, String, String, String, int, int, int,
+	 *             int, int, int, int, boolean, boolean, String, boolean,
+	 *             TZSRecurrence, int, int, int, ServiceContext)}
+	 */
+	@Indexable(type = IndexableType.REINDEX)
+	public CalEvent addEvent(
+			long userId, String title, String description, String location,
+			int startDateMonth, int startDateDay, int startDateYear,
+			int startDateHour, int startDateMinute, int endDateMonth,
+			int endDateDay, int endDateYear, int durationHour,
+			int durationMinute, boolean allDay, boolean timeZoneSensitive,
+			String type, boolean repeating, TZSRecurrence recurrence,
+			int remindBy, int firstReminder, int secondReminder,
+			ServiceContext serviceContext)
+		throws PortalException, SystemException {
+
+		return addEvent(
+			userId, title, description, location, startDateMonth, startDateDay,
+			startDateYear, startDateHour, startDateMinute, durationHour,
+			durationMinute, allDay, timeZoneSensitive, type, repeating,
+			recurrence, remindBy, firstReminder, secondReminder,
+			serviceContext);
 	}
 
 	public void addEventResources(
@@ -439,7 +459,14 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 		events.add(event);
 
-		return exportICal4j(toICalCalendar(userId, events), null);
+		return exportEvents(userId, events, null);
+	}
+
+	public File exportEvents(
+			long userId, List<CalEvent> events, String fileName)
+		throws PortalException, SystemException {
+
+		return exportICal4j(toICalCalendar(userId, events), fileName);
 	}
 
 	public File exportGroupEvents(long userId, long groupId, String fileName)
@@ -689,7 +716,6 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		throws PortalException, SystemException {
 
 		try {
-
 			CalendarBuilder builder = new CalendarBuilder();
 
 			net.fortuna.ical4j.model.Calendar calendar = builder.build(
@@ -717,7 +743,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		AssetEntry assetEntry = assetEntryLocalService.updateEntry(
 			userId, event.getGroupId(), CalEvent.class.getName(),
 			event.getEventId(), event.getUuid(), 0, assetCategoryIds,
-			assetTagNames, true, null, null, null, null, ContentTypes.TEXT_HTML,
+			assetTagNames, true, null, null, null, ContentTypes.TEXT_HTML,
 			event.getTitle(), event.getDescription(), null, null, null, 0, 0,
 			null, false);
 
@@ -731,11 +757,10 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			long userId, long eventId, String title, String description,
 			String location, int startDateMonth, int startDateDay,
 			int startDateYear, int startDateHour, int startDateMinute,
-			int endDateMonth, int endDateDay, int endDateYear, int durationHour,
-			int durationMinute, boolean allDay, boolean timeZoneSensitive,
-			String type, boolean repeating, TZSRecurrence recurrence,
-			int remindBy, int firstReminder, int secondReminder,
-			ServiceContext serviceContext)
+			int durationHour, int durationMinute, boolean allDay,
+			boolean timeZoneSensitive, String type, boolean repeating,
+			TZSRecurrence recurrence, int remindBy, int firstReminder,
+			int secondReminder, ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
 		// Event
@@ -764,16 +789,6 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		startDate.set(Calendar.SECOND, 0);
 		startDate.set(Calendar.MILLISECOND, 0);
 
-		Calendar endDate = CalendarFactoryUtil.getCalendar(timeZone, locale);
-
-		endDate.set(Calendar.MONTH, endDateMonth);
-		endDate.set(Calendar.DATE, endDateDay);
-		endDate.set(Calendar.YEAR, endDateYear);
-		endDate.set(Calendar.HOUR_OF_DAY, 23);
-		endDate.set(Calendar.MINUTE, 59);
-		endDate.set(Calendar.SECOND, 59);
-		endDate.set(Calendar.MILLISECOND, 990);
-
 		if (allDay) {
 			startDate.set(Calendar.HOUR_OF_DAY, 0);
 			startDate.set(Calendar.MINUTE, 0);
@@ -783,9 +798,8 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		}
 
 		validate(
-			title, startDateMonth, startDateDay, startDateYear, endDateMonth,
-			endDateDay, endDateYear, durationHour, durationMinute, allDay,
-			repeating, recurrence);
+			title, startDateMonth, startDateDay, startDateYear, durationHour,
+			durationMinute, allDay, repeating, recurrence);
 
 		CalEvent event = calEventPersistence.findByPrimaryKey(eventId);
 
@@ -794,7 +808,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		event.setDescription(description);
 		event.setLocation(location);
 		event.setStartDate(startDate.getTime());
-		event.setEndDate(endDate.getTime());
+		event.setEndDate(getEndDate(recurrence));
 		event.setDurationHour(durationHour);
 		event.setDurationMinute(durationMinute);
 		event.setAllDay(allDay);
@@ -818,15 +832,45 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 		// Social
 
+		JSONObject extraDataJSONObject = JSONFactoryUtil.createJSONObject();
+
+		extraDataJSONObject.put("title", event.getTitle());
+
 		socialActivityLocalService.addActivity(
 			userId, event.getGroupId(), CalEvent.class.getName(), eventId,
-			CalendarActivityKeys.UPDATE_EVENT, StringPool.BLANK, 0);
+			CalendarActivityKeys.UPDATE_EVENT, extraDataJSONObject.toString(),
+			0);
 
 		// Pool
 
 		CalEventLocalUtil.clearEventsPool(event.getGroupId());
 
 		return event;
+	}
+
+	/**
+	 * @deprecated {@link #updateEvent(long, long, String, String, String, int,
+	 *             int, int, int, int, int, int, boolean, boolean, String,
+	 *             boolean, TZSRecurrence, int, int, int, ServiceContext)}
+	 */
+	@Indexable(type = IndexableType.REINDEX)
+	public CalEvent updateEvent(
+			long userId, long eventId, String title, String description,
+			String location, int startDateMonth, int startDateDay,
+			int startDateYear, int startDateHour, int startDateMinute,
+			int endDateMonth, int endDateDay, int endDateYear, int durationHour,
+			int durationMinute, boolean allDay, boolean timeZoneSensitive,
+			String type, boolean repeating, TZSRecurrence recurrence,
+			int remindBy, int firstReminder, int secondReminder,
+			ServiceContext serviceContext)
+		throws PortalException, SystemException {
+
+		return updateEvent(
+			userId, eventId, title, description, location, startDateMonth,
+			startDateDay, startDateYear, startDateHour, startDateMinute,
+			durationHour, durationMinute, allDay, timeZoneSensitive, type,
+			repeating, recurrence, remindBy, firstReminder, secondReminder,
+			serviceContext);
 	}
 
 	protected File exportICal4j(
@@ -839,7 +883,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			String extension = ".ics";
 
 			if (Validator.isNull(fileName)) {
-				fileName = "liferay.";
+				fileName = "liferay_calendar.";
 			}
 			else {
 				int pos = fileName.lastIndexOf(CharPool.PERIOD);
@@ -875,6 +919,20 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		finally {
 			StreamUtil.cleanUp(os);
 		}
+	}
+
+	protected Date getEndDate(Recurrence recurrence) {
+		if (recurrence == null) {
+			return null;
+		}
+
+		Calendar untilCalendar = recurrence.getUntil();
+
+		if (untilCalendar == null) {
+			return null;
+		}
+
+		return untilCalendar.getTime();
 	}
 
 	protected Calendar getRecurrenceCal(
@@ -977,21 +1035,9 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 		// End date
 
-		Calendar endDate = null;
-
 		DtEnd dtEnd = event.getEndDate(true);
 
 		RRule rrule = (RRule)event.getProperty(Property.RRULE);
-
-		if (dtEnd != null) {
-			endDate = toCalendar(dtEnd, timeZone, timeZoneXPropertyValue);
-
-			endDate.setTime(dtEnd.getDate());
-		}
-		else {
-			endDate = (Calendar)startDate.clone();
-			endDate.add(Calendar.DATE, 1);
-		}
 
 		// Duration
 
@@ -1068,16 +1114,10 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			until.setTimeInMillis(until.getTimeInMillis() + diffMillis);
 
 			recurrence.setUntil(until);
-
-			endDate.setTime(recurrence.getUntil().getTime());
 		}
 		else if (rrule != null) {
 			repeating = true;
 			recurrence = toRecurrence(rrule, startDate);
-
-			if (recurrence.getUntil() != null) {
-				endDate.setTime(recurrence.getUntil().getTime());
-			}
 		}
 
 		// Reminder
@@ -1129,9 +1169,6 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		int startDateYear = startDate.get(Calendar.YEAR);
 		int startDateHour = startDate.get(Calendar.HOUR_OF_DAY);
 		int startDateMinute = startDate.get(Calendar.MINUTE);
-		int endDateMonth = endDate.get(Calendar.MONTH);
-		int endDateDay = endDate.get(Calendar.DAY_OF_MONTH);
-		int endDateYear = endDate.get(Calendar.YEAR);
 		int durationHour = (int)durationHours;
 		int durationMinute = (int)durationMins;
 
@@ -1141,19 +1178,17 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			calEventLocalService.addEvent(
 				userId, title, description, location, startDateMonth,
 				startDateDay, startDateYear, startDateHour, startDateMinute,
-				endDateMonth, endDateDay, endDateYear, durationHour,
-				durationMinute, allDay, timeZoneSensitive, type, repeating,
-				recurrence, remindBy, firstReminder, secondReminder,
+				durationHour, durationMinute, allDay, timeZoneSensitive, type,
+				repeating, recurrence, remindBy, firstReminder, secondReminder,
 				serviceContext);
 		}
 		else {
 			calEventLocalService.updateEvent(
 				userId, existingEvent.getEventId(), title, description,
 				location, startDateMonth, startDateDay, startDateYear,
-				startDateHour, startDateMinute, endDateMonth, endDateDay,
-				endDateYear, durationHour, durationMinute, allDay,
-				timeZoneSensitive, type, repeating, recurrence, remindBy,
-				firstReminder, secondReminder, serviceContext);
+				startDateHour, startDateMinute, durationHour, durationMinute,
+				allDay, timeZoneSensitive, type, repeating, recurrence,
+				remindBy, firstReminder, secondReminder, serviceContext);
 		}
 	}
 
@@ -1508,8 +1543,8 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			Dur dur = new Dur(
 				0, event.getDurationHour(), event.getDurationMinute(), 0);
 
-			DtEnd dtEnd = new DtEnd(new DateTime(dur.getTime(
-				event.getStartDate())));
+			DtEnd dtEnd = new DtEnd(
+				new DateTime(dur.getTime(event.getStartDate())));
 
 			eventProps.add(dtEnd);
 		}
@@ -1613,7 +1648,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 			recurrence.setUntil(until);
 		}
-		else if (rRule.getValue().indexOf("COUNT") >= 0) {
+		else if (rRule.getValue().contains("COUNT")) {
 			until.setTimeInMillis(startDate.getTimeInMillis());
 
 			int addField = 0;
@@ -1707,21 +1742,16 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 	protected void validate(
 			String title, int startDateMonth, int startDateDay,
-			int startDateYear, int endDateMonth, int endDateDay,
-			int endDateYear, int durationHour, int durationMinute,
+			int startDateYear, int durationHour, int durationMinute,
 			boolean allDay, boolean repeating, TZSRecurrence recurrence)
 		throws PortalException {
 
 		if (Validator.isNull(title)) {
 			throw new EventTitleException();
 		}
-		else if (!Validator.isDate(
-				startDateMonth, startDateDay, startDateYear)) {
 
+		if (!Validator.isDate(startDateMonth, startDateDay, startDateYear)) {
 			throw new EventStartDateException();
-		}
-		else if (!Validator.isDate(endDateMonth, endDateDay, endDateYear)) {
-			throw new EventEndDateException();
 		}
 
 		if (!allDay && (durationHour <= 0) && (durationMinute <= 0)) {
@@ -1734,7 +1764,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		if (repeating) {
 			Calendar until = recurrence.getUntil();
 
-			if (startDate.after(until)) {
+			if ((until != null) && startDate.after(until)) {
 				throw new EventEndDateException();
 			}
 		}

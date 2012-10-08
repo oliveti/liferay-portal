@@ -117,6 +117,14 @@ if (!paginationType.equals("none")) {
 	/>
 </c:if>
 
+<%
+long portletDisplayDDMTemplateId = PortletDisplayTemplateUtil.getPortletDisplayTemplateDDMTemplateId(themeDisplay, displayStyle);
+
+Map<String, Object> contextObjects = new HashMap<String, Object>();
+
+contextObjects.put(PortletDisplayTemplateConstants.ASSET_PUBLISHER_HELPER, AssetPublisherHelperUtil.getAssetPublisherHelper());
+%>
+
 <c:choose>
 	<c:when test='<%= selectionStyle.equals("dynamic") %>'>
 		<%@ include file="/html/portlet/asset_publisher/view_dynamic_list.jspf" %>

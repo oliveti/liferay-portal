@@ -151,6 +151,24 @@ public class UploadServletRequestImpl
 		}
 	}
 
+	public UploadServletRequestImpl(
+		HttpServletRequest request, Map<String, FileItem[]> fileParams,
+		Map<String, List<String>> regularParams) {
+
+		super(request);
+
+		_fileParams = new LinkedHashMap<String, FileItem[]>();
+		_regularParams = new LinkedHashMap<String, List<String>>();
+
+		if (fileParams != null) {
+			_fileParams.putAll(fileParams);
+		}
+
+		if (regularParams != null) {
+			_regularParams.putAll(regularParams);
+		}
+	}
+
 	public void cleanUp() {
 		if ((_fileParams != null) && !_fileParams.isEmpty()) {
 			for (FileItem[] liferayFileItems : _fileParams.values()) {
@@ -190,9 +208,9 @@ public class UploadServletRequestImpl
 
 		FileItem liferayFileItem = liferayFileItems[0];
 
-		if (liferayFileItem.getSize() <=
-				liferayFileItem.getSizeThreshold()) {
+		long size = liferayFileItem.getSize();
 
+		if ((size > 0) && (size <= liferayFileItem.getSizeThreshold())) {
 			forceCreate = true;
 		}
 
@@ -411,6 +429,10 @@ public class UploadServletRequestImpl
 		}
 
 		return ArrayUtil.append(parameterValues, parentParameterValues);
+	}
+
+	public Map<String, List<String>> getRegularParameterMap() {
+		return _regularParams;
 	}
 
 	public Long getSize(String name) {

@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
+import com.liferay.portal.kernel.templateparser.TemplateContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.ThemeHelper;
@@ -148,9 +149,13 @@ public class ThemeUtil {
 		ServletContext pluginServletContext = ServletContextPool.get(
 			pluginServletContextName);
 
-		ClassLoader pluginClassLoader =
-			(ClassLoader)pluginServletContext.getAttribute(
-				PluginContextListener.PLUGIN_CLASS_LOADER);
+		ClassLoader pluginClassLoader = null;
+
+		if (pluginServletContext != null) {
+			pluginClassLoader =
+				(ClassLoader)pluginServletContext.getAttribute(
+					PluginContextListener.PLUGIN_CLASS_LOADER);
+		}
 
 		Thread currentThread = Thread.currentThread();
 
@@ -221,9 +226,9 @@ public class ThemeUtil {
 			servletContext, portletId, path);
 
 		if (Validator.isNotNull(portletId) &&
+			PortletConstants.hasInstanceId(portletId) &&
 			!TemplateResourceLoaderUtil.hasTemplateResource(
-				TemplateManager.FREEMARKER, resourcePath) &&
-			portletId.contains(PortletConstants.INSTANCE_SEPARATOR)) {
+				TemplateManager.FREEMARKER, resourcePath)) {
 
 			String rootPortletId = PortletConstants.getRootPortletId(portletId);
 
@@ -284,11 +289,11 @@ public class ThemeUtil {
 
 		VelocityTaglib velocityTaglib = new VelocityTaglib(
 			servletContext, request,
-			new PipingServletResponse(response, writer), pageContext);
+			new PipingServletResponse(response, writer), pageContext, template);
 
+		template.put(TemplateContext.WRITER, writer);
 		template.put("taglibLiferay", velocityTaglib);
 		template.put("theme", velocityTaglib);
-		template.put("writer", writer);
 
 		// Portal JSP tag library factory
 
@@ -321,7 +326,7 @@ public class ThemeUtil {
 				public void service(
 						ServletRequest servletRequest,
 						ServletResponse servletResponse)
-					throws ServletException, IOException {
+					throws IOException, ServletException {
 
 					servlet.service(servletRequest, servletResponse);
 				}
@@ -429,7 +434,7 @@ public class ThemeUtil {
 		boolean checkResourceExists = true;
 
 		if (Validator.isNotNull(portletId)) {
-			if (portletId.contains(PortletConstants.INSTANCE_SEPARATOR) &&
+			if (PortletConstants.hasInstanceId(portletId) &&
 				(checkResourceExists = !
 				TemplateResourceLoaderUtil.hasTemplateResource(
 					TemplateManager.VELOCITY, resourcePath))) {
@@ -463,6 +468,11 @@ public class ThemeUtil {
 		TemplateResource templateResource =
 			TemplateResourceLoaderUtil.getTemplateResource(
 				TemplateManager.VELOCITY, resourcePath);
+
+		if (templateResource == null) {
+			throw new Exception(
+				"Unable to load template resource " + resourcePath);
+		}
 
 		Template template = TemplateManagerUtil.getTemplate(
 			TemplateManager.VELOCITY, templateResource,
@@ -499,11 +509,11 @@ public class ThemeUtil {
 
 		VelocityTaglib velocityTaglib = new VelocityTaglib(
 			servletContext, request,
-			new PipingServletResponse(response, writer), pageContext);
+			new PipingServletResponse(response, writer), pageContext, template);
 
+		template.put(TemplateContext.WRITER, writer);
 		template.put("taglibLiferay", velocityTaglib);
 		template.put("theme", velocityTaglib);
-		template.put("writer", writer);
 
 		// Merge templates
 

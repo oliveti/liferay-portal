@@ -89,14 +89,14 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 				if (fileArray[i].isDirectory()) {
 					copyDirectory(
 						fileArray[i],
-						new File(destination.getPath() + File.separator
-							+ fileArray[i].getName()));
+						new File(destination.getPath() + File.separator +
+							fileArray[i].getName()));
 				}
 				else {
 					copyFile(
 						fileArray[i],
-						new File(destination.getPath() + File.separator
-							+ fileArray[i].getName()));
+						new File(destination.getPath() + File.separator +
+							fileArray[i].getName()));
 				}
 			}
 		}
@@ -195,12 +195,20 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 		sb.append(Time.getTimestamp());
 		sb.append(PwdGenerator.getPassword(PwdGenerator.KEY2, 8));
 
-		if (Validator.isNotNull(extension)) {
+		if (Validator.isFileExtension(extension)) {
 			sb.append(StringPool.PERIOD);
 			sb.append(extension);
 		}
 
 		return sb.toString();
+	}
+
+	public File createTempFolder() {
+		File file = new File(createTempFileName());
+
+		file.mkdirs();
+
+		return file;
 	}
 
 	public String decodeSafeFileName(String fileName) {
@@ -287,6 +295,8 @@ public class FileImpl implements com.liferay.portal.kernel.util.File {
 			}
 
 			Tika tika = new Tika();
+
+			tika.setMaxStringLength(-1);
 
 			boolean forkProcess = false;
 

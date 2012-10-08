@@ -14,6 +14,14 @@
 
 package com.liferay.portal.kernel.lar;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.kernel.xml.Document;
+import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.kernel.xml.SAXReaderUtil;
+
 import javax.portlet.PortletPreferences;
 
 /**
@@ -26,12 +34,27 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			PortletPreferences portletPreferences)
 		throws PortletDataException {
 
+		long startTime = 0;
+
+		if (_log.isInfoEnabled()) {
+			_log.info("Deleting portlet " + portletId);
+
+			startTime = System.currentTimeMillis();
+		}
+
 		try {
 			return doDeleteData(
 				portletDataContext, portletId, portletPreferences);
 		}
 		catch (Exception e) {
 			throw new PortletDataException(e);
+		}
+		finally {
+			if (_log.isInfoEnabled()) {
+				long duration = System.currentTimeMillis() - startTime;
+
+				_log.info("Deleted portlet in " + Time.getDuration(duration));
+			}
 		}
 	}
 
@@ -40,6 +63,14 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			PortletPreferences portletPreferences)
 		throws PortletDataException {
 
+		long startTime = 0;
+
+		if (_log.isInfoEnabled()) {
+			_log.info("Exporting portlet " + portletId);
+
+			startTime = System.currentTimeMillis();
+		}
+
 		try {
 			return doExportData(
 				portletDataContext, portletId, portletPreferences);
@@ -47,6 +78,17 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 		catch (Exception e) {
 			throw new PortletDataException(e);
 		}
+		finally {
+			if (_log.isInfoEnabled()) {
+				long duration = System.currentTimeMillis() - startTime;
+
+				_log.info("Exported portlet in " + Time.getDuration(duration));
+			}
+		}
+	}
+
+	public String[] getDataPortletPreferences() {
+		return new String[0];
 	}
 
 	public PortletDataHandlerControl[] getExportControls() {
@@ -70,12 +112,42 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			PortletPreferences portletPreferences, String data)
 		throws PortletDataException {
 
+		long startTime = 0;
+
+		if (_log.isInfoEnabled()) {
+			_log.info("Importing portlet " + portletId);
+
+			startTime = System.currentTimeMillis();
+		}
+
+		long sourceGroupId = portletDataContext.getSourceGroupId();
+
 		try {
+			Document document = SAXReaderUtil.read(data);
+
+			Element rootElement = document.getRootElement();
+
+			long portletSourceGroupId = GetterUtil.getLong(
+				rootElement.attributeValue("group-id"));
+
+			if (portletSourceGroupId != 0) {
+				portletDataContext.setSourceGroupId(portletSourceGroupId);
+			}
+
 			return doImportData(
 				portletDataContext, portletId, portletPreferences, data);
 		}
 		catch (Exception e) {
 			throw new PortletDataException(e);
+		}
+		finally {
+			portletDataContext.setSourceGroupId(sourceGroupId);
+
+			if (_log.isInfoEnabled()) {
+				long duration = System.currentTimeMillis() - startTime;
+
+				_log.info("Imported portlet in " + Time.getDuration(duration));
+			}
 		}
 	}
 
@@ -85,6 +157,10 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 
 	public boolean isAlwaysStaged() {
 		return _ALWAYS_STAGED;
+	}
+
+	public boolean isDataLocalized() {
+		return _DATA_LOCALIZED;
 	}
 
 	public boolean isPublishToLiveByDefault() {
@@ -119,6 +195,11 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 
 	private static final boolean _ALWAYS_STAGED = false;
 
+	private static final boolean _DATA_LOCALIZED = false;
+
 	private static final boolean _PUBLISH_TO_LIVE_BY_DEFAULT = false;
+
+	private static Log _log = LogFactoryUtil.getLog(
+		BasePortletDataHandler.class);
 
 }

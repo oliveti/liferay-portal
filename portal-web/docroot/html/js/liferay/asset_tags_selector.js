@@ -15,33 +15,35 @@ AUI.add(
 
 		var CSS_TAGS_LIST = 'lfr-tags-selector-list';
 
-		var MAP_INVALID_CHARACTERS = {
-			'&': 1,
-			'\'': 1,
-			'@': 1,
-			'\\': 1,
-			']': 1,
-			'}': 1,
-			':': 1,
-			',': 1,
-			'=': 1,
-			'>': 1,
-			'/': 1,
-			'<': 1,
-			'\n': 1,
-			'[': 1,
-			'{': 1,
-			'%': 1,
-			'|': 1,
-			'+': 1,
-			'#': 1,
-			'?': 1,
-			'"': 1,
-			'\r': 1,
-			';': 1,
-			'*': 1,
-			'~': 1
-		};
+		var MAP_INVALID_CHARACTERS = AArray.hash(
+			[
+				'&',
+				'\'',
+				'@',
+				'\\',
+				']',
+				'}',
+				':',
+				',',
+				'=',
+				'>',
+				'/',
+				'<',
+				'\n',
+				'[',
+				'{',
+				'%',
+				'|',
+				'+',
+				'#',
+				'?',
+				'"',
+				'\r',
+				';',
+				'*',
+				'~'
+			]
+		);
 
 		var TPL_CHECKED = ' checked="checked" ';
 
@@ -377,7 +379,7 @@ AUI.add(
 					_onAddEntryClick: function(event) {
 						var instance = this;
 
-						var text = instance.inputNode.val();
+						var text = Liferay.Util.escapeHTML(instance.inputNode.val());
 
 						if (text) {
 							if (text.indexOf(',') > -1) {

@@ -29,7 +29,9 @@ import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.portlet.Route;
 import com.liferay.portal.kernel.portlet.Router;
-import com.liferay.portal.kernel.scheduler.SchedulerEngineUtil;
+import com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateHandler;
+import com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateHandlerRegistryUtil;
+import com.liferay.portal.kernel.scheduler.SchedulerEngineHelperUtil;
 import com.liferay.portal.kernel.scheduler.SchedulerEntry;
 import com.liferay.portal.kernel.scheduler.SchedulerException;
 import com.liferay.portal.kernel.scheduler.StorageType;
@@ -146,6 +148,14 @@ public class PortletBagFactory {
 
 		PortletDataHandler portletDataHandlerInstance = newPortletDataHandler(
 			portlet);
+
+		PortletDisplayTemplateHandler portletDisplayTemplateHandlerInstance =
+			newPortletDisplayTemplateHandler(portlet);
+
+		if (portletDisplayTemplateHandlerInstance != null) {
+			PortletDisplayTemplateHandlerRegistryUtil.register(
+				portletDisplayTemplateHandlerInstance);
+		}
 
 		PortletLayoutListener portletLayoutListenerInstance =
 			newPortletLayoutListener(portlet);
@@ -307,15 +317,15 @@ public class PortletBagFactory {
 			portlet.getPortletId(), _servletContext, portletInstance,
 			configurationActionInstance, indexerInstances, openSearchInstance,
 			friendlyURLMapperInstance, urlEncoderInstance,
-			portletDataHandlerInstance, portletLayoutListenerInstance,
-			pollerProcessorInstance, popMessageListenerInstance,
-			socialActivityInterpreterInstance, socialRequestInterpreterInstance,
-			webDAVStorageInstance, xmlRpcMethodInstance,
-			controlPanelEntryInstance, assetRendererFactoryInstances,
-			atomCollectionAdapterInstances, customAttributesDisplayInstances,
-			permissionPropagatorInstance, trashHandlerInstances,
-			workflowHandlerInstances, preferencesValidatorInstance,
-			resourceBundles);
+			portletDataHandlerInstance, portletDisplayTemplateHandlerInstance,
+			portletLayoutListenerInstance, pollerProcessorInstance,
+			popMessageListenerInstance, socialActivityInterpreterInstance,
+			socialRequestInterpreterInstance, webDAVStorageInstance,
+			xmlRpcMethodInstance, controlPanelEntryInstance,
+			assetRendererFactoryInstances, atomCollectionAdapterInstances,
+			customAttributesDisplayInstances, permissionPropagatorInstance,
+			trashHandlerInstances, workflowHandlerInstances,
+			preferencesValidatorInstance, resourceBundles);
 
 		PortletBagPool.put(portlet.getRootPortletId(), portletBag);
 
@@ -510,7 +520,7 @@ public class PortletBagFactory {
 			portletId = null;
 		}
 
-		SchedulerEngineUtil.schedule(
+		SchedulerEngineHelperUtil.schedule(
 			schedulerEntry, StorageType.MEMORY_CLUSTERED, portletId, 0);
 	}
 
@@ -820,6 +830,19 @@ public class PortletBagFactory {
 
 		return (PortletDataHandler)newInstance(
 			PortletDataHandler.class, portlet.getPortletDataHandlerClass());
+	}
+
+	protected PortletDisplayTemplateHandler newPortletDisplayTemplateHandler(
+			Portlet portlet)
+		throws Exception {
+
+		if (Validator.isNull(portlet.getPortletDisplayTemplateHandlerClass())) {
+			return null;
+		}
+
+		return (PortletDisplayTemplateHandler)newInstance(
+			PortletDisplayTemplateHandler.class,
+			portlet.getPortletDisplayTemplateHandlerClass());
 	}
 
 	protected PortletLayoutListener newPortletLayoutListener(Portlet portlet)

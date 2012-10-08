@@ -20,7 +20,7 @@
 String viewOrganizationsRedirect = ParamUtil.getString(request, "viewOrganizationsRedirect", themeDisplay.getURLControlPanel());
 String redirect = ParamUtil.getString(request, "redirect", viewOrganizationsRedirect);
 String closeRedirect = ParamUtil.getString(request, "closeRedirect");
-String backURL = ParamUtil.getString(request, "backURL", redirect);
+String backURL = ParamUtil.getString(request, "backURL");
 
 Group group = (Group)request.getAttribute(WebKeys.GROUP);
 
@@ -82,6 +82,12 @@ if (group != null) {
 	seoSections = PropsValues.SITES_FORM_UPDATE_SEO;
 	advancedSections = PropsValues.SITES_FORM_UPDATE_ADVANCED;
 	miscellaneousSections = PropsValues.SITES_FORM_UPDATE_MISCELLANEOUS;
+}
+
+int trashEnabled = PrefsPropsUtil.getInteger(company.getCompanyId(), PropsKeys.TRASH_ENABLED);
+
+if ((trashEnabled == 0) && ArrayUtil.contains(advancedSections, "recycle-bin")) {
+	advancedSections = ArrayUtil.remove(advancedSections, "recycle-bin");
 }
 
 String[][] categorySections = {mainSections, seoSections, advancedSections, miscellaneousSections};
@@ -244,5 +250,5 @@ else {
 %>
 
 <%!
-private static String[] _CATEGORY_NAMES = {"basic-information", "search-engine-optimization", "advanced", "miscellaneous"};
+private static final String[] _CATEGORY_NAMES = {"basic-information", "search-engine-optimization", "advanced", "miscellaneous"};
 %>

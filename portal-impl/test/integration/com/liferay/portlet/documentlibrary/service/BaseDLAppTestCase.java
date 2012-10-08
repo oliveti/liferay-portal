@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.util.TestPropsValues;
 import com.liferay.portlet.documentlibrary.NoSuchFolderException;
@@ -45,6 +46,37 @@ public abstract class BaseDLAppTestCase {
 		if (parentFolder != null) {
 			DLAppServiceUtil.deleteFolder(parentFolder.getFolderId());
 		}
+	}
+
+	protected DLFileRank addDLFileRank(long fileEntryId) throws Exception {
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setAddGuestPermissions(true);
+
+		return DLAppLocalServiceUtil.addFileRank(
+			TestPropsValues.getGroupId(), TestPropsValues.getCompanyId(),
+			TestPropsValues.getUserId(), fileEntryId, serviceContext);
+	}
+
+	protected DLFileShortcut addDLFileShortcut(FileEntry fileEntry)
+		throws Exception {
+
+		return addDLFileShortcut(fileEntry, fileEntry.getFolderId());
+	}
+
+	protected DLFileShortcut addDLFileShortcut(
+			FileEntry fileEntry, long folderId)
+		throws Exception {
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setAddGuestPermissions(true);
+
+		return DLAppServiceUtil.addFileShortcut(
+			TestPropsValues.getGroupId(), folderId, fileEntry.getFileEntryId(),
+			serviceContext);
 	}
 
 	protected FileEntry addFileEntry(boolean rootFolder, String fileName)
@@ -83,6 +115,16 @@ public abstract class BaseDLAppTestCase {
 			long folderId, String sourceFileName, String title, byte[] bytes)
 		throws Exception {
 
+		return addFileEntry(
+			folderId, sourceFileName, title, bytes,
+			WorkflowConstants.ACTION_PUBLISH);
+	}
+
+	protected FileEntry addFileEntry(
+			long folderId, String sourceFileName, String title, byte[] bytes,
+			int workflowAction)
+		throws Exception {
+
 		String description = StringPool.BLANK;
 		String changeLog = StringPool.BLANK;
 
@@ -94,35 +136,12 @@ public abstract class BaseDLAppTestCase {
 
 		serviceContext.setAddGroupPermissions(true);
 		serviceContext.setAddGuestPermissions(true);
+		serviceContext.setWorkflowAction(workflowAction);
 
 		return DLAppServiceUtil.addFileEntry(
 			TestPropsValues.getGroupId(), folderId, sourceFileName,
 			ContentTypes.TEXT_PLAIN, title, description, changeLog, bytes,
 			serviceContext);
-	}
-
-	protected DLFileRank addFileRank(long fileEntryId) throws Exception {
-		ServiceContext serviceContext = new ServiceContext();
-
-		serviceContext.setAddGroupPermissions(true);
-		serviceContext.setAddGuestPermissions(true);
-
-		return DLAppLocalServiceUtil.addFileRank(
-			TestPropsValues.getGroupId(), TestPropsValues.getCompanyId(),
-			TestPropsValues.getUserId(), fileEntryId, serviceContext);
-	}
-
-	protected DLFileShortcut addFileShortcut(FileEntry fileEntry)
-		throws Exception {
-
-		ServiceContext serviceContext = new ServiceContext();
-
-		serviceContext.setAddGroupPermissions(true);
-		serviceContext.setAddGuestPermissions(true);
-
-		return DLAppServiceUtil.addFileShortcut(
-			TestPropsValues.getGroupId(), fileEntry.getFolderId(),
-			fileEntry.getFileEntryId(), serviceContext);
 	}
 
 	protected Folder addFolder(boolean rootFolder, String name)

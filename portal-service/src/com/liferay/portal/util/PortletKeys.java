@@ -106,6 +106,8 @@ public class PortletKeys {
 
 	public static final String MAIL = "1_WAR_mailportlet";
 
+	public static final String MARKETPLACE_STORE = "1_WAR_marketplaceportlet";
+
 	public static final String MEDIA_GALLERY_DISPLAY = "31";
 
 	public static final String MESSAGE_BOARDS = "19";
@@ -156,6 +158,8 @@ public class PortletKeys {
 
 	public static final String PORTLET_CSS = "113";
 
+	public static final String PORTLET_DISPLAY_TEMPLATES = "183";
+
 	public static final long PREFS_OWNER_ID_DEFAULT = 0;
 
 	public static final int PREFS_OWNER_TYPE_ARCHIVED = 5;
@@ -190,6 +194,8 @@ public class PortletKeys {
 
 	public static final String SHOPPING = "34";
 
+	public static final String SITE_MAP = "85";
+
 	public static final String SITE_MEMBERSHIPS_ADMIN = "174";
 
 	public static final String SITE_REDIRECTOR = "49";
@@ -197,6 +203,8 @@ public class PortletKeys {
 	public static final String SITE_SETTINGS = "165";
 
 	public static final String SITES_ADMIN = "134";
+
+	public static final String SITES_DIRECTORY = "184";
 
 	public static final String SOFTWARE_CATALOG = "98";
 
