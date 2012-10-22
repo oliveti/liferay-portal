@@ -173,6 +173,7 @@ create index IX_81776090 on DDMStorageLink (structureId);
 create index IX_32A18526 on DDMStorageLink (uuid_);
 
 create index IX_31817A62 on DDMStructure (classNameId);
+create index IX_4FBAC092 on DDMStructure (companyId, classNameId);
 create index IX_C8419FBE on DDMStructure (groupId);
 create unique index IX_490E7A1E on DDMStructure (groupId, structureKey);
 create index IX_E61809C8 on DDMStructure (uuid_);
@@ -201,6 +202,7 @@ create index IX_EB531760 on DLContent (companyId, repositoryId, path_);
 create unique index IX_FDD1AAA8 on DLContent (companyId, repositoryId, path_, version);
 
 create index IX_4CB1B2B4 on DLFileEntry (companyId);
+create index IX_8F6C75D0 on DLFileEntry (folderId, name);
 create index IX_F4AF5636 on DLFileEntry (groupId);
 create index IX_93CF8193 on DLFileEntry (groupId, folderId);
 create index IX_29D0AF28 on DLFileEntry (groupId, folderId, fileEntryTypeId);

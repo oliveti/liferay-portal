@@ -28,65 +28,13 @@ import java.util.List;
 import javax.portlet.PortletRequest;
 
 /**
- * Represents the interface to manage the basic operations of the Recycle Bin.
- *
- * <p>
- * The basic operations are:
- * </p>
- *
- * <ul>
- * <li>
- * Deletion of entries
- * </li>
- * <li>
- * Restore of entries
- * </li>
- * </ul>
- *
- * <p>
- * The entities that support these operations are:
- * </p>
- *
- * <ul>
- * <li>
- * BlogsEntry {@link com.liferay.portlet.blogs.trash.BlogsEntryTrashHandler}
- * </li>
- * <li>
- * BookmarksEntry {@link
- * com.liferay.portlet.bookmarks.trash.BookmarksEntryTrashHandler}
- * </li>
- * <li>
- * DLFileEntry {@link
- * com.liferay.portlet.documentlibrary.trash.DLFileEntryTrashHandler}
- * </li>
- * <li>
- * DLFileShortcut {@link
- * com.liferay.portlet.documentlibrary.trash.DLFileShortcutTrashHandler}
- * </li>
- * <li>
- * DLFolder {@link
- * com.liferay.portlet.documentlibrary.trash.DLFolderTrashHandler}
- * </li>
- * <li>
- * MBThread {@link
- * com.liferay.portlet.messageboards.trash.MBThreadTrashHandler}
- * </li>
- * <li>
- * WikiNode {@link
- * com.liferay.portlet.wiki.trash.WikiNodeTrashHandler}
- * </li>
- * <li>
- * WikiPage {@link
- * com.liferay.portlet.wiki.trash.WikiPageTrashHandler}
- * </li>
- * </ul>
- *
  * @author Alexander Chow
  * @author Zsolt Berentey
  */
 public interface TrashHandler {
 
-	public void checkDuplicateTrashEntry(TrashEntry trashEntry, String newName)
+	public void checkDuplicateTrashEntry(
+			TrashEntry trashEntry, long containerModelId, String newName)
 		throws PortalException, SystemException;
 
 	public void deleteTrashAttachments(Group group, Date date)
@@ -112,10 +60,10 @@ public interface TrashHandler {
 	public String getContainerModelName();
 
 	public List<ContainerModel> getContainerModels(
-			long trashEntryId, long containerModelId, int start, int end)
+			long classPK, long containerModelId, int start, int end)
 		throws PortalException, SystemException;
 
-	public int getContainerModelsCount(long trashEntryId, long containerModelId)
+	public int getContainerModelsCount(long classPK, long containerModelId)
 		throws PortalException, SystemException;
 
 	public String getDeleteMessage();
@@ -133,8 +81,9 @@ public interface TrashHandler {
 	public TrashRenderer getTrashRenderer(long classPK)
 		throws PortalException, SystemException;
 
-	public boolean hasPermission(
-			PermissionChecker permissionChecker, long classPK, String actionId)
+	public boolean hasTrashPermission(
+			PermissionChecker permissionChecker, long groupId, long classPK,
+			String trashActionId)
 		throws PortalException, SystemException;
 
 	public boolean isInTrash(long classPK)
@@ -143,7 +92,7 @@ public interface TrashHandler {
 	public boolean isRestorable(long classPK)
 		throws PortalException, SystemException;
 
-	public void moveTrashEntry(
+	public TrashEntry moveTrashEntry(
 			long classPK, long containerModelId, ServiceContext serviceContext)
 		throws PortalException, SystemException;
 

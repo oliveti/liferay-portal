@@ -512,7 +512,8 @@ create table DDMTemplate (
 	type_ VARCHAR(75) null,
 	mode_ VARCHAR(75) null,
 	language VARCHAR(75) null,
-	script TEXT null
+	script TEXT null,
+	cacheable BOOLEAN
 );
 
 create table DLContent (
@@ -641,6 +642,7 @@ create table DLFileVersion (
 	fileEntryTypeId LONG,
 	version VARCHAR(75) null,
 	size_ LONG,
+	checksum VARCHAR(75) null,
 	status INTEGER,
 	statusByUserId LONG,
 	statusByUserName VARCHAR(75) null,

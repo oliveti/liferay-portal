@@ -901,9 +901,20 @@ public class DDMStructureWrapper implements DDMStructure,
 		return _ddmStructure.getLocalizedFieldsMap();
 	}
 
+	public java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.String>>> getLocalizedTransientFieldsMap() {
+		return _ddmStructure.getLocalizedTransientFieldsMap();
+	}
+
 	public java.util.List<com.liferay.portlet.dynamicdatamapping.model.DDMTemplate> getTemplates()
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _ddmStructure.getTemplates();
+	}
+
+	public java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.String>> getTransientFieldsMap(
+		java.lang.String locale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _ddmStructure.getTransientFieldsMap(locale);
 	}
 
 	public boolean hasField(java.lang.String fieldName)
@@ -919,6 +930,11 @@ public class DDMStructureWrapper implements DDMStructure,
 	public void setLocalizedFieldsMap(
 		java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.String>>> localizedFieldsMap) {
 		_ddmStructure.setLocalizedFieldsMap(localizedFieldsMap);
+	}
+
+	public void setLocalizedTransientFieldsMap(
+		java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.String>>> localizedTransientFieldsMap) {
+		_ddmStructure.setLocalizedTransientFieldsMap(localizedTransientFieldsMap);
 	}
 
 	/**

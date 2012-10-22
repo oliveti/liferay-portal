@@ -19,7 +19,11 @@ package com.liferay.portal.kernel.util;
  */
 public interface PropsKeys {
 
+	public static final String ADMIN_ANALYTICS_TYPES = "admin.analytics.types";
+
 	public static final String ADMIN_DEFAULT_GROUP_NAMES = "admin.default.group.names";
+
+	public static final String ADMIN_DEFAULT_ORGANIZATION_GROUP_NAMES = "admin.default.organization.group.names";
 
 	public static final String ADMIN_DEFAULT_ROLE_NAMES = "admin.default.role.names";
 
@@ -100,6 +104,8 @@ public interface PropsKeys {
 	public static final String ASSET_ENTRY_VALIDATOR = "asset.entry.validator";
 
 	public static final String ASSET_FILTER_SEARCH_LIMIT = "asset.filter.search.limit";
+
+	public static final String ASSET_PUBLISHER_DISPLAY_STYLE_DEFAULT = "asset.publisher.display.style.default";
 
 	public static final String ASSET_PUBLISHER_DISPLAY_STYLES = "asset.publisher.display.styles";
 
@@ -639,6 +645,8 @@ public interface PropsKeys {
 
 	public static final String DL_FILE_ENTRY_TYPE_IG_IMAGE_AUTO_CREATE_ON_UPGRADE = "dl.file.entry.type.ig.image.auto.create.on.upgrade";
 
+	public static final String DL_FILE_ENTRY_VERSION_POLICY = "dl.file.entry.version.policy";
+
 	public static final String DL_FILE_EXTENSIONS = "dl.file.extensions";
 
 	public static final String DL_FILE_EXTENSIONS_STRICT_CHECK = "dl.file.extensions.strict.check";
@@ -704,6 +712,8 @@ public interface PropsKeys {
 	public static final String DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_FREEMARKER = "dynamic.data.lists.error.template.freemarker";
 
 	public static final String DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_VELOCITY = "dynamic.data.lists.error.template.velocity";
+
+	public static final String DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_XSL = "dynamic.data.lists.error.template.xsl";
 
 	public static final String DYNAMIC_DATA_LISTS_RECORD_SET_FORCE_AUTOGENERATE_KEY = "dynamic.data.lists.record.set.force.autogenerate.key";
 
@@ -1553,6 +1563,8 @@ public interface PropsKeys {
 
 	public static final String MY_SITES_SHOW_USER_PUBLIC_SITES_WITH_NO_LAYOUTS = "my.sites.show.user.public.sites.with.no.layouts";
 
+	public static final String NAVIGATION_DISPLAY_STYLE_DEFAULT = "navigation.display.style.default";
+
 	public static final String NAVIGATION_DISPLAY_STYLE_OPTIONS = "navigation.display.style.options";
 
 	public static final String NESTED_PORTLETS_LAYOUT_TEMPLATE_DEFAULT = "nested.portlets.layout.template.default";
@@ -2045,6 +2057,8 @@ public interface PropsKeys {
 
 	public static final String SITES_CONTROL_PANEL_MEMBERS_VISIBLE = "sites.control.panel.members.visible";
 
+	public static final String SITES_DIRECTORY_DISPLAY_STYLE_DEFAULT = "sites.directory.display.style.default";
+
 	public static final String SITES_DIRECTORY_DISPLAY_STYLE_OPTIONS = "sites.directory.display.style.options";
 
 	public static final String SITES_EMAIL_FROM_ADDRESS = "sites.email.from.address";
@@ -2207,6 +2221,8 @@ public interface PropsKeys {
 
 	public static final String TRASH_SEARCH_LIMIT = "trash.search.limit";
 
+	public static final String UPGRADE_DATABASE_TRANSACTIONS_DISABLED = "upgrade.database.transactions.disabled";
+
 	public static final String UPGRADE_PROCESSES = "upgrade.processes";
 
 	public static final String UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE = "com.liferay.portal.upload.UploadServletRequestImpl.max.size";
@@ -2314,6 +2330,8 @@ public interface PropsKeys {
 	public static final String VELOCITY_ENGINE_RESTRICTED_PACKAGES = "velocity.engine.restricted.packages";
 
 	public static final String VELOCITY_ENGINE_VELOCIMACRO_LIBRARY = "velocity.engine.velocimacro.library";
+
+	public static final String VERIFY_DATABASE_TRANSACTIONS_DISABLED = "verify.database.transactions.disabled";
 
 	public static final String VERIFY_FREQUENCY = "verify.frequency";
 

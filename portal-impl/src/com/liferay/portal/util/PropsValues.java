@@ -25,7 +25,11 @@ import com.liferay.portal.kernel.util.Time;
  */
 public class PropsValues {
 
+	public static String[] ADMIN_ANALYTICS_TYPES =  StringUtil.splitLines(PropsUtil.get(PropsKeys.ADMIN_ANALYTICS_TYPES));
+
 	public static String[] ADMIN_DEFAULT_GROUP_NAMES = StringUtil.splitLines(PropsUtil.get(PropsKeys.ADMIN_DEFAULT_GROUP_NAMES));
+
+	public static String[] ADMIN_DEFAULT_ORGANIZATION_GROUP_NAMES = StringUtil.splitLines(PropsUtil.get(PropsKeys.ADMIN_DEFAULT_ORGANIZATION_GROUP_NAMES));
 
 	public static String[] ADMIN_DEFAULT_ROLE_NAMES = StringUtil.splitLines(PropsUtil.get(PropsKeys.ADMIN_DEFAULT_ROLE_NAMES));
 
@@ -79,7 +83,9 @@ public class PropsValues {
 
 	public static final int ASSET_FILTER_SEARCH_LIMIT = GetterUtil.getInteger(PropsUtil.get(PropsKeys.ASSET_FILTER_SEARCH_LIMIT));
 
-	public static String[] ASSET_PUBLISHER_DISPLAY_STYLES = PropsUtil.getArray(PropsKeys.ASSET_PUBLISHER_DISPLAY_STYLES);
+	public static final String ASSET_PUBLISHER_DISPLAY_STYLE_DEFAULT = PropsUtil.get(PropsKeys.ASSET_PUBLISHER_DISPLAY_STYLE_DEFAULT);
+
+	public static final String[] ASSET_PUBLISHER_DISPLAY_STYLES = PropsUtil.getArray(PropsKeys.ASSET_PUBLISHER_DISPLAY_STYLES);
 
 	public static final String[] ASSET_TAG_PROPERTIES_DEFAULT = PropsUtil.getArray(PropsKeys.ASSET_TAG_PROPERTIES_DEFAULT);
 
@@ -517,6 +523,8 @@ public class PropsValues {
 
 	public static boolean DL_FILE_ENTRY_TYPE_IG_IMAGE_AUTO_CREATE_ON_UPGRADE = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.DL_FILE_ENTRY_TYPE_IG_IMAGE_AUTO_CREATE_ON_UPGRADE));
 
+	public static final int DL_FILE_ENTRY_VERSION_POLICY = GetterUtil.getInteger(PropsUtil.get(PropsKeys.DL_FILE_ENTRY_VERSION_POLICY));
+
 	public static final String[] DL_FILE_EXTENSIONS = PropsUtil.getArray(PropsKeys.DL_FILE_EXTENSIONS);
 
 	public static final boolean DL_FILE_EXTENSIONS_STRICT_CHECK = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.DL_FILE_EXTENSIONS_STRICT_CHECK));
@@ -568,6 +576,8 @@ public class PropsValues {
 	public static final String DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_FREEMARKER = PropsUtil.get(PropsKeys.DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_FREEMARKER);
 
 	public static final String DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_VELOCITY = PropsUtil.get(PropsKeys.DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_VELOCITY);
+
+	public static final String DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_XSL = PropsUtil.get(PropsKeys.DYNAMIC_DATA_LISTS_ERROR_TEMPLATE_XSL);
 
 	public static final boolean DYNAMIC_DATA_LISTS_RECORD_SET_FORCE_AUTOGENERATE_KEY = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.DYNAMIC_DATA_LISTS_RECORD_SET_FORCE_AUTOGENERATE_KEY));
 
@@ -1111,6 +1121,8 @@ public class PropsValues {
 
 	public static boolean MY_SITES_SHOW_USER_PUBLIC_SITES_WITH_NO_LAYOUTS = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.MY_SITES_SHOW_USER_PUBLIC_SITES_WITH_NO_LAYOUTS));
 
+	public static final String NAVIGATION_DISPLAY_STYLE_DEFAULT = PropsUtil.get(PropsKeys.NAVIGATION_DISPLAY_STYLE_DEFAULT);
+
 	public static final String[] NAVIGATION_DISPLAY_STYLE_OPTIONS = PropsUtil.getArray(PropsKeys.NAVIGATION_DISPLAY_STYLE_OPTIONS);
 
 	public static final String NESTED_PORTLETS_LAYOUT_TEMPLATE_DEFAULT = PropsUtil.get(PropsKeys.NESTED_PORTLETS_LAYOUT_TEMPLATE_DEFAULT);
@@ -1505,6 +1517,8 @@ public class PropsValues {
 
 	public static final boolean SITES_CONTROL_PANEL_MEMBERS_VISIBLE = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SITES_CONTROL_PANEL_MEMBERS_VISIBLE));
 
+	public static final String SITES_DIRECTORY_DISPLAY_STYLE_DEFAULT = PropsUtil.get(PropsKeys.SITES_DIRECTORY_DISPLAY_STYLE_DEFAULT);
+
 	public static final String[] SITES_DIRECTORY_DISPLAY_STYLE_OPTIONS = PropsUtil.getArray(PropsKeys.SITES_DIRECTORY_DISPLAY_STYLE_OPTIONS);
 
 	public static String[] SITES_FORM_ADD_ADVANCED = PropsUtil.getArray(PropsKeys.SITES_FORM_ADD_ADVANCED);
@@ -1617,6 +1631,8 @@ public class PropsValues {
 
 	public static final int TRASH_SEARCH_LIMIT = GetterUtil.getInteger(PropsUtil.get(PropsKeys.TRASH_SEARCH_LIMIT));
 
+	public static final boolean UPGRADE_DATABASE_TRANSACTIONS_DISABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.UPGRADE_DATABASE_TRANSACTIONS_DISABLED));
+
 	public static boolean USER_GROUPS_COPY_LAYOUTS_TO_USER_PERSONAL_SITE = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.USER_GROUPS_COPY_LAYOUTS_TO_USER_PERSONAL_SITE));
 
 	public static boolean USER_GROUPS_NAME_ALLOW_NUMERIC = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.USER_GROUPS_NAME_ALLOW_NUMERIC));
@@ -1706,6 +1722,8 @@ public class PropsValues {
 	public static final String[] VELOCITY_ENGINE_RESTRICTED_CLASSES = PropsUtil.getArray(PropsKeys.VELOCITY_ENGINE_RESTRICTED_CLASSES);
 
 	public static final String[] VELOCITY_ENGINE_RESTRICTED_PACKAGES = PropsUtil.getArray(PropsKeys.VELOCITY_ENGINE_RESTRICTED_PACKAGES);
+
+	public static final boolean VERIFY_DATABASE_TRANSACTIONS_DISABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.VERIFY_DATABASE_TRANSACTIONS_DISABLED));
 
 	public static final String VIRTUAL_HOSTS_DEFAULT_SITE_NAME = PropsUtil.get(PropsKeys.VIRTUAL_HOSTS_DEFAULT_SITE_NAME);
 

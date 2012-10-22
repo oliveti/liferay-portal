@@ -81,8 +81,9 @@ public class RawMetadataProcessorImpl
 		throws SystemException {
 
 		long fileEntryMetadataCount =
-			DLFileEntryMetadataLocalServiceUtil.getFileEntryMetadataCount(
-				fileVersion.getFileEntryId(), fileVersion.getFileVersionId());
+			DLFileEntryMetadataLocalServiceUtil.
+				getFileVersionFileEntryMetadatasCount(
+					fileVersion.getFileVersionId());
 
 		if (fileEntryMetadataCount == 0) {
 			trigger(fileVersion);
@@ -142,6 +143,7 @@ public class RawMetadataProcessorImpl
 
 		List<DDMStructure> ddmStructures =
 			DDMStructureLocalServiceUtil.getClassStructures(
+				fileVersion.getCompanyId(),
 				PortalUtil.getClassNameId(DLFileEntry.class), QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS);
 
