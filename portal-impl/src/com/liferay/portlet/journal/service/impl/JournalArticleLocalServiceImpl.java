@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.lar.ImportExportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
@@ -316,7 +317,7 @@ public class JournalArticleLocalServiceImpl
 
 		// Workflow
 
-		if (classNameId == 0) {
+		if (classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT) {
 			WorkflowHandlerRegistryUtil.startWorkflowInstance(
 				user.getCompanyId(), groupId, userId,
 				JournalArticle.class.getName(), article.getId(), article,
@@ -358,8 +359,9 @@ public class JournalArticleLocalServiceImpl
 		int displayDateMinute = calendar.get(Calendar.MINUTE);
 
 		return addArticle(
-			userId, groupId, folderId, 0, 0, StringPool.BLANK, true, 1,
-			titleMap, descriptionMap, content, "general", structureId,
+			userId, groupId, folderId,
+			JournalArticleConstants.CLASSNAME_ID_DEFAULT, 0, StringPool.BLANK,
+			true, 1, titleMap, descriptionMap, content, "general", structureId,
 			templateId, null, displayDateMonth, displayDateDay, displayDateYear,
 			displayDateHour, displayDateMinute, 0, 0, 0, 0, 0, true, 0, 0, 0, 0,
 			0, true, true, false, null, null, null, null, serviceContext);
@@ -434,7 +436,8 @@ public class JournalArticleLocalServiceImpl
 
 		List<JournalArticle> articles =
 			journalArticleFinder.findByExpirationDate(
-				0, WorkflowConstants.STATUS_APPROVED,
+				JournalArticleConstants.CLASSNAME_ID_DEFAULT,
+				WorkflowConstants.STATUS_APPROVED,
 				new Date(now.getTime() + _JOURNAL_ARTICLE_CHECK_INTERVAL));
 
 		if (_log.isDebugEnabled()) {
@@ -479,7 +482,8 @@ public class JournalArticleLocalServiceImpl
 		}
 
 		articles = journalArticleFinder.findByReviewDate(
-			0, now, new Date(now.getTime() - _JOURNAL_ARTICLE_CHECK_INTERVAL));
+			JournalArticleConstants.CLASSNAME_ID_DEFAULT, now,
+			new Date(now.getTime() - _JOURNAL_ARTICLE_CHECK_INTERVAL));
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
@@ -562,7 +566,13 @@ public class JournalArticleLocalServiceImpl
 			newArticleId = String.valueOf(counterLocalService.increment());
 		}
 		else {
-			validate(groupId, newArticleId);
+			validate(newArticleId);
+
+			if (journalArticlePersistence.countByG_A(
+					groupId, newArticleId) > 0) {
+
+				throw new DuplicateArticleIdException();
+			}
 		}
 
 		long id = counterLocalService.increment();
@@ -2078,7 +2088,7 @@ public class JournalArticleLocalServiceImpl
 
 		JournalArticle article = latestArticle;
 
-		boolean imported = ParamUtil.getBoolean(serviceContext, "imported");
+		boolean imported = ImportExportThreadLocal.isImportInProcess();
 
 		double latestVersion = latestArticle.getVersion();
 
@@ -2388,7 +2398,9 @@ public class JournalArticleLocalServiceImpl
 
 		boolean visible = article.isApproved();
 
-		if (article.getClassNameId() > 0) {
+		if (article.getClassNameId() !=
+				JournalArticleConstants.CLASSNAME_ID_DEFAULT) {
+
 			visible = false;
 		}
 
@@ -2551,7 +2563,8 @@ public class JournalArticleLocalServiceImpl
 					}
 				}
 
-				if (article.getClassNameId() == 0) {
+				if (article.getClassNameId() ==
+						JournalArticleConstants.CLASSNAME_ID_DEFAULT) {
 
 					// Get the earliest display date and latest expiration date
 					// among all article versions
@@ -2585,7 +2598,8 @@ public class JournalArticleLocalServiceImpl
 			}
 		}
 
-		if (article.getClassNameId() == 0) {
+		if (article.getClassNameId() ==
+				JournalArticleConstants.CLASSNAME_ID_DEFAULT) {
 
 			// Email
 
@@ -3523,7 +3537,7 @@ public class JournalArticleLocalServiceImpl
 			throw le;
 		}
 
-		if ((classNameId == 0) &&
+		if ((classNameId == JournalArticleConstants.CLASSNAME_ID_DEFAULT) &&
 			(titleMap.isEmpty() ||
 			 Validator.isNull(titleMap.get(articleDefaultLocale)))) {
 
@@ -3562,12 +3576,16 @@ public class JournalArticleLocalServiceImpl
 					throw new NoSuchTemplateException();
 				}
 			}
-			else if (classNameId == 0) {
+			else if (classNameId ==
+						JournalArticleConstants.CLASSNAME_ID_DEFAULT) {
+
 				throw new NoSuchTemplateException();
 			}
 		}
 
-		if ((expirationDate != null) && expirationDate.before(new Date())) {
+		if ((expirationDate != null) && expirationDate.before(new Date()) &&
+			!ImportExportThreadLocal.isImportInProcess()) {
+
 			throw new ArticleExpirationDateException();
 		}
 
@@ -3618,7 +3636,14 @@ public class JournalArticleLocalServiceImpl
 		throws PortalException, SystemException {
 
 		if (!autoArticleId) {
-			validate(groupId, articleId);
+			validate(articleId);
+		}
+
+		JournalArticle article = journalArticlePersistence.fetchByG_A_V(
+			groupId, articleId, version);
+
+		if (article != null) {
+			throw new DuplicateArticleIdException();
 		}
 
 		validate(
@@ -3627,17 +3652,11 @@ public class JournalArticleLocalServiceImpl
 			smallImageFile, smallImageBytes);
 	}
 
-	protected void validate(long groupId, String articleId)
-		throws PortalException, SystemException {
-
+	protected void validate(String articleId) throws PortalException {
 		if (Validator.isNull(articleId) ||
 			(articleId.indexOf(CharPool.SPACE) != -1)) {
 
 			throw new ArticleIdException();
-		}
-
-		if (journalArticlePersistence.countByG_A(groupId, articleId) > 0) {
-			throw new DuplicateArticleIdException();
 		}
 	}
 

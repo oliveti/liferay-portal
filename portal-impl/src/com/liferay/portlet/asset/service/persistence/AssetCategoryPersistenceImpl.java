@@ -551,7 +551,9 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 						assetCategory.getPrimaryKeyObj());
 			}
 
-			session.delete(assetCategory);
+			if (assetCategory != null) {
+				session.delete(assetCategory);
+			}
 		}
 		catch (Exception e) {
 			throw processException(e);
@@ -560,7 +562,9 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 			closeSession(session);
 		}
 
-		clearCache(assetCategory);
+		if (assetCategory != null) {
+			clearCache(assetCategory);
+		}
 
 		return assetCategory;
 	}
@@ -8855,8 +8859,8 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 					});
 		}
 
-		protected void shrink(long groupId, long leftCategoryId, long delta) {
-			_sqlUpdate.update(new Object[] { delta, groupId, leftCategoryId });
+		protected void shrink(long groupId, long rightCategoryId, long delta) {
+			_sqlUpdate.update(new Object[] { delta, groupId, rightCategoryId });
 		}
 
 		private SqlUpdate _sqlUpdate;

@@ -16,29 +16,35 @@ package com.liferay.portal.kernel.dao.db;
 
 /**
  * @author James Lefeu
- * @auther Peter Shin
+ * @author Peter Shin
  */
 public class IndexMetadata extends Index {
 
 	public IndexMetadata(
 		String indexName, String tableName, boolean unique,
-		String specification, String sql) {
+		String specification, String createSQL, String dropSQL) {
 
 		super(indexName, tableName, unique);
 
 		_specification = specification;
-		_sql = sql;
+		_createSQL = createSQL;
+		_dropSQL = dropSQL;
+	}
+
+	public String getCreateSQL() {
+		return _createSQL;
+	}
+
+	public String getDropSQL() {
+		return _dropSQL;
 	}
 
 	public String getSpecification() {
 		return _specification;
 	}
 
-	public String getSQL() {
-		return _sql;
-	}
-
+	private String _createSQL;
+	private String _dropSQL;
 	private String _specification;
-	private String _sql;
 
 }

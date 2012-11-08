@@ -73,6 +73,8 @@ public class SourceFormatter {
 				GetterUtil.getString(
 					System.getProperty("source.formatter.excludes")));
 
+			_portalSource = _isPortalSource();
+
 			_sourceFormatterHelper = new SourceFormatterHelper(false);
 
 			_sourceFormatterHelper.init();
@@ -87,6 +89,8 @@ public class SourceFormatter {
 						_formatDDLStructuresXML();
 						_formatFriendlyURLRoutesXML();
 						_formatFTL();
+						_formatJS();
+						_formatPortalProperties();
 						_formatPortletXML();
 						_formatServiceXML();
 						_formatSH();
@@ -1080,8 +1084,7 @@ public class SourceFormatter {
 			new String[] {
 				"**\\journal\\dependencies\\template.ftl",
 				"**\\servicebuilder\\dependencies\\props.ftl"
-			}
-		);
+			});
 
 		List<String> fileNames = _sourceFormatterHelper.scanForFiles(
 			directoryScanner);
@@ -1158,8 +1161,6 @@ public class SourceFormatter {
 	}
 
 	private static void _formatJava() throws IOException {
-		String basedir = "./";
-
 		String copyright = _getCopyright();
 		String oldCopyright = _getOldCopyright();
 
@@ -1167,7 +1168,7 @@ public class SourceFormatter {
 
 		Collection<String> fileNames = null;
 
-		if (_fileUtil.exists(basedir + "portal-impl")) {
+		if (_portalSource) {
 			fileNames = _getPortalJavaFiles();
 
 			_javaTermAlphabetizeExclusionsProperties =
@@ -1633,17 +1634,27 @@ public class SourceFormatter {
 					}
 
 					for (int x = -1;;) {
-						x = line.indexOf(StringPool.COMMA, x + 1);
+						int posComma = line.indexOf(StringPool.COMMA, x + 1);
+						int posSemicolon = line.indexOf(
+							StringPool.SEMICOLON, x + 1);
+
+						if ((posComma == -1) && (posSemicolon == -1)) {
+							break;
+						}
+
+						x = Math.min(posComma, posSemicolon);
 
 						if (x == -1) {
-							break;
+							x = Math.max(posComma, posSemicolon);
 						}
 
 						if (line.length() > (x + 1)) {
 							char nextChar = line.charAt(x + 1);
 
-							if ((nextChar != CharPool.SPACE) &&
-								(nextChar != CharPool.APOSTROPHE)) {
+							if ((nextChar != CharPool.APOSTROPHE) &&
+								(nextChar != CharPool.CLOSE_PARENTHESIS) &&
+								(nextChar != CharPool.SPACE) &&
+								(nextChar != CharPool.STAR)) {
 
 								line = StringUtil.insert(
 									line, StringPool.SPACE, x + 1);
@@ -1758,7 +1769,8 @@ public class SourceFormatter {
 								"line break: " + fileName + " " + lineCount);
 						}
 
-						if (((previousLine.endsWith(StringPool.COLON) &&
+						if (Validator.isNotNull(trimmedLine) &&
+							((previousLine.endsWith(StringPool.COLON) &&
 							  previousLine.contains(StringPool.TAB + "for ")) ||
 							 (previousLine.endsWith(
 								 StringPool.OPEN_PARENTHESIS) &&
@@ -1897,13 +1909,87 @@ public class SourceFormatter {
 		return newContent;
 	}
 
+	private static void _formatJS() throws IOException {
+		String basedir = "./";
+
+		DirectoryScanner directoryScanner = new DirectoryScanner();
+
+		directoryScanner.setBasedir(basedir);
+
+		String[] excludes = {
+			"**\\js\\aui\\**", "**\\js\\editor\\**", "**\\js\\misc\\**",
+			"**\\tools\\**", "**\\VAADIN\\**"
+		};
+
+		excludes = ArrayUtil.append(excludes, _excludes);
+
+		directoryScanner.setExcludes(excludes);
+
+		directoryScanner.setIncludes(new String[] {"**\\*.js"});
+
+		List<String> fileNames = _sourceFormatterHelper.scanForFiles(
+			directoryScanner);
+
+		for (String fileName : fileNames) {
+			File file = new File(basedir + fileName);
+
+			String content = _fileUtil.read(file);
+
+			String newContent = _trimContent(content);
+
+			newContent = StringUtil.replace(
+				newContent,
+				new String[] {
+					"else{", "for(", "function (", "if(", "while(", "){\n",
+					"= new Array();", "= new Object();"
+				},
+				new String[] {
+					"else {", "for (", "function(", "if (", "while (", ") {\n",
+					"= [];", "= {};"
+				});
+
+			Pattern pattern = Pattern.compile("\t+var \\w+\\, ");
+
+			for (;;) {
+				Matcher matcher = pattern.matcher(newContent);
+
+				if (!matcher.find()) {
+					break;
+				}
+
+				String match = newContent.substring(
+					matcher.start(), matcher.end());
+
+				int pos = match.indexOf("var ");
+
+				StringBundler sb = new StringBundler(4);
+
+				sb.append(match.substring(0, match.length() - 2));
+				sb.append(StringPool.SEMICOLON);
+				sb.append("\n");
+				sb.append(match.substring(0, pos + 4));
+
+				newContent = StringUtil.replace(
+					newContent, match, sb.toString());
+			}
+
+			if (newContent.endsWith("\n")) {
+				newContent = newContent.substring(0, newContent.length() - 1);
+			}
+
+			if ((newContent != null) && !content.equals(newContent)) {
+				_fileUtil.write(file, newContent);
+
+				_sourceFormatterHelper.printError(fileName, file);
+			}
+		}
+	}
+
 	private static void _formatJSP() throws IOException {
 		String basedir = "./";
 
 		String copyright = _getCopyright();
 		String oldCopyright = _getOldCopyright();
-
-		List<String> list = new ArrayList<String>();
 
 		DirectoryScanner directoryScanner = new DirectoryScanner();
 
@@ -1921,9 +2007,8 @@ public class SourceFormatter {
 		directoryScanner.setIncludes(
 			new String[] {"**\\*.jsp", "**\\*.jspf", "**\\*.vm"});
 
-		list.addAll(_sourceFormatterHelper.scanForFiles(directoryScanner));
-
-		String[] fileNames = list.toArray(new String[list.size()]);
+		List<String> fileNames = _sourceFormatterHelper.scanForFiles(
+			directoryScanner);
 
 		for (String fileName : fileNames) {
 			File file = new File(basedir + fileName);
@@ -2344,12 +2429,101 @@ public class SourceFormatter {
 		return content;
 	}
 
+	private static void _formatPortalProperties() throws IOException {
+		String basedir = "./";
+
+		String portalPortalProperties = null;
+
+		if (_portalSource) {
+			File portalPortalPropertiesFile = new File(
+				basedir + "portal-impl/src/portal.properties");
+
+			portalPortalProperties = _fileUtil.read(portalPortalPropertiesFile);
+		}
+		else {
+			portalPortalProperties = ContentUtil.get("portal.properties");
+		}
+
+		DirectoryScanner directoryScanner = new DirectoryScanner();
+
+		directoryScanner.setBasedir(basedir);
+
+		if (_portalSource) {
+			directoryScanner.setExcludes(
+				new String[] {"**\\classes\\**", "**\\bin\\**"});
+			directoryScanner.setIncludes(
+				new String[] {
+					"**\\portal-ext.properties",
+					"**\\portal-legacy-*.properties",
+				});
+		}
+		else {
+			directoryScanner.setIncludes(
+				new String[] {
+					"**\\portal.properties", "**\\portal-ext.properties"
+				});
+		}
+
+		List<String> fileNames = _sourceFormatterHelper.scanForFiles(
+			directoryScanner);
+
+		for (String fileName : fileNames) {
+			File file = new File(basedir + fileName);
+
+			String content = _fileUtil.read(file);
+
+			_formatPortalProperties(fileName, content, portalPortalProperties);
+		}
+	}
+
+	private static void _formatPortalProperties(
+			String fileName, String content, String portalPortalProperties)
+		throws IOException {
+
+		UnsyncBufferedReader unsyncBufferedReader = new UnsyncBufferedReader(
+			new UnsyncStringReader(content));
+
+		int lineCount = 0;
+
+		String line = null;
+
+		int previousPos = -1;
+
+		while ((line = unsyncBufferedReader.readLine()) != null) {
+			lineCount++;
+
+			int pos = line.indexOf(StringPool.EQUAL);
+
+			if (pos == -1) {
+				continue;
+			}
+
+			String property = line.substring(0, pos + 1);
+
+			property = property.trim();
+
+			pos = portalPortalProperties.indexOf(
+				StringPool.FOUR_SPACES + property);
+
+			if (pos == -1) {
+				continue;
+			}
+
+			if (pos < previousPos) {
+				_sourceFormatterHelper.printError(
+					fileName, "sort " + fileName + " " + lineCount);
+			}
+
+			previousPos = pos;
+		}
+	}
+
 	private static void _formatPortletXML()
 		throws DocumentException, IOException {
 
 		String basedir = "./";
 
-		if (_fileUtil.exists(basedir + "portal-impl")) {
+		if (_portalSource) {
 			File file = new File(
 				basedir + "portal-web/docroot/WEB-INF/portlet-custom.xml");
 
@@ -2627,7 +2801,7 @@ public class SourceFormatter {
 
 		String basedir = "./";
 
-		if (!_fileUtil.exists(basedir + "portal-impl")) {
+		if (!_portalSource) {
 			return;
 		}
 
@@ -2737,7 +2911,7 @@ public class SourceFormatter {
 
 		String basedir = "./";
 
-		if (!_fileUtil.exists(basedir + "portal-impl")) {
+		if (!_portalSource) {
 			return;
 		}
 
@@ -2782,7 +2956,7 @@ public class SourceFormatter {
 	private static void _formatWebXML() throws IOException {
 		String basedir = "./";
 
-		if (_fileUtil.exists(basedir + "portal-impl")) {
+		if (_portalSource) {
 			Properties properties = new Properties();
 
 			String propertiesContent = _fileUtil.read(
@@ -3787,6 +3961,17 @@ public class SourceFormatter {
 		return false;
 	}
 
+	private static boolean _isPortalSource() {
+		String basedir = "./";
+
+		if (_fileUtil.exists(basedir + "portal-impl")) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 	private static boolean _isValidJavaParameter(String javaParameter) {
 		int quoteCount = StringUtil.count(javaParameter, StringPool.QUOTE);
 
@@ -4308,6 +4493,7 @@ public class SourceFormatter {
 	private static Pattern _jspIncludeFilePattern = Pattern.compile(
 		"/.*[.]jsp[f]?");
 	private static Properties _lineLengthExclusionsProperties;
+	private static boolean _portalSource;
 	private static SAXReaderImpl _saxReaderUtil = SAXReaderImpl.getInstance();
 	private static SourceFormatterHelper _sourceFormatterHelper;
 	private static Pattern _xssPattern = Pattern.compile(

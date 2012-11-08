@@ -61,7 +61,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"addPage", _addPageParameterTypes1);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -102,7 +102,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"addPage", _addPageParameterTypes2);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -141,7 +141,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"addPageAttachment", _addPageAttachmentParameterTypes3);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -175,7 +175,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"addPageAttachment", _addPageAttachmentParameterTypes4);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -209,7 +209,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"addPageAttachments", _addPageAttachmentsParameterTypes5);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -243,7 +243,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"addTempPageAttachment",
 					_addTempPageAttachmentParameterTypes6);
 
@@ -282,7 +282,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"changeParent", _changeParentParameterTypes7);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -315,7 +315,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"deletePage", _deletePageParameterTypes8);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -348,7 +348,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"deletePage", _deletePageParameterTypes9);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -381,7 +381,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"deletePageAttachment",
 					_deletePageAttachmentParameterTypes10);
 
@@ -415,7 +415,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"deletePageAttachments",
 					_deletePageAttachmentsParameterTypes11);
 
@@ -449,7 +449,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"deleteTempPageAttachment",
 					_deleteTempPageAttachmentParameterTypes12);
 
@@ -478,13 +478,47 @@ public class WikiPageServiceHttp {
 		}
 	}
 
+	public static void deleteTrashPageAttachments(HttpPrincipal httpPrincipal,
+		long nodeId, java.lang.String title)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		try {
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"deleteTrashPageAttachments",
+					_deleteTrashPageAttachmentsParameterTypes13);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
+					title);
+
+			try {
+				TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception e) {
+				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
+					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				}
+
+				if (e instanceof com.liferay.portal.kernel.exception.SystemException) {
+					throw (com.liferay.portal.kernel.exception.SystemException)e;
+				}
+
+				throw new com.liferay.portal.kernel.exception.SystemException(e);
+			}
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException se) {
+			_log.error(se, se);
+
+			throw se;
+		}
+	}
+
 	public static com.liferay.portlet.wiki.model.WikiPage getDraftPage(
 		HttpPrincipal httpPrincipal, long nodeId, java.lang.String title)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"getDraftPage", _getDraftPageParameterTypes13);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"getDraftPage", _getDraftPageParameterTypes14);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title);
@@ -520,8 +554,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"getNodePages", _getNodePagesParameterTypes14);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"getNodePages", _getNodePagesParameterTypes15);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					max);
@@ -559,8 +593,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"getNodePagesRSS", _getNodePagesRSSParameterTypes15);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"getNodePagesRSS", _getNodePagesRSSParameterTypes16);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					max, type, version, displayStyle, feedURL, entryURL);
@@ -596,8 +630,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"getPage", _getPageParameterTypes16);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"getPage", _getPageParameterTypes17);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title);
@@ -634,8 +668,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"getPage", _getPageParameterTypes17);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"getPage", _getPageParameterTypes18);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title, head);
@@ -672,8 +706,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"getPage", _getPageParameterTypes18);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"getPage", _getPageParameterTypes19);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title, version);
@@ -712,8 +746,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"getPagesRSS", _getPagesRSSParameterTypes19);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"getPagesRSS", _getPagesRSSParameterTypes20);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					companyId, nodeId, title, max, type, version, displayStyle,
@@ -751,9 +785,9 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"getTempPageAttachmentNames",
-					_getTempPageAttachmentNamesParameterTypes20);
+					_getTempPageAttachmentNamesParameterTypes21);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					tempFolderName);
@@ -790,8 +824,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"movePage", _movePageParameterTypes21);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"movePage", _movePageParameterTypes22);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title, newTitle, serviceContext);
@@ -818,48 +852,12 @@ public class WikiPageServiceHttp {
 		}
 	}
 
-	public static void movePageAttachmentFromTrash(
-		HttpPrincipal httpPrincipal, long nodeId, java.lang.String title,
-		java.lang.String deletedFileName)
+	public static long movePageAttachmentToTrash(HttpPrincipal httpPrincipal,
+		long nodeId, java.lang.String title, java.lang.String fileName)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"movePageAttachmentFromTrash",
-					_movePageAttachmentFromTrashParameterTypes22);
-
-			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
-					title, deletedFileName);
-
-			try {
-				TunnelUtil.invoke(httpPrincipal, methodHandler);
-			}
-			catch (Exception e) {
-				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
-					throw (com.liferay.portal.kernel.exception.PortalException)e;
-				}
-
-				if (e instanceof com.liferay.portal.kernel.exception.SystemException) {
-					throw (com.liferay.portal.kernel.exception.SystemException)e;
-				}
-
-				throw new com.liferay.portal.kernel.exception.SystemException(e);
-			}
-		}
-		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
-
-			throw se;
-		}
-	}
-
-	public static java.lang.String movePageAttachmentToTrash(
-		HttpPrincipal httpPrincipal, long nodeId, java.lang.String title,
-		java.lang.String fileName)
-		throws com.liferay.portal.kernel.exception.PortalException,
-			com.liferay.portal.kernel.exception.SystemException {
-		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"movePageAttachmentToTrash",
 					_movePageAttachmentToTrashParameterTypes23);
 
@@ -883,7 +881,7 @@ public class WikiPageServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (java.lang.String)returnObj;
+			return ((Long)returnObj).longValue();
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -897,7 +895,7 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"movePageToTrash", _movePageToTrashParameterTypes24);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
@@ -930,11 +928,46 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"movePageToTrash", _movePageToTrashParameterTypes25);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title, version);
+
+			try {
+				TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception e) {
+				if (e instanceof com.liferay.portal.kernel.exception.PortalException) {
+					throw (com.liferay.portal.kernel.exception.PortalException)e;
+				}
+
+				if (e instanceof com.liferay.portal.kernel.exception.SystemException) {
+					throw (com.liferay.portal.kernel.exception.SystemException)e;
+				}
+
+				throw new com.liferay.portal.kernel.exception.SystemException(e);
+			}
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException se) {
+			_log.error(se, se);
+
+			throw se;
+		}
+	}
+
+	public static void restorePageAttachmentFromTrash(
+		HttpPrincipal httpPrincipal, long nodeId, java.lang.String title,
+		java.lang.String fileName)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		try {
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"restorePageAttachmentFromTrash",
+					_restorePageAttachmentFromTrashParameterTypes26);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
+					title, fileName);
 
 			try {
 				TunnelUtil.invoke(httpPrincipal, methodHandler);
@@ -963,9 +996,9 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
 					"restorePageFromTrash",
-					_restorePageFromTrashParameterTypes26);
+					_restorePageFromTrashParameterTypes27);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					resourcePrimKey);
@@ -998,8 +1031,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"revertPage", _revertPageParameterTypes27);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"revertPage", _revertPageParameterTypes28);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title, version, serviceContext);
@@ -1035,8 +1068,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"subscribePage", _subscribePageParameterTypes28);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"subscribePage", _subscribePageParameterTypes29);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title);
@@ -1068,8 +1101,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"unsubscribePage", _unsubscribePageParameterTypes29);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"unsubscribePage", _unsubscribePageParameterTypes30);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title);
@@ -1105,8 +1138,8 @@ public class WikiPageServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		try {
-			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class.getName(),
-					"updatePage", _updatePageParameterTypes30);
+			MethodKey methodKey = new MethodKey(WikiPageServiceUtil.class,
+					"updatePage", _updatePageParameterTypes31);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey, nodeId,
 					title, version, content, summary, minorEdit, format,
@@ -1184,41 +1217,42 @@ public class WikiPageServiceHttp {
 	private static final Class<?>[] _deleteTempPageAttachmentParameterTypes12 = new Class[] {
 			long.class, java.lang.String.class, java.lang.String.class
 		};
-	private static final Class<?>[] _getDraftPageParameterTypes13 = new Class[] {
+	private static final Class<?>[] _deleteTrashPageAttachmentsParameterTypes13 = new Class[] {
 			long.class, java.lang.String.class
 		};
-	private static final Class<?>[] _getNodePagesParameterTypes14 = new Class[] {
+	private static final Class<?>[] _getDraftPageParameterTypes14 = new Class[] {
+			long.class, java.lang.String.class
+		};
+	private static final Class<?>[] _getNodePagesParameterTypes15 = new Class[] {
 			long.class, int.class
 		};
-	private static final Class<?>[] _getNodePagesRSSParameterTypes15 = new Class[] {
+	private static final Class<?>[] _getNodePagesRSSParameterTypes16 = new Class[] {
 			long.class, int.class, java.lang.String.class, double.class,
 			java.lang.String.class, java.lang.String.class,
 			java.lang.String.class
 		};
-	private static final Class<?>[] _getPageParameterTypes16 = new Class[] {
+	private static final Class<?>[] _getPageParameterTypes17 = new Class[] {
 			long.class, java.lang.String.class
 		};
-	private static final Class<?>[] _getPageParameterTypes17 = new Class[] {
+	private static final Class<?>[] _getPageParameterTypes18 = new Class[] {
 			long.class, java.lang.String.class, java.lang.Boolean.class
 		};
-	private static final Class<?>[] _getPageParameterTypes18 = new Class[] {
+	private static final Class<?>[] _getPageParameterTypes19 = new Class[] {
 			long.class, java.lang.String.class, double.class
 		};
-	private static final Class<?>[] _getPagesRSSParameterTypes19 = new Class[] {
+	private static final Class<?>[] _getPagesRSSParameterTypes20 = new Class[] {
 			long.class, long.class, java.lang.String.class, int.class,
 			java.lang.String.class, double.class, java.lang.String.class,
 			java.lang.String.class, java.lang.String.class,
 			java.util.Locale.class
 		};
-	private static final Class<?>[] _getTempPageAttachmentNamesParameterTypes20 = new Class[] {
+	private static final Class<?>[] _getTempPageAttachmentNamesParameterTypes21 = new Class[] {
 			long.class, java.lang.String.class
 		};
-	private static final Class<?>[] _movePageParameterTypes21 = new Class[] {
+	private static final Class<?>[] _movePageParameterTypes22 = new Class[] {
 			long.class, java.lang.String.class, java.lang.String.class,
 			com.liferay.portal.service.ServiceContext.class
 		};
-	private static final Class<?>[] _movePageAttachmentFromTrashParameterTypes22 =
-		new Class[] { long.class, java.lang.String.class, java.lang.String.class };
 	private static final Class<?>[] _movePageAttachmentToTrashParameterTypes23 = new Class[] {
 			long.class, java.lang.String.class, java.lang.String.class
 		};
@@ -1228,20 +1262,22 @@ public class WikiPageServiceHttp {
 	private static final Class<?>[] _movePageToTrashParameterTypes25 = new Class[] {
 			long.class, java.lang.String.class, double.class
 		};
-	private static final Class<?>[] _restorePageFromTrashParameterTypes26 = new Class[] {
+	private static final Class<?>[] _restorePageAttachmentFromTrashParameterTypes26 =
+		new Class[] { long.class, java.lang.String.class, java.lang.String.class };
+	private static final Class<?>[] _restorePageFromTrashParameterTypes27 = new Class[] {
 			long.class
 		};
-	private static final Class<?>[] _revertPageParameterTypes27 = new Class[] {
+	private static final Class<?>[] _revertPageParameterTypes28 = new Class[] {
 			long.class, java.lang.String.class, double.class,
 			com.liferay.portal.service.ServiceContext.class
 		};
-	private static final Class<?>[] _subscribePageParameterTypes28 = new Class[] {
+	private static final Class<?>[] _subscribePageParameterTypes29 = new Class[] {
 			long.class, java.lang.String.class
 		};
-	private static final Class<?>[] _unsubscribePageParameterTypes29 = new Class[] {
+	private static final Class<?>[] _unsubscribePageParameterTypes30 = new Class[] {
 			long.class, java.lang.String.class
 		};
-	private static final Class<?>[] _updatePageParameterTypes30 = new Class[] {
+	private static final Class<?>[] _updatePageParameterTypes31 = new Class[] {
 			long.class, java.lang.String.class, double.class,
 			java.lang.String.class, java.lang.String.class, boolean.class,
 			java.lang.String.class, java.lang.String.class,

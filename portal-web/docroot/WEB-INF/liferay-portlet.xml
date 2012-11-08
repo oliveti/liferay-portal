@@ -205,6 +205,7 @@
 		<asset-renderer-factory>com.liferay.portlet.messageboards.asset.MBMessageAssetRendererFactory</asset-renderer-factory>
 		<custom-attributes-display>com.liferay.portlet.messageboards.MBCategoryCustomAttributesDisplay</custom-attributes-display>
 		<custom-attributes-display>com.liferay.portlet.messageboards.MBMessageCustomAttributesDisplay</custom-attributes-display>
+		<trash-handler>com.liferay.portlet.messageboards.trash.MBMessageTrashHandler</trash-handler>
 		<trash-handler>com.liferay.portlet.messageboards.trash.MBThreadTrashHandler</trash-handler>
 		<workflow-handler>com.liferay.portlet.messageboards.workflow.MBDiscussionWorkflowHandler</workflow-handler>
 		<workflow-handler>com.liferay.portlet.messageboards.workflow.MBMessageWorkflowHandler</workflow-handler>
@@ -711,7 +712,8 @@
 		<instanceable>true</instanceable>
 		<private-request-attributes>false</private-request-attributes>
 		<private-session-attributes>false</private-session-attributes>
-		<render-weight>50</render-weight>
+		<render-weight>1</render-weight>
+		<ajaxable>false</ajaxable>
 		<css-class-wrapper>portlet-breadcrumb</css-class-wrapper>
 		<add-default-resource>true</add-default-resource>
 	</portlet>
@@ -1174,9 +1176,11 @@
 		<portlet-name>127</portlet-name>
 		<icon>/html/icons/user_groups_admin.png</icon>
 		<struts-path>user_groups_admin</struts-path>
+		<indexer-class>com.liferay.portlet.usergroupsadmin.util.UserGroupIndexer</indexer-class>
 		<portlet-url-class>com.liferay.portal.struts.StrutsActionPortletURL</portlet-url-class>
 		<control-panel-entry-category>portal</control-panel-entry-category>
 		<control-panel-entry-weight>4.5</control-panel-entry-weight>
+		<custom-attributes-display>com.liferay.portlet.usergroupsadmin.UserGroupCustomAttributesDisplay</custom-attributes-display>
 		<use-default-template>false</use-default-template>
 		<private-request-attributes>false</private-request-attributes>
 		<private-session-attributes>false</private-session-attributes>
@@ -1961,6 +1965,7 @@
 		<private-request-attributes>false</private-request-attributes>
 		<private-session-attributes>false</private-session-attributes>
 		<header-portlet-css>/html/portlet/document_library/css/main.css</header-portlet-css>
+		<header-portlet-css>/html/portlet/message_boards/css/main.css</header-portlet-css>
 		<header-portlet-css>/html/portlet/trash/css/main.css</header-portlet-css>
 		<css-class-wrapper>portlet-trash</css-class-wrapper>
 	</portlet>

@@ -93,6 +93,8 @@ public interface PropsKeys {
 
 	public static final String APPLICATION_STARTUP_EVENTS = "application.startup.events";
 
+	public static final String ASSET_CATEGORIES_NAVIGATION_DISPLAY_TEMPLATES_CONFIG = "asset.categories.navigation.display.templates.config";
+
 	public static final String ASSET_CATEGORIES_NAVIGATION_DISPLAY_TEMPLATES_HELP = "asset.categories.navigation.display.templates.help";
 
 	public static final String ASSET_CATEGORIES_PROPERTIES_DEFAULT = "asset.categories.properties.default";
@@ -109,6 +111,8 @@ public interface PropsKeys {
 
 	public static final String ASSET_PUBLISHER_DISPLAY_STYLES = "asset.publisher.display.styles";
 
+	public static final String ASSET_PUBLISHER_DISPLAY_TEMPLATES_CONFIG = "asset.publisher.display.templates.config";
+
 	public static final String ASSET_PUBLISHER_DISPLAY_TEMPLATES_HELP = "asset.publisher.display.templates.help";
 
 	public static final String ASSET_RENDERER_ENABLED = "asset.renderer.enabled.";
@@ -116,6 +120,8 @@ public interface PropsKeys {
 	public static final String ASSET_TAG_PROPERTIES_DEFAULT = "asset.tag.properties.default";
 
 	public static final String ASSET_TAG_SUGGESTIONS_ENABLED = "asset.tag.suggestions.enabled";
+
+	public static final String ASSET_TAGS_NAVIGATION_DISPLAY_TEMPLATES_CONFIG = "asset.tags.navigation.display.templates.config";
 
 	public static final String ASSET_TAGS_NAVIGATION_DISPLAY_TEMPLATES_HELP = "asset.tags.navigation.display.templates.help";
 
@@ -216,6 +222,8 @@ public interface PropsKeys {
 	public static final String AUTO_LOGIN_IGNORE_PATHS = "auto.login.ignore.paths";
 
 	public static final String BASIC_AUTH_PASSWORD_REQUIRED = "basic.auth.password.required";
+
+	public static final String BLOGS_DISPLAY_TEMPLATES_CONFIG = "blogs.display.templates.config";
 
 	public static final String BLOGS_DISPLAY_TEMPLATES_HELP = "blogs.display.templates.help";
 
@@ -573,6 +581,8 @@ public interface PropsKeys {
 
 	public static final String DL_FILE_ENTRY_COMMENTS_ENABLED = "dl.file.entry.comments.enabled";
 
+	public static final String DL_FILE_ENTRY_CONVERSIONS_ENABLED = "dl.file.entry.conversions.enabled";
+
 	public static final String DL_FILE_ENTRY_DRAFTS_ENABLED = "dl.file.entry.drafts.enabled";
 
 	public static final String DL_FILE_ENTRY_LOCK_POLICY = "dl.file.entry.lock.policy";
@@ -722,6 +732,10 @@ public interface PropsKeys {
 	public static final String DYNAMIC_DATA_LISTS_TEMPLATE_LANGUAGE_PARSER = "dynamic.data.lists.template.language.parser";
 
 	public static final String DYNAMIC_DATA_LISTS_TRANSFORMER_LISTENER = "dynamic.data.lists.transformer.listener";
+
+	public static final String DYNAMIC_DATA_MAPPING_IMAGE_EXTENSIONS = "dynamic.data.mapping.image.extensions";
+
+	public static final String DYNAMIC_DATA_MAPPING_IMAGE_SMALL_MAX_SIZE = "dynamic.data.mapping.image.small.max.size";
 
 	public static final String DYNAMIC_DATA_MAPPING_STRUCTURE_FORCE_AUTOGENERATE_KEY = "dynamic.data.mapping.structure.force.autogenerate.key";
 
@@ -2231,7 +2245,11 @@ public interface PropsKeys {
 
 	public static final String USER_GROUPS_COPY_LAYOUTS_TO_USER_PERSONAL_SITE = "user.groups.copy.layouts.to.user.personal.site";
 
+	public static final String USER_GROUPS_INDEXER_ENABLED = "user.groups.indexer.enabled";
+
 	public static final String USER_GROUPS_NAME_ALLOW_NUMERIC = "user.groups.name.allow.numeric";
+
+	public static final String USER_GROUPS_SEARCH_WITH_INDEX = "user.groups.search.with.index";
 
 	public static final String USER_NOTIFICATION_EVENT_CONFIRMATION_ENABLED = "user.notification.event.confirmation.enabled";
 
@@ -2370,6 +2388,8 @@ public interface PropsKeys {
 	public static final String WEBDAV_NONCE_EXPIRATION = "webdav.nonce.expiration";
 
 	public static final String WIDGET_SERVLET_MAPPING = "widget.servlet.mapping";
+
+	public static final String WIKI_DISPLAY_TEMPLATES_CONFIG = "wiki.display.templates.config";
 
 	public static final String WIKI_DISPLAY_TEMPLATES_HELP = "wiki.display.templates.help";
 

@@ -830,6 +830,7 @@
 			<validator name="email" />
 		</field>
 		<field name="facebookId" type="long" />
+		<field name="ldapServerId" type="long" />
 		<field name="openId" type="String">
 			<hint name="max-length">1024</hint>
 			<hint name="display-width">400</hint>
@@ -1619,6 +1620,9 @@
 			<hint-collection name="CLOB" />
 		</field>
 		<field name="cacheable" type="boolean" />
+		<field name="smallImage" type="boolean" />
+		<field name="smallImageId" type="long" />
+		<field name="smallImageURL" type="String" />
 	</model>
 	<model name="com.liferay.portlet.expando.model.ExpandoColumn">
 		<field name="columnId" type="long" />

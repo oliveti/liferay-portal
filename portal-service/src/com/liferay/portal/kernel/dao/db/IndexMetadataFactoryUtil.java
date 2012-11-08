@@ -18,20 +18,18 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
-import java.util.List;
-
 /**
  * @author James Lefeu
- * @auther Peter Shin
+ * @author Peter Shin
  */
 public class IndexMetadataFactoryUtil {
 
-	public static IndexMetadata create(
-		String tableName, List<String> columnNames, boolean unique) {
+	public static IndexMetadata createIndexMetadata(
+		boolean unique, String tableName, String... columnNames) {
 
-		String specification = getSpecification(tableName, columnNames);
+		String specification = _getSpecification(tableName, columnNames);
 
-		String indexName = getIndexName(specification);
+		String indexName = _getIndexName(specification);
 
 		StringBundler sb = new StringBundler(5);
 
@@ -47,13 +45,22 @@ public class IndexMetadataFactoryUtil {
 		sb.append(" on ");
 		sb.append(specification);
 
-		String sql = sb.toString();
+		String createSQL = sb.toString();
+
+		sb.setIndex(0);
+
+		sb.append("drop index ");
+		sb.append(indexName);
+		sb.append(" on ");
+		sb.append(tableName);
+
+		String dropSQL = sb.toString();
 
 		return new IndexMetadata(
-			indexName, tableName, unique, specification, sql);
+			indexName, tableName, unique, specification, createSQL, dropSQL);
 	}
 
-	protected static String getIndexName(String specification) {
+	private static String _getIndexName(String specification) {
 		String specificationHash = StringUtil.toHexString(
 			specification.hashCode());
 
@@ -62,8 +69,8 @@ public class IndexMetadataFactoryUtil {
 		return _INDEX_NAME_PREFIX.concat(specificationHash);
 	}
 
-	protected static String getSpecification(
-		String tableName, List<String> columnNames) {
+	private static String _getSpecification(
+		String tableName, String[] columnNames) {
 
 		StringBundler sb = new StringBundler(6);
 
@@ -71,7 +78,7 @@ public class IndexMetadataFactoryUtil {
 		sb.append(StringPool.SPACE);
 		sb.append(StringPool.OPEN_PARENTHESIS);
 
-		if ((columnNames != null) && !columnNames.isEmpty()) {
+		if ((columnNames != null) && (columnNames.length > 0)) {
 			sb.append(
 				StringUtil.merge(columnNames, StringPool.COMMA_AND_SPACE));
 		}

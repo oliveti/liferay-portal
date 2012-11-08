@@ -1670,8 +1670,9 @@ public class PortletImporter {
 					scopeGroup = GroupLocalServiceUtil.addGroup(
 						portletDataContext.getUserId(null),
 						GroupConstants.DEFAULT_PARENT_GROUP_ID,
-						Layout.class.getName(), scopeLayout.getPlid(), name,
-						null, 0, null, false, true, null);
+						Layout.class.getName(), scopeLayout.getPlid(),
+						GroupConstants.DEFAULT_LIVE_GROUP_ID, name, null, 0,
+						null, false, true, null);
 				}
 
 				Group group = scopeLayout.getGroup();
@@ -1913,10 +1914,9 @@ public class PortletImporter {
 				String name = enu.nextElement();
 
 				if (!ArrayUtil.contains(dataPortletPreferences, name)) {
-					String value = GetterUtil.getString(
-						jxPreferences.getValue(name, null));
+					String[] values = jxPreferences.getValues(name, null);
 
-					portletPreferences.setValue(name, value);
+					portletPreferences.setValues(name, values);
 				}
 			}
 

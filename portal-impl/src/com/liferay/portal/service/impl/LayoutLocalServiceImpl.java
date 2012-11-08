@@ -72,6 +72,7 @@ import com.liferay.portal.util.comparator.LayoutComparator;
 import com.liferay.portal.util.comparator.LayoutPriorityComparator;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.expando.model.ExpandoBridge;
+import com.liferay.portlet.mobiledevicerules.model.MDRRuleGroupInstance;
 import com.liferay.portlet.sites.util.SitesUtil;
 
 import java.io.File;
@@ -473,6 +474,22 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		ratingsStatsLocalService.deleteStats(
 			Layout.class.getName(), layout.getPlid());
 
+		// Mobile device rules
+
+		long layoutClassNameId = classNameLocalService.getClassNameId(
+			Layout.class);
+
+		List<MDRRuleGroupInstance> mdrRuleGroupInstances =
+			mdrRuleGroupInstancePersistence.findByC_C(
+				layoutClassNameId, layout.getPlid());
+
+		for (MDRRuleGroupInstance mdrRuleGroupInstance :
+				mdrRuleGroupInstances) {
+
+			mdrRuleGroupInstanceLocalService.deleteMDRRuleGroupInstance(
+				mdrRuleGroupInstance);
+		}
+
 		// Message boards
 
 		mbMessageLocalService.deleteDiscussionMessages(
@@ -802,6 +819,13 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		return layoutPersistence.fetchByG_P_P_First(
 			groupId, privateLayout, parentLayoutId,
 			new LayoutPriorityComparator());
+	}
+
+	public Layout fetchLayout(
+			long groupId, boolean privateLayout, long layoutId)
+		throws SystemException {
+
+		return layoutPersistence.fetchByG_P_L(groupId, privateLayout, layoutId);
 	}
 
 	/**

@@ -60,7 +60,7 @@ public class WebServerTrashTest extends BaseWebServerTestCase {
 		super.setUp();
 
 		_user = ServiceTestUtil.addUser(
-			null, true, new long[] {TestPropsValues.getGroupId()});
+			null, true, new long[] {group.getGroupId()});
 
 		try {
 			_role = RoleLocalServiceUtil.getRole(
@@ -68,8 +68,8 @@ public class WebServerTrashTest extends BaseWebServerTestCase {
 		}
 		catch (NoSuchRoleException nsre) {
 			_role = RoleLocalServiceUtil.addRole(
-				TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
-				"Trash Admin", null, null, RoleConstants.TYPE_REGULAR);
+				TestPropsValues.getUserId(), null, 0, "Trash Admin", null, null,
+				RoleConstants.TYPE_REGULAR, null);
 		}
 
 		ResourcePermissionLocalServiceUtil.addResourcePermission(

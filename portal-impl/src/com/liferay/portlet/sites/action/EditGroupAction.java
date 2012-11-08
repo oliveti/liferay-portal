@@ -416,8 +416,8 @@ public class EditGroupAction extends PortletAction {
 			active = ParamUtil.getBoolean(actionRequest, "active");
 
 			liveGroup = GroupServiceUtil.addGroup(
-				parentGroupId, name, description, type, friendlyURL, true,
-				active, serviceContext);
+				parentGroupId, GroupConstants.DEFAULT_LIVE_GROUP_ID, name,
+				description, type, friendlyURL, true, active, serviceContext);
 
 			LiveUsers.joinGroup(
 				themeDisplay.getCompanyId(), liveGroup.getGroupId(), userId);
@@ -495,7 +495,7 @@ public class EditGroupAction extends PortletAction {
 			StringPool.NEW_LINE);
 
 		for (String analyticsType : analyticsTypes) {
-			if (analyticsType.equals("google")) {
+			if (analyticsType.equalsIgnoreCase("google")) {
 				String googleAnalyticsId = ParamUtil.getString(
 					actionRequest, "googleAnalyticsId",
 					typeSettingsProperties.getProperty("googleAnalyticsId"));

@@ -1112,6 +1112,7 @@
 			<basic name="screenName" />
 			<basic name="emailAddress" />
 			<basic name="facebookId" />
+			<basic name="ldapServerId" />
 			<basic name="openId" />
 			<basic name="portraitId" />
 			<basic name="languageId" />
@@ -2290,6 +2291,9 @@
 			<basic name="language" />
 			<basic name="script" />
 			<basic name="cacheable" />
+			<basic name="smallImage" />
+			<basic name="smallImageId" />
+			<basic name="smallImageURL" />
 			<transient name="className" />
 			<transient name="descriptionCurrentLanguageId" />
 			<transient name="descriptionMap" />
@@ -4183,7 +4187,9 @@
 	</entity>
 	<entity class="com.liferay.portlet.dynamicdatamapping.model.impl.DDMTemplateImpl" name="DDMTemplate">
 		<table name="DDMTemplate" />
-		<attributes />
+		<attributes>
+			<transient name="smallImageType" />
+		</attributes>
 	</entity>
 	<entity class="com.liferay.portlet.expando.model.impl.ExpandoColumnImpl" name="ExpandoColumn">
 		<table name="ExpandoColumn" />
@@ -4439,8 +4445,7 @@
 	<entity class="com.liferay.portlet.wiki.model.impl.WikiPageImpl" name="WikiPage">
 		<table name="WikiPage" />
 		<attributes>
-			<transient name="attachmentsDir" />
-			<transient name="deletedAttachmentsDir" />
+			<transient name="attachmentsFolderId" />
 		</attributes>
 	</entity>
 	<entity class="com.liferay.portlet.wiki.model.impl.WikiPageResourceImpl" name="WikiPageResource">
