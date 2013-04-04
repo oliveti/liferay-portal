@@ -14,6 +14,7 @@ import com.liferay.portal.model.CacheModel;
 import com.liferay.portal.model.ContainerModel;
 import com.liferay.portal.model.GroupedModel;
 import com.liferay.portal.model.ResourcedModel;
+import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.model.WorkflowedModel;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.expando.model.ExpandoBridge;
@@ -61,6 +62,10 @@ public interface ${entity.name}Model extends
 
 	<#if entity.isResourcedModel()>
 		, ResourcedModel
+	</#if>
+
+	<#if entity.isStagedModel()>
+		, StagedModel
 	</#if>
 
 	<#if entity.isWorkflowEnabled()>
@@ -260,7 +265,7 @@ public interface ${entity.name}Model extends
 
 	<#if entity.isWorkflowEnabled()>
 		/**
-		 * @deprecated Renamed to {@link #isApproved()}
+		 * @deprecated As of 6.1.0, replaced by {@link #isApproved()}
 		 */
 		public boolean getApproved();
 
@@ -390,6 +395,10 @@ public interface ${entity.name}Model extends
 
 	public ExpandoBridge getExpandoBridge();
 
+	public void setExpandoBridgeAttributes(BaseModel<?> baseModel);
+
+	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge);
+
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext);
 
 	<#if entity.hasLocalizedColumn()>
@@ -405,6 +414,8 @@ public interface ${entity.name}Model extends
 	public CacheModel<${entity.name}> toCacheModel();
 
 	public ${entity.name} toEscapedModel();
+
+	public ${entity.name} toUnescapedModel();
 
 	public String toString();
 

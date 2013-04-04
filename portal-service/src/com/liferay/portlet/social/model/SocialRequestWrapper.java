@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -480,6 +480,16 @@ public class SocialRequestWrapper implements SocialRequest,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_socialRequest.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_socialRequest.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_socialRequest.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -507,6 +517,10 @@ public class SocialRequestWrapper implements SocialRequest,
 		return new SocialRequestWrapper(_socialRequest.toEscapedModel());
 	}
 
+	public com.liferay.portlet.social.model.SocialRequest toUnescapedModel() {
+		return new SocialRequestWrapper(_socialRequest.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _socialRequest.toString();
@@ -522,7 +536,7 @@ public class SocialRequestWrapper implements SocialRequest,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public SocialRequest getWrappedSocialRequest() {
 		return _socialRequest;

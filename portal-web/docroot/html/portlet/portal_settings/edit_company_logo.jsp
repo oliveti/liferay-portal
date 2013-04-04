@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -21,7 +21,7 @@ String logoURL = themeDisplay.getPathImage() + "/company_logo?img_id=" + company
 %>
 
 <c:choose>
-	<c:when test='<%= SessionMessages.contains(renderRequest, "request_processed") %>'>
+	<c:when test='<%= SessionMessages.contains(renderRequest, "requestProcessed") %>'>
 		<aui:script>
 			opener.<portlet:namespace />changeLogo('<%= logoURL %>');
 

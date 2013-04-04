@@ -10,7 +10,6 @@
 }
 
 .aui-form-validator-error-container .aui-field-element {
-	display: inline-block;
 	padding-right: 20px;
 }
 
@@ -48,6 +47,30 @@
 
 		.aui-field-input {
 			width: 100%;
+		}
+	}
+}
+
+.lfr-ddm-container .aui-field-wrapper {
+	position: relative;
+	
+	.aui-field-wrapper {
+		margin-left: 20px;
+	}
+
+	.lfr-ddm-repeatable-add-button, .lfr-ddm-repeatable-delete-button {
+		display: block;
+		height: 16px;
+		position: absolute;
+		top: 4px;
+		width: 16px;
+
+		&.lfr-ddm-repeatable-add-button {
+			right: 4px;
+		}
+
+		&.lfr-ddm-repeatable-delete-button {
+			right: 24px;
 		}
 	}
 }
@@ -118,6 +141,22 @@ fieldset, .aui-form fieldset {
 [class~="aui-form-validator-message"] {
 	background-color: #333;
 	color: #fff;
+}
+
+.lfr-ddm-container .aui-field-wrapper {
+	&.lfr-ddm-repeatable-active {
+		background: #F7FAFB;
+	}
+
+	.lfr-ddm-repeatable-add-button, .lfr-ddm-repeatable-delete-button {
+		&.lfr-ddm-repeatable-add-button {
+			background: transparent url(@theme_image_path@/common/add.png) no-repeat 0 0;
+		}
+
+		&.lfr-ddm-repeatable-delete-button {
+			background: transparent url(@theme_image_path@/common/delete.png) no-repeat 0 0;
+		}
+	}
 }
 
 .ie6 .aui-form-validator-message {

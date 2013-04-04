@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -359,6 +359,16 @@ public class SubscriptionWrapper implements Subscription,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_subscription.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_subscription.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_subscription.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -385,6 +395,10 @@ public class SubscriptionWrapper implements Subscription,
 		return new SubscriptionWrapper(_subscription.toEscapedModel());
 	}
 
+	public com.liferay.portal.model.Subscription toUnescapedModel() {
+		return new SubscriptionWrapper(_subscription.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _subscription.toString();
@@ -400,7 +414,7 @@ public class SubscriptionWrapper implements Subscription,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public Subscription getWrappedSubscription() {
 		return _subscription;

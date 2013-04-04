@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -16,7 +16,6 @@ package com.liferay.portlet.documentlibrary.model.impl;
 
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.json.JSON;
-import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -36,7 +35,6 @@ import java.io.Serializable;
 import java.sql.Types;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +64,8 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 	public static final Object[][] TABLE_COLUMNS = {
 			{ "syncId", Types.BIGINT },
 			{ "companyId", Types.BIGINT },
-			{ "createDate", Types.TIMESTAMP },
-			{ "modifiedDate", Types.TIMESTAMP },
+			{ "createDate", Types.BIGINT },
+			{ "modifiedDate", Types.BIGINT },
 			{ "fileId", Types.BIGINT },
 			{ "fileUuid", Types.VARCHAR },
 			{ "repositoryId", Types.BIGINT },
@@ -78,7 +76,7 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 			{ "type_", Types.VARCHAR },
 			{ "version", Types.VARCHAR }
 		};
-	public static final String TABLE_SQL_CREATE = "create table DLSync (syncId LONG not null primary key,companyId LONG,createDate DATE null,modifiedDate DATE null,fileId LONG,fileUuid VARCHAR(75) null,repositoryId LONG,parentFolderId LONG,name VARCHAR(255) null,description STRING null,event VARCHAR(75) null,type_ VARCHAR(75) null,version VARCHAR(75) null)";
+	public static final String TABLE_SQL_CREATE = "create table DLSync (syncId LONG not null primary key,companyId LONG,createDate LONG,modifiedDate LONG,fileId LONG,fileUuid VARCHAR(75) null,repositoryId LONG,parentFolderId LONG,name VARCHAR(255) null,description STRING null,event VARCHAR(75) null,type_ VARCHAR(75) null,version VARCHAR(75) null)";
 	public static final String TABLE_SQL_DROP = "drop table DLSync";
 	public static final String ORDER_BY_JPQL = " ORDER BY dlSync.companyId ASC, dlSync.repositoryId ASC, dlSync.modifiedDate ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY DLSync.companyId ASC, DLSync.repositoryId ASC, DLSync.modifiedDate ASC";
@@ -164,7 +162,7 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_syncId);
+		return _syncId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -214,13 +212,13 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 			setCompanyId(companyId);
 		}
 
-		Date createDate = (Date)attributes.get("createDate");
+		Long createDate = (Long)attributes.get("createDate");
 
 		if (createDate != null) {
 			setCreateDate(createDate);
 		}
 
-		Date modifiedDate = (Date)attributes.get("modifiedDate");
+		Long modifiedDate = (Long)attributes.get("modifiedDate");
 
 		if (modifiedDate != null) {
 			setModifiedDate(modifiedDate);
@@ -312,30 +310,32 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 	}
 
 	@JSON
-	public Date getCreateDate() {
+	public long getCreateDate() {
 		return _createDate;
 	}
 
-	public void setCreateDate(Date createDate) {
+	public void setCreateDate(long createDate) {
 		_createDate = createDate;
 	}
 
 	@JSON
-	public Date getModifiedDate() {
+	public long getModifiedDate() {
 		return _modifiedDate;
 	}
 
-	public void setModifiedDate(Date modifiedDate) {
+	public void setModifiedDate(long modifiedDate) {
 		_columnBitmask = -1L;
 
-		if (_originalModifiedDate == null) {
+		if (!_setOriginalModifiedDate) {
+			_setOriginalModifiedDate = true;
+
 			_originalModifiedDate = _modifiedDate;
 		}
 
 		_modifiedDate = modifiedDate;
 	}
 
-	public Date getOriginalModifiedDate() {
+	public long getOriginalModifiedDate() {
 		return _originalModifiedDate;
 	}
 
@@ -493,13 +493,12 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 
 	@Override
 	public DLSync toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (DLSync)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (DLSync)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -556,7 +555,15 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 			return value;
 		}
 
-		value = DateUtil.compareTo(getModifiedDate(), dlSync.getModifiedDate());
+		if (getModifiedDate() < dlSync.getModifiedDate()) {
+			value = -1;
+		}
+		else if (getModifiedDate() > dlSync.getModifiedDate()) {
+			value = 1;
+		}
+		else {
+			value = 0;
+		}
 
 		if (value != 0) {
 			return value;
@@ -605,6 +612,8 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 
 		dlSyncModelImpl._originalModifiedDate = dlSyncModelImpl._modifiedDate;
 
+		dlSyncModelImpl._setOriginalModifiedDate = false;
+
 		dlSyncModelImpl._originalFileId = dlSyncModelImpl._fileId;
 
 		dlSyncModelImpl._setOriginalFileId = false;
@@ -624,23 +633,9 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 
 		dlSyncCacheModel.companyId = getCompanyId();
 
-		Date createDate = getCreateDate();
+		dlSyncCacheModel.createDate = getCreateDate();
 
-		if (createDate != null) {
-			dlSyncCacheModel.createDate = createDate.getTime();
-		}
-		else {
-			dlSyncCacheModel.createDate = Long.MIN_VALUE;
-		}
-
-		Date modifiedDate = getModifiedDate();
-
-		if (modifiedDate != null) {
-			dlSyncCacheModel.modifiedDate = modifiedDate.getTime();
-		}
-		else {
-			dlSyncCacheModel.modifiedDate = Long.MIN_VALUE;
-		}
+		dlSyncCacheModel.modifiedDate = getModifiedDate();
 
 		dlSyncCacheModel.fileId = getFileId();
 
@@ -800,16 +795,15 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 	}
 
 	private static ClassLoader _classLoader = DLSync.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
-			DLSync.class
-		};
+	private static Class<?>[] _escapedModelInterfaces = new Class[] { DLSync.class };
 	private long _syncId;
 	private long _companyId;
 	private long _originalCompanyId;
 	private boolean _setOriginalCompanyId;
-	private Date _createDate;
-	private Date _modifiedDate;
-	private Date _originalModifiedDate;
+	private long _createDate;
+	private long _modifiedDate;
+	private long _originalModifiedDate;
+	private boolean _setOriginalModifiedDate;
 	private long _fileId;
 	private long _originalFileId;
 	private boolean _setOriginalFileId;
@@ -824,5 +818,5 @@ public class DLSyncModelImpl extends BaseModelImpl<DLSync>
 	private String _type;
 	private String _version;
 	private long _columnBitmask;
-	private DLSync _escapedModelProxy;
+	private DLSync _escapedModel;
 }

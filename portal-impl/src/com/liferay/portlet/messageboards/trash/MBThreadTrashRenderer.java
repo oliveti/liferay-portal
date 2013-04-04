@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -45,8 +45,18 @@ public class MBThreadTrashRenderer extends BaseTrashRenderer {
 	public MBThreadTrashRenderer(MBThread thread)
 		throws PortalException, SystemException {
 
+		_thread = thread;
+
 		_rootMessage = MBMessageLocalServiceUtil.getMBMessage(
 			thread.getRootMessageId());
+	}
+
+	public String getClassName() {
+		return MBThread.class.getName();
+	}
+
+	public long getClassPK() {
+		return _thread.getPrimaryKey();
 	}
 
 	@Override
@@ -70,6 +80,7 @@ public class MBThreadTrashRenderer extends BaseTrashRenderer {
 		return TYPE;
 	}
 
+	@Override
 	public String render(
 			RenderRequest renderRequest, RenderResponse renderResponse,
 			String template)
@@ -107,5 +118,6 @@ public class MBThreadTrashRenderer extends BaseTrashRenderer {
 	}
 
 	private MBMessage _rootMessage;
+	private MBThread _thread;
 
 }

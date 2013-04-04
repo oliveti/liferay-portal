@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -45,6 +45,8 @@ import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
+import com.liferay.portlet.dynamicdatalists.RecordSetDuplicateRecordSetKeyException;
+import com.liferay.portlet.dynamicdatamapping.StructureDuplicateStructureKeyException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -251,14 +253,9 @@ public class ExportImportAction extends EditConfigurationAction {
 						"last-publish-date", StringPool.BLANK));
 
 				if (lastPublishDate > 0) {
-					Calendar cal = Calendar.getInstance(
-						themeDisplay.getTimeZone(), themeDisplay.getLocale());
+					endDate = new Date();
 
-					endDate = cal.getTime();
-
-					cal.setTimeInMillis(lastPublishDate);
-
-					startDate = cal.getTime();
+					startDate = new Date(lastPublishDate);
 				}
 			}
 
@@ -319,7 +316,10 @@ public class ExportImportAction extends EditConfigurationAction {
 
 				SessionErrors.add(actionRequest, e.getClass());
 			}
-			else if (e instanceof LocaleException) {
+			else if ((e instanceof LocaleException) ||
+					 (e instanceof RecordSetDuplicateRecordSetKeyException) ||
+					 (e instanceof StructureDuplicateStructureKeyException)) {
+
 				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
 			else {

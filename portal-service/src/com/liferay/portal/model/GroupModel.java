@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -179,6 +179,21 @@ public interface GroupModel extends AttachedModel, BaseModel<Group> {
 	public void setLiveGroupId(long liveGroupId);
 
 	/**
+	 * Returns the tree path of this group.
+	 *
+	 * @return the tree path of this group
+	 */
+	@AutoEscape
+	public String getTreePath();
+
+	/**
+	 * Sets the tree path of this group.
+	 *
+	 * @param treePath the tree path of this group
+	 */
+	public void setTreePath(String treePath);
+
+	/**
 	 * Returns the name of this group.
 	 *
 	 * @return the name of this group
@@ -310,6 +325,10 @@ public interface GroupModel extends AttachedModel, BaseModel<Group> {
 
 	public ExpandoBridge getExpandoBridge();
 
+	public void setExpandoBridgeAttributes(BaseModel<?> baseModel);
+
+	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge);
+
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext);
 
 	public Object clone();
@@ -321,6 +340,8 @@ public interface GroupModel extends AttachedModel, BaseModel<Group> {
 	public CacheModel<Group> toCacheModel();
 
 	public Group toEscapedModel();
+
+	public Group toUnescapedModel();
 
 	public String toString();
 

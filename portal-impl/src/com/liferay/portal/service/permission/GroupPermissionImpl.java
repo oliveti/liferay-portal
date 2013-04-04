@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -48,6 +48,14 @@ public class GroupPermissionImpl implements GroupPermission {
 		}
 	}
 
+	public void check(PermissionChecker permissionChecker, String actionId)
+		throws PortalException {
+
+		if (!contains(permissionChecker, actionId)) {
+			throw new PrincipalException();
+		}
+	}
+
 	public boolean contains(
 			PermissionChecker permissionChecker, Group group, String actionId)
 		throws PortalException, SystemException {
@@ -68,7 +76,7 @@ public class GroupPermissionImpl implements GroupPermission {
 			User user = UserLocalServiceUtil.getUserById(group.getClassPK());
 
 			if ((permissionChecker.getUserId() != user.getUserId()) &&
-				 UserPermissionUtil.contains(
+				UserPermissionUtil.contains(
 					permissionChecker, user.getUserId(),
 					user.getOrganizationIds(), ActionKeys.UPDATE)) {
 
@@ -149,6 +157,13 @@ public class GroupPermissionImpl implements GroupPermission {
 		else {
 			return false;
 		}
+	}
+
+	public boolean contains(
+		PermissionChecker permissionChecker, String actionId) {
+
+		return permissionChecker.hasPermission(
+			0, Group.class.getName(), 0, actionId);
 	}
 
 }

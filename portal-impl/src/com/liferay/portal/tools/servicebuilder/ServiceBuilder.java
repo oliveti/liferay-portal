@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -115,6 +115,81 @@ public class ServiceBuilder {
 
 	public static final String AUTHOR = "Brian Wing Shun Chan";
 
+	public static String getContent(String fileName) throws Exception {
+		Document document = _getContentDocument(fileName);
+
+		Element rootElement = document.getRootElement();
+
+		Element authorElement = null;
+		Element namespaceElement = null;
+		Map<String, Element> entityElements = new TreeMap<String, Element>();
+		Map<String, Element> exceptionElements = new TreeMap<String, Element>();
+
+		for (Element element : rootElement.elements()) {
+			String elementName = element.getName();
+
+			if (elementName.equals("author")) {
+				element.detach();
+
+				if (authorElement != null) {
+					throw new IllegalArgumentException(
+						"There can only be one author element");
+				}
+
+				authorElement = element;
+			}
+			else if (elementName.equals("namespace")) {
+				element.detach();
+
+				if (namespaceElement != null) {
+					throw new IllegalArgumentException(
+						"There can only be one namespace element");
+				}
+
+				namespaceElement = element;
+			}
+			else if (elementName.equals("entity")) {
+				element.detach();
+
+				String name = element.attributeValue("name");
+
+				entityElements.put(name.toLowerCase(), element);
+			}
+			else if (elementName.equals("exceptions")) {
+				element.detach();
+
+				for (Element exceptionElement : element.elements("exception")) {
+					exceptionElement.detach();
+
+					exceptionElements.put(
+						exceptionElement.getText(), exceptionElement);
+				}
+			}
+		}
+
+		if (authorElement != null) {
+			rootElement.add(authorElement);
+		}
+
+		if (namespaceElement == null) {
+			throw new IllegalArgumentException(
+				"The namespace element is required");
+		}
+		else {
+			rootElement.add(namespaceElement);
+		}
+
+		_addElements(rootElement, entityElements);
+
+		if (!exceptionElements.isEmpty()) {
+			Element exceptionsElement = rootElement.addElement("exceptions");
+
+			_addElements(exceptionsElement, exceptionElements);
+		}
+
+		return document.asXML();
+	}
+
 	public static void main(String[] args) {
 		Map<String, String> arguments = ArgumentsUtil.parseArguments(args);
 
@@ -154,8 +229,8 @@ public class ServiceBuilder {
 				springFileName, springBaseFileName, springClusterFileName,
 				springDynamicDataSourceFileName, springHibernateFileName,
 				springInfrastructureFileName, springShardDataSourceFileName,
-				apiDir, implDir, remotingFileName, sqlDir,
-				sqlFileName, sqlIndexesFileName, sqlIndexesPropertiesFileName,
+				apiDir, implDir, remotingFileName, sqlDir, sqlFileName,
+				sqlIndexesFileName, sqlIndexesPropertiesFileName,
 				sqlSequencesFileName, autoNamespaceTables, beanLocatorUtil,
 				propsUtil, pluginName, targetEntityName, testDir, true,
 				buildNumber, buildNumberIncrement);
@@ -227,7 +302,6 @@ public class ServiceBuilder {
 				"\t-Dservice.tpl.service_util=" + _TPL_ROOT + "service_util.ftl\n"+
 				"\t-Dservice.tpl.service_wrapper=" + _TPL_ROOT + "service_wrapper.ftl\n"+
 				"\t-Dservice.tpl.spring_base_xml=" + _TPL_ROOT + "spring_base_xml.ftl\n"+
-				"\t-Dservice.tpl.spring_dynamic_data_source_xml=" + _TPL_ROOT + "spring_dynamic_data_source_xml.ftl\n"+
 				"\t-Dservice.tpl.spring_hibernate_xml=" + _TPL_ROOT + "spring_hibernate_xml.ftl\n"+
 				"\t-Dservice.tpl.spring_infrastructure_xml=" + _TPL_ROOT + "spring_infrastructure_xml.ftl\n"+
 				"\t-Dservice.tpl.spring_xml=" + _TPL_ROOT + "spring_xml.ftl\n"+
@@ -509,8 +583,6 @@ public class ServiceBuilder {
 			"spring_base_xml", _tplSpringBaseXml);
 		_tplSpringClusterXml = _getTplProperty(
 			"spring_cluster_xml", _tplSpringClusterXml);
-		_tplSpringDynamicDataSourceXml = _getTplProperty(
-			"spring_dynamic_data_source_xml", _tplSpringDynamicDataSourceXml);
 		_tplSpringHibernateXml = _getTplProperty(
 			"spring_hibernate_xml", _tplSpringHibernateXml);
 		_tplSpringInfrastructureXml = _getTplProperty(
@@ -553,7 +625,7 @@ public class ServiceBuilder {
 			_buildNumber = buildNumber;
 			_buildNumberIncrement = buildNumberIncrement;
 
-			String content = _getContent(fileName);
+			String content = getContent(fileName);
 
 			Document document = SAXReaderUtil.read(content, true);
 
@@ -653,11 +725,11 @@ public class ServiceBuilder {
 					if (_isTargetEntity(entity)) {
 						System.out.println("Building " + entity.getName());
 
-						if (entity.hasColumns()) {
-							if (entity.hasLocalService()) {
-								_createActionableDynamicQuery(entity);
-							}
+						if (entity.hasActionableDynamicQuery()) {
+							_createActionableDynamicQuery(entity);
+						}
 
+						if (entity.hasColumns()) {
 							_createHbm(entity);
 							_createHbmUtil(entity);
 
@@ -1557,7 +1629,7 @@ public class ServiceBuilder {
 				//parameterTypeName.startsWith("java.util.List") ||
 				//parameterTypeName.startsWith("java.util.Locale") ||
 				(parameterTypeName.startsWith("java.util.Map") &&
-					!_isStringLocaleMap(javaParameter)) ||
+				 !_isStringLocaleMap(javaParameter)) ||
 				parameterTypeName.startsWith("java.util.Properties") ||
 				parameterTypeName.startsWith("javax")) {
 
@@ -1582,6 +1654,57 @@ public class ServiceBuilder {
 		return false;
 	}
 
+	private static void _addElements(
+		Element element, Map<String, Element> elements) {
+
+		for (Map.Entry<String, Element> entry : elements.entrySet()) {
+			Element childElement = entry.getValue();
+
+			element.add(childElement);
+		}
+	}
+
+	private static Document _getContentDocument(String fileName)
+		throws Exception {
+
+		String content = FileUtil.read(new File(fileName));
+
+		Document document = SAXReaderUtil.read(content);
+
+		Element rootElement = document.getRootElement();
+
+		for (Element element : rootElement.elements()) {
+			String elementName = element.getName();
+
+			if (!elementName.equals("service-builder-import")) {
+				continue;
+			}
+
+			element.detach();
+
+			String dirName = fileName.substring(
+				0, fileName.lastIndexOf(StringPool.SLASH) + 1);
+			String serviceBuilderImportFileName = element.attributeValue(
+				"file");
+
+			Document serviceBuilderImportDocument = _getContentDocument(
+				dirName + serviceBuilderImportFileName);
+
+			Element serviceBuilderImportRootElement =
+				serviceBuilderImportDocument.getRootElement();
+
+			for (Element serviceBuilderImportElement :
+					serviceBuilderImportRootElement.elements()) {
+
+				serviceBuilderImportElement.detach();
+
+				rootElement.add(serviceBuilderImportElement);
+			}
+		}
+
+		return document;
+	}
+
 	private static String _getPackagePath(File file) {
 		String fileName = StringUtil.replace(file.toString(), "\\", "/");
 
@@ -1596,14 +1719,6 @@ public class ServiceBuilder {
 		fileName = fileName.substring(x + 4, y);
 
 		return StringUtil.replace(fileName, "/", ".");
-	}
-
-	private void _addElements(Element element, Map<String, Element> elements) {
-		for (Map.Entry<String, Element> entry : elements.entrySet()) {
-			Element childElement = entry.getValue();
-
-			element.add(childElement);
-		}
 	}
 
 	private void _createActionableDynamicQuery(Entity entity) throws Exception {
@@ -3066,15 +3181,13 @@ public class ServiceBuilder {
 			return;
 		}
 
-		// Content
-
-		String content = _processTemplate(_tplSpringDynamicDataSourceXml);
-
-		// Write file
-
 		File ejbFile = new File(_springDynamicDataSourceFileName);
 
-		FileUtil.write(ejbFile, content, true);
+		if (ejbFile.exists()) {
+			System.out.println("Removing deprecated " + ejbFile);
+
+			ejbFile.delete();
+		}
 	}
 
 	private void _createSpringHibernateXml() throws Exception {
@@ -3781,120 +3894,6 @@ public class ServiceBuilder {
 		return javaFields.toArray(new JavaField[javaFields.size()]);
 	}
 
-	private String _getContent(String fileName) throws Exception {
-		Document document = _getContentDocument(fileName);
-
-		Element rootElement = document.getRootElement();
-
-		Element authorElement = null;
-		Element namespaceElement = null;
-		Map<String, Element> entityElements = new TreeMap<String, Element>();
-		Map<String, Element> exceptionElements = new TreeMap<String, Element>();
-
-		for (Element element : rootElement.elements()) {
-			String elementName = element.getName();
-
-			if (elementName.equals("author")) {
-				element.detach();
-
-				if (authorElement != null) {
-					throw new IllegalArgumentException(
-						"There can only be one author element");
-				}
-
-				authorElement = element;
-			}
-			else if (elementName.equals("namespace")) {
-				element.detach();
-
-				if (namespaceElement != null) {
-					throw new IllegalArgumentException(
-						"There can only be one namespace element");
-				}
-
-				namespaceElement = element;
-			}
-			else if (elementName.equals("entity")) {
-				element.detach();
-
-				String name = element.attributeValue("name");
-
-				entityElements.put(name.toLowerCase(), element);
-			}
-			else if (elementName.equals("exceptions")) {
-				element.detach();
-
-				for (Element exceptionElement : element.elements("exception")) {
-					exceptionElement.detach();
-
-					exceptionElements.put(
-						exceptionElement.getText(), exceptionElement);
-				}
-			}
-		}
-
-		if (authorElement != null) {
-			rootElement.add(authorElement);
-		}
-
-		if (namespaceElement == null) {
-			throw new IllegalArgumentException(
-				"The namespace element is required");
-		}
-		else {
-			rootElement.add(namespaceElement);
-		}
-
-		_addElements(rootElement, entityElements);
-
-		if (!exceptionElements.isEmpty()) {
-			Element exceptionsElement = rootElement.addElement("exceptions");
-
-			_addElements(exceptionsElement, exceptionElements);
-		}
-
-		return document.asXML();
-	}
-
-	private Document _getContentDocument(String fileName) throws Exception {
-		String content = FileUtil.read(new File(fileName));
-
-		Document document = SAXReaderUtil.read(content);
-
-		Element rootElement = document.getRootElement();
-
-		for (Element element : rootElement.elements()) {
-			String elementName = element.getName();
-
-			if (!elementName.equals("service-builder-import")) {
-				continue;
-			}
-
-			element.detach();
-
-			String dirName = fileName.substring(
-				0, fileName.lastIndexOf(StringPool.SLASH) + 1);
-			String serviceBuilderImportFileName = element.attributeValue(
-				"file");
-
-			Document serviceBuilderImportDocument = _getContentDocument(
-				dirName + serviceBuilderImportFileName);
-
-			Element serviceBuilderImportRootElement =
-				serviceBuilderImportDocument.getRootElement();
-
-			for (Element serviceBuilderImportElement :
-					serviceBuilderImportRootElement.elements()) {
-
-				serviceBuilderImportElement.detach();
-
-				rootElement.add(serviceBuilderImportElement);
-			}
-		}
-
-		return document;
-	}
-
 	private Map<String, Object> _getContext() throws TemplateModelException {
 		BeansWrapper wrapper = BeansWrapper.getDefaultInstance();
 
@@ -4534,7 +4533,6 @@ public class ServiceBuilder {
 			boolean filterPrimary = GetterUtil.getBoolean(
 				columnElement.attributeValue("filter-primary"));
 			String collectionEntity = columnElement.attributeValue("entity");
-			String mappingKey = columnElement.attributeValue("mapping-key");
 
 			String mappingTable = columnElement.attributeValue("mapping-table");
 
@@ -4566,9 +4564,9 @@ public class ServiceBuilder {
 
 			EntityColumn col = new EntityColumn(
 				columnName, columnDBName, columnType, primary, accessor,
-				filterPrimary, collectionEntity, mappingKey, mappingTable,
-				idType, idParam, convertNull, lazy, localized, colJsonEnabled,
-				containerModel, parentContainerModel);
+				filterPrimary, collectionEntity, mappingTable, idType, idParam,
+				convertNull, lazy, localized, colJsonEnabled, containerModel,
+				parentContainerModel);
 
 			if (primary) {
 				pkList.add(col);
@@ -4683,7 +4681,13 @@ public class ServiceBuilder {
 			if (columnList.contains(new EntityColumn("groupId"))) {
 				Element finderElement = SAXReaderUtil.createElement("finder");
 
-				finderElement.addAttribute("name", "UUID_G");
+				if (ejbName.equals("Layout")) {
+					finderElement.addAttribute("name", "UUID_G_P");
+				}
+				else {
+					finderElement.addAttribute("name", "UUID_G");
+				}
+
 				finderElement.addAttribute("return-type", ejbName);
 				finderElement.addAttribute("unique", "true");
 
@@ -4695,6 +4699,13 @@ public class ServiceBuilder {
 				finderColumnElement = finderElement.addElement("finder-column");
 
 				finderColumnElement.addAttribute("name", "groupId");
+
+				if (ejbName.equals("Layout")) {
+					finderColumnElement = finderElement.addElement(
+						"finder-column");
+
+					finderColumnElement.addAttribute("name", "privateLayout");
+				}
 
 				finderElements.add(0, finderElement);
 			}
@@ -4995,8 +5006,6 @@ public class ServiceBuilder {
 	private String _tplServiceWrapper = _TPL_ROOT + "service_wrapper.ftl";
 	private String _tplSpringBaseXml = _TPL_ROOT + "spring_base_xml.ftl";
 	private String _tplSpringClusterXml = _TPL_ROOT + "spring_cluster_xml.ftl";
-	private String _tplSpringDynamicDataSourceXml =
-		_TPL_ROOT + "spring_dynamic_data_source_xml.ftl";
 	private String _tplSpringHibernateXml =
 		_TPL_ROOT + "spring_hibernate_xml.ftl";
 	private String _tplSpringInfrastructureXml =

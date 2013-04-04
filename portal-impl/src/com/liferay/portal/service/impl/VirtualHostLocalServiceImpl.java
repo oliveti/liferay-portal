@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -16,6 +16,8 @@ package com.liferay.portal.service.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.model.Company;
+import com.liferay.portal.model.LayoutSet;
 import com.liferay.portal.model.VirtualHost;
 import com.liferay.portal.service.base.VirtualHostLocalServiceBaseImpl;
 
@@ -68,6 +70,19 @@ public class VirtualHostLocalServiceImpl
 		virtualHost.setHostname(hostname);
 
 		virtualHostPersistence.update(virtualHost);
+
+		Company company = companyPersistence.fetchByPrimaryKey(companyId);
+
+		if (company != null) {
+			companyPersistence.clearCache(company);
+		}
+
+		LayoutSet layoutSet = layoutSetPersistence.fetchByPrimaryKey(
+			layoutSetId);
+
+		if (layoutSet != null) {
+			layoutSetPersistence.clearCache(layoutSet);
+		}
 
 		return virtualHost;
 	}

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -15,6 +15,7 @@
 package com.liferay.portlet.expando.service.persistence;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
+import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
@@ -22,14 +23,18 @@ import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.test.ExecutionTestListeners;
+import com.liferay.portal.kernel.util.IntegerWrapper;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.service.ServiceTestUtil;
 import com.liferay.portal.service.persistence.BasePersistence;
 import com.liferay.portal.service.persistence.PersistenceExecutionTestListener;
 import com.liferay.portal.test.LiferayPersistenceIntegrationJUnitTestRunner;
 import com.liferay.portal.test.persistence.TransactionalPersistenceAdvice;
+import com.liferay.portal.util.PropsValues;
 
 import com.liferay.portlet.expando.NoSuchColumnException;
 import com.liferay.portlet.expando.model.ExpandoColumn;
+import com.liferay.portlet.expando.model.impl.ExpandoColumnModelImpl;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -179,6 +184,26 @@ public class ExpandoColumnPersistenceTest {
 	}
 
 	@Test
+	public void testActionableDynamicQuery() throws Exception {
+		final IntegerWrapper count = new IntegerWrapper();
+
+		ActionableDynamicQuery actionableDynamicQuery = new ExpandoColumnActionableDynamicQuery() {
+				@Override
+				protected void performAction(Object object) {
+					ExpandoColumn expandoColumn = (ExpandoColumn)object;
+
+					Assert.assertNotNull(expandoColumn);
+
+					count.increment();
+				}
+			};
+
+		actionableDynamicQuery.performActions();
+
+		Assert.assertEquals(count.getValue(), _persistence.countAll());
+	}
+
+	@Test
 	public void testDynamicQueryByPrimaryKeyExisting()
 		throws Exception {
 		ExpandoColumn newExpandoColumn = addExpandoColumn();
@@ -248,6 +273,25 @@ public class ExpandoColumnPersistenceTest {
 		List<Object> result = _persistence.findWithDynamicQuery(dynamicQuery);
 
 		Assert.assertEquals(0, result.size());
+	}
+
+	@Test
+	public void testResetOriginalValues() throws Exception {
+		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
+			return;
+		}
+
+		ExpandoColumn newExpandoColumn = addExpandoColumn();
+
+		_persistence.clearCache();
+
+		ExpandoColumnModelImpl existingExpandoColumnModelImpl = (ExpandoColumnModelImpl)_persistence.findByPrimaryKey(newExpandoColumn.getPrimaryKey());
+
+		Assert.assertEquals(existingExpandoColumnModelImpl.getTableId(),
+			existingExpandoColumnModelImpl.getOriginalTableId());
+		Assert.assertTrue(Validator.equals(
+				existingExpandoColumnModelImpl.getName(),
+				existingExpandoColumnModelImpl.getOriginalName()));
 	}
 
 	protected ExpandoColumn addExpandoColumn() throws Exception {

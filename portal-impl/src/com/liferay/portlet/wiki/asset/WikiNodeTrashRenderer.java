@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,14 +18,10 @@ import com.liferay.portal.kernel.trash.BaseTrashRenderer;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortletKeys;
-import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.trash.util.TrashUtil;
 import com.liferay.portlet.wiki.model.WikiNode;
 
 import java.util.Locale;
-
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 
 /**
  * @author Eudaldo Alonso
@@ -36,6 +32,14 @@ public class WikiNodeTrashRenderer extends BaseTrashRenderer {
 
 	public WikiNodeTrashRenderer(WikiNode node) {
 		_node = node;
+	}
+
+	public String getClassName() {
+		return WikiNode.class.getName();
+	}
+
+	public long getClassPK() {
+		return _node.getPrimaryKey();
 	}
 
 	@Override
@@ -56,21 +60,11 @@ public class WikiNodeTrashRenderer extends BaseTrashRenderer {
 			return _node.getName();
 		}
 
-		return TrashUtil.stripTrashNamespace(_node.getName());
+		return TrashUtil.getOriginalTitle(_node.getName());
 	}
 
 	public String getType() {
 		return TYPE;
-	}
-
-	public String render(
-			RenderRequest renderRequest, RenderResponse renderResponse,
-			String template)
-		throws Exception {
-
-		renderRequest.setAttribute(WebKeys.WIKI_NODE, _node);
-
-		return "/html/portlet/wiki/trash/node.jsp";
 	}
 
 	private WikiNode _node;

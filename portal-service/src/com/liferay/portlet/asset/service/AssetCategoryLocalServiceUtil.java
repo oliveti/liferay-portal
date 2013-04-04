@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -111,7 +111,7 @@ public class AssetCategoryLocalServiceUtil {
 	* Performs a dynamic query on the database and returns a range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -131,7 +131,7 @@ public class AssetCategoryLocalServiceUtil {
 	* Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -193,12 +193,12 @@ public class AssetCategoryLocalServiceUtil {
 	}
 
 	/**
-	* Returns the asset category with the UUID in the group.
+	* Returns the asset category matching the UUID and group.
 	*
-	* @param uuid the UUID of asset category
-	* @param groupId the group id of the asset category
-	* @return the asset category
-	* @throws PortalException if a asset category with the UUID in the group could not be found
+	* @param uuid the asset category's UUID
+	* @param groupId the primary key of the group
+	* @return the matching asset category
+	* @throws PortalException if a matching asset category could not be found
 	* @throws SystemException if a system exception occurred
 	*/
 	public static com.liferay.portlet.asset.model.AssetCategory getAssetCategoryByUuidAndGroupId(
@@ -212,7 +212,7 @@ public class AssetCategoryLocalServiceUtil {
 	* Returns a range of all the asset categories.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param start the lower bound of the range of asset categories
@@ -251,6 +251,149 @@ public class AssetCategoryLocalServiceUtil {
 	}
 
 	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void addAssetEntryAssetCategory(long entryId, long categoryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().addAssetEntryAssetCategory(entryId, categoryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void addAssetEntryAssetCategory(long entryId,
+		com.liferay.portlet.asset.model.AssetCategory assetCategory)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().addAssetEntryAssetCategory(entryId, assetCategory);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void addAssetEntryAssetCategories(long entryId,
+		long[] categoryIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().addAssetEntryAssetCategories(entryId, categoryIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void addAssetEntryAssetCategories(long entryId,
+		java.util.List<com.liferay.portlet.asset.model.AssetCategory> AssetCategories)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().addAssetEntryAssetCategories(entryId, AssetCategories);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void clearAssetEntryAssetCategories(long entryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().clearAssetEntryAssetCategories(entryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void deleteAssetEntryAssetCategory(long entryId,
+		long categoryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteAssetEntryAssetCategory(entryId, categoryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void deleteAssetEntryAssetCategory(long entryId,
+		com.liferay.portlet.asset.model.AssetCategory assetCategory)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteAssetEntryAssetCategory(entryId, assetCategory);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void deleteAssetEntryAssetCategories(long entryId,
+		long[] categoryIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteAssetEntryAssetCategories(entryId, categoryIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void deleteAssetEntryAssetCategories(long entryId,
+		java.util.List<com.liferay.portlet.asset.model.AssetCategory> AssetCategories)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteAssetEntryAssetCategories(entryId, AssetCategories);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static java.util.List<com.liferay.portlet.asset.model.AssetCategory> getAssetEntryAssetCategories(
+		long entryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getAssetEntryAssetCategories(entryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static java.util.List<com.liferay.portlet.asset.model.AssetCategory> getAssetEntryAssetCategories(
+		long entryId, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getAssetEntryAssetCategories(entryId, start, end);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static java.util.List<com.liferay.portlet.asset.model.AssetCategory> getAssetEntryAssetCategories(
+		long entryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .getAssetEntryAssetCategories(entryId, start, end,
+			orderByComparator);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static int getAssetEntryAssetCategoriesCount(long entryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getAssetEntryAssetCategoriesCount(entryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static boolean hasAssetEntryAssetCategory(long entryId,
+		long categoryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().hasAssetEntryAssetCategory(entryId, categoryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static boolean hasAssetEntryAssetCategories(long entryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().hasAssetEntryAssetCategories(entryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void setAssetEntryAssetCategories(long entryId,
+		long[] categoryIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().setAssetEntryAssetCategories(entryId, categoryIds);
+	}
+
+	/**
 	* Returns the Spring bean ID for this bean.
 	*
 	* @return the Spring bean ID for this bean
@@ -279,6 +422,15 @@ public class AssetCategoryLocalServiceUtil {
 		return getService()
 				   .addCategory(userId, parentCategoryId, titleMap,
 			descriptionMap, vocabularyId, categoryProperties, serviceContext);
+	}
+
+	public static com.liferay.portlet.asset.model.AssetCategory addCategory(
+		long userId, java.lang.String title, long vocabularyId,
+		com.liferay.portal.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .addCategory(userId, title, vocabularyId, serviceContext);
 	}
 
 	public static void addCategoryResources(
@@ -349,6 +501,13 @@ public class AssetCategoryLocalServiceUtil {
 		return getService().getCategory(categoryId);
 	}
 
+	public static com.liferay.portlet.asset.model.AssetCategory getCategory(
+		java.lang.String uuid, long groupId)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return getService().getCategory(uuid, groupId);
+	}
+
 	public static long[] getCategoryIds(java.lang.String className, long classPK)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getService().getCategoryIds(className, classPK);
@@ -395,6 +554,12 @@ public class AssetCategoryLocalServiceUtil {
 		return getService().getEntryCategories(entryId);
 	}
 
+	public static java.util.List<java.lang.Long> getSubcategoryIds(
+		long parentCategoryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getSubcategoryIds(parentCategoryId);
+	}
+
 	public static java.util.List<com.liferay.portlet.asset.model.AssetCategory> getVocabularyCategories(
 		long vocabularyId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator obc)
@@ -423,6 +588,11 @@ public class AssetCategoryLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getService()
 				   .getVocabularyRootCategories(vocabularyId, start, end, obc);
+	}
+
+	public static int getVocabularyRootCategoriesCount(long vocabularyId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getVocabularyRootCategoriesCount(vocabularyId);
 	}
 
 	public static void mergeCategories(long fromCategoryId, long toCategoryId)
@@ -479,7 +649,7 @@ public class AssetCategoryLocalServiceUtil {
 	}
 
 	/**
-	 * @deprecated
+	 * @deprecated As of 6.2.0
 	 */
 	public void setService(AssetCategoryLocalService service) {
 	}

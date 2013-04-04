@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -31,6 +31,7 @@ import com.liferay.portlet.wiki.model.WikiPageConstants;
 import com.liferay.portlet.wiki.service.permission.WikiPagePermission;
 import com.liferay.portlet.wiki.util.WikiUtil;
 
+import java.util.Date;
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
@@ -50,7 +51,7 @@ public class WikiPageAssetRenderer
 
 	public static long getClassPK(WikiPage page) {
 		if (!page.isApproved() && !page.isDraft() && !page.isPending() &&
-			!page.isInTrash() &&
+			!page.isInTrash() && !page.isInTrashContainer() &&
 			(page.getVersion() != WikiPageConstants.VERSION_DEFAULT)) {
 
 			return page.getPageId();
@@ -64,8 +65,8 @@ public class WikiPageAssetRenderer
 		_page = page;
 	}
 
-	public String getAssetRendererFactoryClassName() {
-		return WikiPageAssetRendererFactory.CLASS_NAME;
+	public String getClassName() {
+		return WikiPage.class.getName();
 	}
 
 	public long getClassPK() {
@@ -80,6 +81,11 @@ public class WikiPageAssetRenderer
 		else {
 			return null;
 		}
+	}
+
+	@Override
+	public Date getDisplayDate() {
+		return _page.getModifiedDate();
 	}
 
 	public long getGroupId() {
@@ -103,12 +109,23 @@ public class WikiPageAssetRenderer
 		return content;
 	}
 
+	@Override
+	public String getThumbnailPath(PortletRequest portletRequest)
+		throws Exception {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		return themeDisplay.getPathThemeImages() +
+			"/file_system/large/wiki_page.png";
+	}
+
 	public String getTitle(Locale locale) {
 		if (!_page.isInTrash()) {
 			return _page.getTitle();
 		}
 
-		return TrashUtil.stripTrashNamespace(_page.getTitle());
+		return TrashUtil.getOriginalTitle(_page.getTitle());
 	}
 
 	public String getType() {

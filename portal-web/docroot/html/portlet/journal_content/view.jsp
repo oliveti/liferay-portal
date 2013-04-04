@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -188,7 +188,7 @@ boolean expired = true;
 					</div>
 				</c:if>
 
-				<div class="journal-content-article" id="article_<%= articleDisplay.getCompanyId() %>_<%= articleDisplay.getGroupId() %>_<%= articleDisplay.getArticleId() %>_<%= articleDisplay.getVersion() %>">
+				<div class="journal-content-article">
 					<%= RuntimePageUtil.processXML(request, response, articleDisplay.getContent()) %>
 				</div>
 
@@ -280,14 +280,14 @@ try {
 catch (NoSuchArticleException nsae) {
 }
 
-JournalTemplate template = null;
+DDMTemplate ddmTemplate = null;
 
-if ((articleDisplay != null) && Validator.isNotNull(articleDisplay.getTemplateId())) {
-	template = JournalTemplateLocalServiceUtil.getTemplate(articleDisplay.getGroupId(), articleDisplay.getTemplateId(), true);
+if ((articleDisplay != null) && Validator.isNotNull(articleDisplay.getDDMTemplateKey())) {
+	ddmTemplate = DDMTemplateLocalServiceUtil.fetchTemplate(articleDisplay.getGroupId(), PortalUtil.getClassNameId(DDMStructure.class), articleDisplay.getDDMTemplateKey());
 }
 
 boolean showEditArticleIcon = (latestArticle != null) && JournalArticlePermission.contains(permissionChecker, latestArticle.getGroupId(), latestArticle.getArticleId(), ActionKeys.UPDATE);
-boolean showEditTemplateIcon = (template != null) && JournalTemplatePermission.contains(permissionChecker, template.getGroupId(), template.getTemplateId(), ActionKeys.UPDATE);
+boolean showEditTemplateIcon = (ddmTemplate != null) && DDMTemplatePermission.contains(permissionChecker, ddmTemplate, ActionKeys.UPDATE);
 boolean showSelectArticleIcon = PortletPermissionUtil.contains(permissionChecker, layout, portletDisplay.getId(), ActionKeys.CONFIGURATION);
 boolean showAddArticleIcon = showSelectArticleIcon && JournalPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_ARTICLE);
 boolean showIconsActions = themeDisplay.isSignedIn() && (showEditArticleIcon || showEditTemplateIcon || showSelectArticleIcon || showAddArticleIcon);
@@ -300,7 +300,6 @@ boolean showIconsActions = themeDisplay.isSignedIn() && (showEditArticleIcon || 
 				<liferay-portlet:renderURL portletName="<%= PortletKeys.JOURNAL %>" var="editURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
 					<portlet:param name="struts_action" value="/journal/edit_article" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />
-					<portlet:param name="originalRedirect" value="<%= currentURL %>" />
 					<portlet:param name="groupId" value="<%= String.valueOf(latestArticle.getGroupId()) %>" />
 					<portlet:param name="articleId" value="<%= latestArticle.getArticleId() %>" />
 					<portlet:param name="version" value="<%= String.valueOf(latestArticle.getVersion()) %>" />
@@ -316,11 +315,11 @@ boolean showIconsActions = themeDisplay.isSignedIn() && (showEditArticleIcon || 
 			</c:if>
 
 			<c:if test="<%= showEditTemplateIcon %>">
-				<liferay-portlet:renderURL portletName="<%= PortletKeys.JOURNAL %>" var="editTemplateURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
-					<portlet:param name="struts_action" value="/journal/edit_template" />
+				<liferay-portlet:renderURL portletName="<%= PortletKeys.DYNAMIC_DATA_MAPPING %>" var="editTemplateURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
+					<portlet:param name="struts_action" value="/dynamic_data_mapping/edit_template" />
 					<portlet:param name="redirect" value="<%= currentURL %>" />
-					<portlet:param name="groupId" value="<%= String.valueOf(template.getGroupId()) %>" />
-					<portlet:param name="templateId" value="<%= template.getTemplateId() %>" />
+					<portlet:param name="groupId" value="<%= String.valueOf(ddmTemplate.getGroupId()) %>" />
+					<portlet:param name="templateId" value="<%= String.valueOf(ddmTemplate.getTemplateId()) %>" />
 				</liferay-portlet:renderURL>
 
 				<liferay-ui:icon

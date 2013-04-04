@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -36,25 +36,20 @@
 	<div class="display-template">
 
 		<%
-		PortletDisplayTemplateHandler portletDisplayTemplateHandler = PortletDisplayTemplateHandlerRegistryUtil.getPortletDisplayTemplateHandler(BlogsEntry.class.getName());
+		TemplateHandler templateHandler = TemplateHandlerRegistryUtil.getTemplateHandler(BlogsEntry.class.getName());
 
 		List<String> displayStyles = new ArrayList<String>();
 
-		displayStyles.add(RSSUtil.DISPLAY_STYLE_ABSTRACT);
-		displayStyles.add(RSSUtil.DISPLAY_STYLE_FULL_CONTENT);
-		displayStyles.add(RSSUtil.DISPLAY_STYLE_TITLE);
+		displayStyles.add(BlogsUtil.DISPLAY_STYLE_ABSTRACT);
+		displayStyles.add(BlogsUtil.DISPLAY_STYLE_FULL_CONTENT);
+		displayStyles.add(BlogsUtil.DISPLAY_STYLE_TITLE);
 		%>
 
-		<liferay-ui:ddm-template-menu
-			classNameId="<%= PortalUtil.getClassNameId(portletDisplayTemplateHandler.getClassName()) %>"
+		<liferay-ui:ddm-template-selector
+			classNameId="<%= PortalUtil.getClassNameId(templateHandler.getClassName()) %>"
 			displayStyles="<%= displayStyles %>"
 			preferenceName="pageDisplayStyle"
 			preferenceValue="<%= pageDisplayStyle %>"
-		/>
-
-		<liferay-ui:ddm-template-selector
-			classNameId="<%= PortalUtil.getClassNameId(portletDisplayTemplateHandler.getClassName()) %>"
-			message='<%= LanguageUtil.format(pageContext, "manage-display-templates-for-x", themeDisplay.getScopeGroupName(), false) %>'
 			refreshURL="<%= portletURL.toString() %>"
 		/>
 	</div>

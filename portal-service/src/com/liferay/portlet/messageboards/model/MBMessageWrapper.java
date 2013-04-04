@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -62,7 +62,6 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 		attributes.put("subject", getSubject());
 		attributes.put("body", getBody());
 		attributes.put("format", getFormat());
-		attributes.put("attachments", getAttachments());
 		attributes.put("anonymous", getAnonymous());
 		attributes.put("priority", getPriority());
 		attributes.put("allowPingbacks", getAllowPingbacks());
@@ -176,12 +175,6 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 
 		if (format != null) {
 			setFormat(format);
-		}
-
-		Boolean attachments = (Boolean)attributes.get("attachments");
-
-		if (attachments != null) {
-			setAttachments(attachments);
 		}
 
 		Boolean anonymous = (Boolean)attributes.get("anonymous");
@@ -591,33 +584,6 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 	}
 
 	/**
-	* Returns the attachments of this message-boards message.
-	*
-	* @return the attachments of this message-boards message
-	*/
-	public boolean getAttachments() {
-		return _mbMessage.getAttachments();
-	}
-
-	/**
-	* Returns <code>true</code> if this message-boards message is attachments.
-	*
-	* @return <code>true</code> if this message-boards message is attachments; <code>false</code> otherwise
-	*/
-	public boolean isAttachments() {
-		return _mbMessage.isAttachments();
-	}
-
-	/**
-	* Sets whether this message-boards message is attachments.
-	*
-	* @param attachments the attachments of this message-boards message
-	*/
-	public void setAttachments(boolean attachments) {
-		_mbMessage.setAttachments(attachments);
-	}
-
-	/**
 	* Returns the anonymous of this message-boards message.
 	*
 	* @return the anonymous of this message-boards message
@@ -809,7 +775,7 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 	}
 
 	/**
-	* @deprecated Renamed to {@link #isApproved()}
+	* @deprecated As of 6.1.0, replaced by {@link #isApproved()}
 	*/
 	public boolean getApproved() {
 		return _mbMessage.getApproved();
@@ -929,6 +895,16 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_mbMessage.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_mbMessage.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_mbMessage.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -956,6 +932,10 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 		return new MBMessageWrapper(_mbMessage.toEscapedModel());
 	}
 
+	public com.liferay.portlet.messageboards.model.MBMessage toUnescapedModel() {
+		return new MBMessageWrapper(_mbMessage.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _mbMessage.toString();
@@ -975,14 +955,29 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 		return _mbMessage.getAssetTagNames();
 	}
 
-	public java.lang.String getAttachmentsDir() {
-		return _mbMessage.getAttachmentsDir();
-	}
-
-	public java.lang.String[] getAttachmentsFiles()
+	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getAttachmentsFileEntries()
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		return _mbMessage.getAttachmentsFiles();
+		return _mbMessage.getAttachmentsFileEntries();
+	}
+
+	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getAttachmentsFileEntries(
+		int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _mbMessage.getAttachmentsFileEntries(start, end);
+	}
+
+	public int getAttachmentsFileEntriesCount()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _mbMessage.getAttachmentsFileEntriesCount();
+	}
+
+	public long getAttachmentsFolderId()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _mbMessage.getAttachmentsFolderId();
 	}
 
 	public java.lang.String getBody(boolean translate) {
@@ -995,14 +990,23 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 		return _mbMessage.getCategory();
 	}
 
-	public java.lang.String getDeletedAttachmentsDir() {
-		return _mbMessage.getDeletedAttachmentsDir();
-	}
-
-	public java.lang.String[] getDeletedAttachmentsFiles()
+	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getDeletedAttachmentsFileEntries()
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		return _mbMessage.getDeletedAttachmentsFiles();
+		return _mbMessage.getDeletedAttachmentsFileEntries();
+	}
+
+	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getDeletedAttachmentsFileEntries(
+		int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _mbMessage.getDeletedAttachmentsFileEntries(start, end);
+	}
+
+	public int getDeletedAttachmentsFileEntriesCount()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _mbMessage.getDeletedAttachmentsFileEntriesCount();
 	}
 
 	public com.liferay.portlet.messageboards.model.MBThread getThread()
@@ -1011,8 +1015,16 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 		return _mbMessage.getThread();
 	}
 
-	public java.lang.String getThreadAttachmentsDir() {
-		return _mbMessage.getThreadAttachmentsDir();
+	public long getThreadAttachmentsFolderId()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _mbMessage.getThreadAttachmentsFolderId();
+	}
+
+	public com.liferay.portal.model.ContainerModel getTrashContainer()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _mbMessage.getTrashContainer();
 	}
 
 	public java.lang.String getWorkflowClassName() {
@@ -1041,12 +1053,12 @@ public class MBMessageWrapper implements MBMessage, ModelWrapper<MBMessage> {
 		return _mbMessage.isRoot();
 	}
 
-	public void setAttachmentsDir(java.lang.String attachmentsDir) {
-		_mbMessage.setAttachmentsDir(attachmentsDir);
+	public void setAttachmentsFolderId(long attachmentsFolderId) {
+		_mbMessage.setAttachmentsFolderId(attachmentsFolderId);
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public MBMessage getWrappedMBMessage() {
 		return _mbMessage;

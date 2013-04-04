@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -21,7 +21,7 @@ JournalFolder folder = (JournalFolder)request.getAttribute("view.jsp-folder");
 
 long folderId = GetterUtil.getLong((String)request.getAttribute("view.jsp-folderId"));
 
-List<JournalStructure> structures = JournalStructureServiceUtil.getStructures(PortalUtil.getSiteAndCompanyGroupIds(themeDisplay));
+List<DDMStructure> ddmStructures = DDMStructureLocalServiceUtil.getStructures(PortalUtil.getSiteAndCompanyGroupIds(themeDisplay), PortalUtil.getClassNameId(JournalArticle.class));
 %>
 
 <liferay-ui:icon-menu align="left" direction="down" icon="" message="add" showExpanded="<%= false %>" showWhenSingleIcon="<%= true %>">
@@ -53,26 +53,18 @@ List<JournalStructure> structures = JournalStructureServiceUtil.getStructures(Po
 		/>
 
 		<%
-		for (JournalStructure structure : structures) {
+		for (DDMStructure ddmStructure : ddmStructures) {
 		%>
 
 			<liferay-portlet:renderURL var="addArticleURL" windowState="<%= LiferayWindowState.MAXIMIZED.toString() %>">
 				<portlet:param name="struts_action" value="/journal/edit_article" />
 				<portlet:param name="redirect" value="<%= currentURL %>" />
 				<portlet:param name="folderId" value="<%= String.valueOf(folderId) %>" />
-				<portlet:param name="structureId" value="<%= structure.getStructureId() %>" />
+				<portlet:param name="structureId" value="<%= ddmStructure.getStructureKey() %>" />
 			</liferay-portlet:renderURL>
 
-			<%
-			String structureName = HtmlUtil.escape(structure.getName(themeDisplay.getLocale()));
-
-			if (structure.getGroupId() == themeDisplay.getCompanyGroupId()) {
-				structureName += " (" + LanguageUtil.get(themeDisplay.getLocale(), "global") + ")";
-			}
-			%>
-
 			<liferay-ui:icon
-				message="<%= structureName %>"
+				message="<%= HtmlUtil.escape(ddmStructure.getName(themeDisplay.getLocale())) %>"
 				src='<%= themeDisplay.getPathThemeImages() + "/common/history.png" %>'
 				url="<%= addArticleURL.toString() %>"
 			/>

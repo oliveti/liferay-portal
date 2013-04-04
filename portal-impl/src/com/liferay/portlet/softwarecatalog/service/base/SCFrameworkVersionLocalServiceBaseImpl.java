@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -155,7 +155,7 @@ public abstract class SCFrameworkVersionLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCFrameworkVersionModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -175,7 +175,7 @@ public abstract class SCFrameworkVersionLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCFrameworkVersionModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -231,7 +231,7 @@ public abstract class SCFrameworkVersionLocalServiceBaseImpl
 	 * Returns a range of all the s c framework versions.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCFrameworkVersionModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of s c framework versions
@@ -265,6 +265,152 @@ public abstract class SCFrameworkVersionLocalServiceBaseImpl
 	public SCFrameworkVersion updateSCFrameworkVersion(
 		SCFrameworkVersion scFrameworkVersion) throws SystemException {
 		return scFrameworkVersionPersistence.update(scFrameworkVersion);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addSCProductVersionSCFrameworkVersion(long productVersionId,
+		long frameworkVersionId) throws SystemException {
+		scProductVersionPersistence.addSCFrameworkVersion(productVersionId,
+			frameworkVersionId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addSCProductVersionSCFrameworkVersion(long productVersionId,
+		SCFrameworkVersion scFrameworkVersion) throws SystemException {
+		scProductVersionPersistence.addSCFrameworkVersion(productVersionId,
+			scFrameworkVersion);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addSCProductVersionSCFrameworkVersions(long productVersionId,
+		long[] frameworkVersionIds) throws SystemException {
+		scProductVersionPersistence.addSCFrameworkVersions(productVersionId,
+			frameworkVersionIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addSCProductVersionSCFrameworkVersions(long productVersionId,
+		List<SCFrameworkVersion> SCFrameworkVersions) throws SystemException {
+		scProductVersionPersistence.addSCFrameworkVersions(productVersionId,
+			SCFrameworkVersions);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void clearSCProductVersionSCFrameworkVersions(long productVersionId)
+		throws SystemException {
+		scProductVersionPersistence.clearSCFrameworkVersions(productVersionId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteSCProductVersionSCFrameworkVersion(
+		long productVersionId, long frameworkVersionId)
+		throws SystemException {
+		scProductVersionPersistence.removeSCFrameworkVersion(productVersionId,
+			frameworkVersionId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteSCProductVersionSCFrameworkVersion(
+		long productVersionId, SCFrameworkVersion scFrameworkVersion)
+		throws SystemException {
+		scProductVersionPersistence.removeSCFrameworkVersion(productVersionId,
+			scFrameworkVersion);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteSCProductVersionSCFrameworkVersions(
+		long productVersionId, long[] frameworkVersionIds)
+		throws SystemException {
+		scProductVersionPersistence.removeSCFrameworkVersions(productVersionId,
+			frameworkVersionIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteSCProductVersionSCFrameworkVersions(
+		long productVersionId, List<SCFrameworkVersion> SCFrameworkVersions)
+		throws SystemException {
+		scProductVersionPersistence.removeSCFrameworkVersions(productVersionId,
+			SCFrameworkVersions);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<SCFrameworkVersion> getSCProductVersionSCFrameworkVersions(
+		long productVersionId) throws SystemException {
+		return scProductVersionPersistence.getSCFrameworkVersions(productVersionId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<SCFrameworkVersion> getSCProductVersionSCFrameworkVersions(
+		long productVersionId, int start, int end) throws SystemException {
+		return scProductVersionPersistence.getSCFrameworkVersions(productVersionId,
+			start, end);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<SCFrameworkVersion> getSCProductVersionSCFrameworkVersions(
+		long productVersionId, int start, int end,
+		OrderByComparator orderByComparator) throws SystemException {
+		return scProductVersionPersistence.getSCFrameworkVersions(productVersionId,
+			start, end, orderByComparator);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getSCProductVersionSCFrameworkVersionsCount(
+		long productVersionId) throws SystemException {
+		return scProductVersionPersistence.getSCFrameworkVersionsSize(productVersionId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasSCProductVersionSCFrameworkVersion(
+		long productVersionId, long frameworkVersionId)
+		throws SystemException {
+		return scProductVersionPersistence.containsSCFrameworkVersion(productVersionId,
+			frameworkVersionId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasSCProductVersionSCFrameworkVersions(long productVersionId)
+		throws SystemException {
+		return scProductVersionPersistence.containsSCFrameworkVersions(productVersionId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void setSCProductVersionSCFrameworkVersions(long productVersionId,
+		long[] frameworkVersionIds) throws SystemException {
+		scProductVersionPersistence.setSCFrameworkVersions(productVersionId,
+			frameworkVersionIds);
 	}
 
 	/**

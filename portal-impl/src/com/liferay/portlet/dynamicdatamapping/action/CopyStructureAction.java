@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -17,6 +17,7 @@ package com.liferay.portlet.dynamicdatamapping.action;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
+import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -67,11 +68,13 @@ public class CopyStructureAction extends PortletAction {
 
 			String redirect = getSaveAndContinueRedirect(
 				portletConfig, actionRequest, structure);
-
 			String closeRedirect = ParamUtil.getString(
 				actionRequest, "closeRedirect");
 
 			if (Validator.isNotNull(closeRedirect)) {
+				redirect = HttpUtil.setParameter(
+					redirect, "closeRedirect", closeRedirect);
+
 				LiferayPortletConfig liferayPortletConfig =
 					(LiferayPortletConfig)portletConfig;
 
@@ -140,12 +143,14 @@ public class CopyStructureAction extends PortletAction {
 
 		Map<Locale, String> nameMap = LocalizationUtil.getLocalizationMap(
 			actionRequest, "name");
+		Map<Locale, String> descriptionMap =
+			LocalizationUtil.getLocalizationMap(actionRequest, "description");
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			DDMStructure.class.getName(), actionRequest);
 
 		DDMStructure structure = DDMStructureServiceUtil.copyStructure(
-			classPK, nameMap, null, serviceContext);
+			classPK, nameMap, descriptionMap, serviceContext);
 
 		copyTemplates(actionRequest, classPK, structure.getStructureId());
 
@@ -200,7 +205,7 @@ public class CopyStructureAction extends PortletAction {
 		long classNameId = PortalUtil.getClassNameId(DDMStructure.class);
 
 		portletURL.setParameter(
-			"classNamId", String.valueOf(classNameId), false);
+			"classNameId", String.valueOf(classNameId), false);
 
 		portletURL.setParameter(
 			"classPK", String.valueOf(structure.getStructureId()), false);

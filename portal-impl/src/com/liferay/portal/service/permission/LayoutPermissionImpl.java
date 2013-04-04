@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -185,18 +185,17 @@ public class LayoutPermissionImpl implements LayoutPermission {
 			return false;
 		}
 
-		User user = UserLocalServiceUtil.getUserById(
-			permissionChecker.getUserId());
+		User user = permissionChecker.getUser();
 
 		if (!user.isDefaultUser() && !group.isUser()) {
 
 			// This is new way of doing an ownership check without having to
 			// have a userId field on the model. When the instance model was
 			// first created, we set the user's userId as the ownerId of the
-			// individual scope ResourcePermission of the Owner Role.
-			// Therefore, ownership can be determined by obtaining the Owner
-			// role ResourcePermission for the current instance model and
-			// testing it with the hasOwnerPermission call.
+			// individual scope ResourcePermission of the Owner Role. Therefore,
+			// ownership can be determined by obtaining the Owner role
+			// ResourcePermission for the current instance model and testing it
+			// with the hasOwnerPermission call.
 
 			ResourcePermission resourcePermission =
 				ResourcePermissionLocalServiceUtil.getResourcePermission(
@@ -212,6 +211,26 @@ public class LayoutPermissionImpl implements LayoutPermission {
 
 				return true;
 			}
+		}
+
+		// Control panel layouts are only viewable by authenticated users
+
+		if (group.isControlPanel()) {
+			if (!permissionChecker.isSignedIn()) {
+				return false;
+			}
+
+			if (PortalPermissionUtil.contains(
+					permissionChecker, ActionKeys.VIEW_CONTROL_PANEL)) {
+
+				return true;
+			}
+
+			if (Validator.isNotNull(controlPanelCategory)) {
+				return true;
+			}
+
+			return false;
 		}
 
 		if (GroupPermissionUtil.contains(
@@ -366,34 +385,14 @@ public class LayoutPermissionImpl implements LayoutPermission {
 			}
 		}
 
-		// If the current group is staging, only users with editorial rights
-		// can access it
+		// If the current group is staging, only users with editorial rights can
+		// access it
 
 		if (group.isStagingGroup()) {
 			if (GroupPermissionUtil.contains(
 					permissionChecker, group.getGroupId(),
 					ActionKeys.VIEW_STAGING)) {
 
-				return true;
-			}
-
-			return false;
-		}
-
-		// Control panel layouts are only viewable by authenticated users
-
-		if (group.isControlPanel()) {
-			if (!permissionChecker.isSignedIn()) {
-				return false;
-			}
-
-			if (PortalPermissionUtil.contains(
-					permissionChecker, ActionKeys.VIEW_CONTROL_PANEL)) {
-
-				return true;
-			}
-
-			if (Validator.isNotNull(controlPanelCategory)) {
 				return true;
 			}
 
@@ -407,7 +406,7 @@ public class LayoutPermissionImpl implements LayoutPermission {
 			if (GroupPermissionUtil.contains(
 					permissionChecker, group.getGroupId(),
 					ActionKeys.MANAGE_LAYOUTS) ||
-				 GroupPermissionUtil.contains(
+				GroupPermissionUtil.contains(
 					permissionChecker, group.getGroupId(), ActionKeys.UPDATE)) {
 
 				return true;

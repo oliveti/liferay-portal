@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -223,7 +223,7 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_id);
+		return _id;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -1214,7 +1214,7 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 	}
 
 	/**
-	 * @deprecated {@link #isApproved}
+	 * @deprecated As of 6.1.0, replaced by {@link #isApproved}
 	 */
 	public boolean getApproved() {
 		return isApproved();
@@ -1329,13 +1329,12 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 
 	@Override
 	public JournalArticle toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (JournalArticle)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (JournalArticle)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -1912,7 +1911,7 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 	}
 
 	private static ClassLoader _classLoader = JournalArticle.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			JournalArticle.class
 		};
 	private String _uuid;
@@ -1979,5 +1978,5 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 	private String _statusByUserName;
 	private Date _statusDate;
 	private long _columnBitmask;
-	private JournalArticle _escapedModelProxy;
+	private JournalArticle _escapedModel;
 }

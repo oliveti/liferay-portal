@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -36,10 +36,6 @@ public class JSONObjectImpl implements JSONObject {
 		_jsonObject = new org.json.JSONObject();
 	}
 
-	public JSONObjectImpl(org.json.JSONObject jsonObj) {
-		_jsonObject = jsonObj;
-	}
-
 	public JSONObjectImpl(JSONObject jsonObject, String[] names)
 		throws JSONException {
 
@@ -64,6 +60,10 @@ public class JSONObjectImpl implements JSONObject {
 
 	public JSONObjectImpl(Object obj, String[] names) {
 		_jsonObject = new org.json.JSONObject(obj, names);
+	}
+
+	public JSONObjectImpl(org.json.JSONObject jsonObject) {
+		_jsonObject = jsonObject;
 	}
 
 	public JSONObjectImpl(String json) throws JSONException {
@@ -114,13 +114,13 @@ public class JSONObjectImpl implements JSONObject {
 	}
 
 	public JSONObject getJSONObject(String key) {
-		org.json.JSONObject jsonObj = _jsonObject.optJSONObject(key);
+		org.json.JSONObject jsonObject = _jsonObject.optJSONObject(key);
 
-		if (jsonObj == null) {
+		if (jsonObject == null) {
 			return null;
 		}
 
-		return new JSONObjectImpl(jsonObj);
+		return new JSONObjectImpl(jsonObject);
 	}
 
 	public long getLong(String key) {

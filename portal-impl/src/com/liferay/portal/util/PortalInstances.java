@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -287,6 +287,13 @@ public class PortalInstances {
 	private long[] _getCompanyIdsBySQL() throws SQLException {
 		List<Long> companyIds = new ArrayList<Long>();
 
+		String currentShardName = ShardUtil.setTargetSource(
+			PropsValues.SHARD_DEFAULT_NAME);
+
+		if (Validator.isNotNull(currentShardName)) {
+			ShardUtil.pushCompanyService(PropsValues.SHARD_DEFAULT_NAME);
+		}
+
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -295,6 +302,8 @@ public class PortalInstances {
 			con = DataAccess.getConnection();
 
 			ps = con.prepareStatement(_GET_COMPANY_IDS);
+
+			ps.setString(1, currentShardName);
 
 			rs = ps.executeQuery();
 
@@ -305,6 +314,12 @@ public class PortalInstances {
 			}
 		}
 		finally {
+			if (Validator.isNotNull(currentShardName)) {
+				ShardUtil.popCompanyService();
+
+				ShardUtil.setTargetSource(currentShardName);
+			}
+
 			DataAccess.cleanUp(con, ps, rs);
 		}
 
@@ -513,7 +528,8 @@ public class PortalInstances {
 	}
 
 	private static final String _GET_COMPANY_IDS =
-		"select companyId from Company";
+		"select companyId from Company, Shard where Company.companyId = " +
+			"Shard.classPK and Shard.name = ?";
 
 	private static Log _log = LogFactoryUtil.getLog(PortalInstances.class);
 

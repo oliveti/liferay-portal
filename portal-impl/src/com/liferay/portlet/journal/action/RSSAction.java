@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -133,7 +133,8 @@ public class RSSAction extends com.liferay.portal.struts.RSSAction {
 			syndEntries.add(syndEntry);
 		}
 
-		syndFeed.setFeedType(feed.getFeedType() + "_" + feed.getFeedVersion());
+		syndFeed.setFeedType(
+			feed.getFeedFormat() + "_" + feed.getFeedVersion());
 
 		List<SyndLink> syndLinks = new ArrayList<SyndLink>();
 

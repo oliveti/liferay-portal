@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -225,6 +225,16 @@ public class ServiceComponentWrapper implements ServiceComponent,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_serviceComponent.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_serviceComponent.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_serviceComponent.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -250,6 +260,10 @@ public class ServiceComponentWrapper implements ServiceComponent,
 
 	public com.liferay.portal.model.ServiceComponent toEscapedModel() {
 		return new ServiceComponentWrapper(_serviceComponent.toEscapedModel());
+	}
+
+	public com.liferay.portal.model.ServiceComponent toUnescapedModel() {
+		return new ServiceComponentWrapper(_serviceComponent.toUnescapedModel());
 	}
 
 	@Override
@@ -279,7 +293,7 @@ public class ServiceComponentWrapper implements ServiceComponent,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public ServiceComponent getWrappedServiceComponent() {
 		return _serviceComponent;

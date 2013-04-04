@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -105,19 +105,14 @@ List layoutList = layoutView.getList();
 		<div class="display-template">
 
 			<%
-			PortletDisplayTemplateHandler portletDisplayTemplateHandler = PortletDisplayTemplateHandlerRegistryUtil.getPortletDisplayTemplateHandler(LayoutSet.class.getName());
+			TemplateHandler templateHandler = TemplateHandlerRegistryUtil.getTemplateHandler(LayoutSet.class.getName());
 			%>
 
-			<liferay-ui:ddm-template-menu
-				classNameId="<%= PortalUtil.getClassNameId(portletDisplayTemplateHandler.getClassName()) %>"
-				preferenceValue="<%= displayStyle %>"
-				showEmptyOption="<%= true %>"
-			/>
-
 			<liferay-ui:ddm-template-selector
-				classNameId="<%= PortalUtil.getClassNameId(portletDisplayTemplateHandler.getClassName()) %>"
-				message='<%= LanguageUtil.format(pageContext, "manage-display-templates-for-x", themeDisplay.getScopeGroupName(), false) %>'
+				classNameId="<%= PortalUtil.getClassNameId(templateHandler.getClassName()) %>"
+				preferenceValue="<%= displayStyle %>"
 				refreshURL="<%= currentURL %>"
+				showEmptyOption="<%= true %>"
 			/>
 		</div>
 	</aui:fieldset>

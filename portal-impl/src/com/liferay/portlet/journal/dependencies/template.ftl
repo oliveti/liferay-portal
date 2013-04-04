@@ -44,10 +44,10 @@ Another special accessor exists for elements of type "link_to_layout":
   ${linkToPage.url}: The URL that links to the selected page in the current
                      site.
 
-The variable ${journalTemplatesPath} can be used to include
-another Journal template, e.g. <#include "${journalTemplatesPath}/LAYOUT-PARENT" />
+The variable ${templatesPath} can be used to include another template through
+its template key, e.g. <#include "${templatesPath}/LAYOUT-PARENT" />.
 
 The variable ${viewMode} specifies which mode the article is being viewed in.
 For example, if ${viewMode} evaluates to "print", that means the user clicked
 the print icon to view this article.
---#>
+-->

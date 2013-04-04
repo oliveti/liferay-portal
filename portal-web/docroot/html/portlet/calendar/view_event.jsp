@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -95,7 +95,7 @@ request.setAttribute("view_event.jsp-event", event);
 						<liferay-ui:message key="end-date" />:
 					</c:when>
 					<c:otherwise>
-						<liferay-ui:message key="ocurrence-s" />:
+						<liferay-ui:message key="occurrence-s" />:
 					</c:otherwise>
 				</c:choose>
 			</dt>
@@ -174,7 +174,7 @@ request.setAttribute("view_event.jsp-event", event);
 				<liferay-ui:message key="type" />:
 			</dt>
 			<dd>
-				<span class="categories"><%= LanguageUtil.get(pageContext, event.getType()) %></span>
+				<span class="categories"><%= HtmlUtil.escape(LanguageUtil.get(pageContext, event.getType())) %></span>
 			</dd>
 
 			<c:if test="<%= Validator.isNotNull(event.getLocation()) %>">

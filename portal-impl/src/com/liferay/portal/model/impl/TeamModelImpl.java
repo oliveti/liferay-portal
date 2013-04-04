@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -169,7 +169,7 @@ public class TeamModelImpl extends BaseModelImpl<Team> implements TeamModel {
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_teamId);
+		return _teamId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -403,13 +403,12 @@ public class TeamModelImpl extends BaseModelImpl<Team> implements TeamModel {
 
 	@Override
 	public Team toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (Team)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (Team)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -620,9 +619,7 @@ public class TeamModelImpl extends BaseModelImpl<Team> implements TeamModel {
 	}
 
 	private static ClassLoader _classLoader = Team.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
-			Team.class
-		};
+	private static Class<?>[] _escapedModelInterfaces = new Class[] { Team.class };
 	private long _teamId;
 	private long _companyId;
 	private long _userId;
@@ -637,5 +634,5 @@ public class TeamModelImpl extends BaseModelImpl<Team> implements TeamModel {
 	private String _originalName;
 	private String _description;
 	private long _columnBitmask;
-	private Team _escapedModelProxy;
+	private Team _escapedModel;
 }

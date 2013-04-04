@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -170,7 +170,7 @@ public class UserGroupModelImpl extends BaseModelImpl<UserGroup>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_userGroupId);
+		return _userGroupId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -359,13 +359,12 @@ public class UserGroupModelImpl extends BaseModelImpl<UserGroup>
 
 	@Override
 	public UserGroup toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (UserGroup)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (UserGroup)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -533,7 +532,7 @@ public class UserGroupModelImpl extends BaseModelImpl<UserGroup>
 	}
 
 	private static ClassLoader _classLoader = UserGroup.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			UserGroup.class
 		};
 	private long _userGroupId;
@@ -548,5 +547,5 @@ public class UserGroupModelImpl extends BaseModelImpl<UserGroup>
 	private String _description;
 	private boolean _addedByLDAPImport;
 	private long _columnBitmask;
-	private UserGroup _escapedModelProxy;
+	private UserGroup _escapedModel;
 }

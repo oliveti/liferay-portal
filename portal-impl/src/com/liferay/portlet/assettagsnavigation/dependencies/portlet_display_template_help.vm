@@ -18,13 +18,6 @@
 ##
 ##  $themeDisplay: the theme display
 ##
-## It is possible to use these variables to create advanced templates to display
-## a set of tags in your tags navigation portlet. Here's a simple template
-## example:
-##
-##  #foreach ($entry in $entries)
-##      <h1 class="tag-name">
-##          $entry.getName()
-##      </h1>
-##  #end
+## The variable $templatesPath can be used to include another template through
+## its template key, e.g. #parse ("$templatesPath/LAYOUT-PARENT").
 ##

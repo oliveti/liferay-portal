@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -105,7 +105,7 @@ public class BlogsStatsUserModelImpl extends BaseModelImpl<BlogsStatsUser>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_statsUserId);
+		return _statsUserId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -361,13 +361,12 @@ public class BlogsStatsUserModelImpl extends BaseModelImpl<BlogsStatsUser>
 
 	@Override
 	public BlogsStatsUser toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (BlogsStatsUser)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (BlogsStatsUser)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -575,7 +574,7 @@ public class BlogsStatsUserModelImpl extends BaseModelImpl<BlogsStatsUser>
 	}
 
 	private static ClassLoader _classLoader = BlogsStatsUser.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			BlogsStatsUser.class
 		};
 	private long _statsUserId;
@@ -599,5 +598,5 @@ public class BlogsStatsUserModelImpl extends BaseModelImpl<BlogsStatsUser>
 	private double _ratingsTotalScore;
 	private double _ratingsAverageScore;
 	private long _columnBitmask;
-	private BlogsStatsUser _escapedModelProxy;
+	private BlogsStatsUser _escapedModel;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -315,6 +315,16 @@ public class ExpandoValueWrapper implements ExpandoValue,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_expandoValue.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_expandoValue.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_expandoValue.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -342,6 +352,10 @@ public class ExpandoValueWrapper implements ExpandoValue,
 		return new ExpandoValueWrapper(_expandoValue.toEscapedModel());
 	}
 
+	public com.liferay.portlet.expando.model.ExpandoValue toUnescapedModel() {
+		return new ExpandoValueWrapper(_expandoValue.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _expandoValue.toString();
@@ -354,6 +368,12 @@ public class ExpandoValueWrapper implements ExpandoValue,
 	public void persist()
 		throws com.liferay.portal.kernel.exception.SystemException {
 		_expandoValue.persist();
+	}
+
+	public java.util.List<java.util.Locale> getAvailableLocales()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _expandoValue.getAvailableLocales();
 	}
 
 	public boolean getBoolean()
@@ -384,6 +404,12 @@ public class ExpandoValueWrapper implements ExpandoValue,
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _expandoValue.getDateArray();
+	}
+
+	public java.util.Locale getDefaultLocale()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _expandoValue.getDefaultLocale();
 	}
 
 	public double getDouble()
@@ -470,10 +496,34 @@ public class ExpandoValueWrapper implements ExpandoValue,
 		return _expandoValue.getString();
 	}
 
+	public java.lang.String getString(java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _expandoValue.getString(locale);
+	}
+
 	public java.lang.String[] getStringArray()
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		return _expandoValue.getStringArray();
+	}
+
+	public java.lang.String[] getStringArray(java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _expandoValue.getStringArray(locale);
+	}
+
+	public java.util.Map<java.util.Locale, java.lang.String[]> getStringArrayMap()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _expandoValue.getStringArrayMap();
+	}
+
+	public java.util.Map<java.util.Locale, java.lang.String> getStringMap()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _expandoValue.getStringMap();
 	}
 
 	public void setBoolean(boolean data)
@@ -583,14 +633,44 @@ public class ExpandoValueWrapper implements ExpandoValue,
 		_expandoValue.setString(data);
 	}
 
+	public void setString(java.lang.String data, java.util.Locale locale,
+		java.util.Locale defaultLocale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_expandoValue.setString(data, locale, defaultLocale);
+	}
+
 	public void setStringArray(java.lang.String[] data)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
 		_expandoValue.setStringArray(data);
 	}
 
+	public void setStringArray(java.lang.String[] data,
+		java.util.Locale locale, java.util.Locale defaultLocale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_expandoValue.setStringArray(data, locale, defaultLocale);
+	}
+
+	public void setStringArrayMap(
+		java.util.Map<java.util.Locale, java.lang.String[]> dataMap,
+		java.util.Locale defaultLocale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_expandoValue.setStringArrayMap(dataMap, defaultLocale);
+	}
+
+	public void setStringMap(
+		java.util.Map<java.util.Locale, java.lang.String> dataMap,
+		java.util.Locale defaultLocale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_expandoValue.setStringMap(dataMap, defaultLocale);
+	}
+
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public ExpandoValue getWrappedExpandoValue() {
 		return _expandoValue;

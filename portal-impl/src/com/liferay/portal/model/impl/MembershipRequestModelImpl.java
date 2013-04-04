@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -95,6 +95,7 @@ public class MembershipRequestModelImpl extends BaseModelImpl<MembershipRequest>
 	public static long GROUPID_COLUMN_BITMASK = 1L;
 	public static long STATUSID_COLUMN_BITMASK = 2L;
 	public static long USERID_COLUMN_BITMASK = 4L;
+	public static long CREATEDATE_COLUMN_BITMASK = 8L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -159,7 +160,7 @@ public class MembershipRequestModelImpl extends BaseModelImpl<MembershipRequest>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_membershipRequestId);
+		return _membershipRequestId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -429,13 +430,12 @@ public class MembershipRequestModelImpl extends BaseModelImpl<MembershipRequest>
 
 	@Override
 	public MembershipRequest toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (MembershipRequest)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (MembershipRequest)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -658,7 +658,7 @@ public class MembershipRequestModelImpl extends BaseModelImpl<MembershipRequest>
 	}
 
 	private static ClassLoader _classLoader = MembershipRequest.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			MembershipRequest.class
 		};
 	private long _membershipRequestId;
@@ -680,5 +680,5 @@ public class MembershipRequestModelImpl extends BaseModelImpl<MembershipRequest>
 	private int _originalStatusId;
 	private boolean _setOriginalStatusId;
 	private long _columnBitmask;
-	private MembershipRequest _escapedModelProxy;
+	private MembershipRequest _escapedModel;
 }

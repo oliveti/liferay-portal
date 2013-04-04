@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -485,7 +485,7 @@ public class WikiNodeWrapper implements WikiNode, ModelWrapper<WikiNode> {
 	}
 
 	/**
-	* @deprecated Renamed to {@link #isApproved()}
+	* @deprecated As of 6.1.0, replaced by {@link #isApproved()}
 	*/
 	public boolean getApproved() {
 		return _wikiNode.getApproved();
@@ -572,6 +572,51 @@ public class WikiNodeWrapper implements WikiNode, ModelWrapper<WikiNode> {
 		return _wikiNode.isScheduled();
 	}
 
+	/**
+	* Returns the container model ID of this wiki node.
+	*
+	* @return the container model ID of this wiki node
+	*/
+	public long getContainerModelId() {
+		return _wikiNode.getContainerModelId();
+	}
+
+	/**
+	* Sets the container model ID of this wiki node.
+	*
+	* @param container model ID of this wiki node
+	*/
+	public void setContainerModelId(long containerModelId) {
+		_wikiNode.setContainerModelId(containerModelId);
+	}
+
+	/**
+	* Returns the container name of this wiki node.
+	*
+	* @return the container name of this wiki node
+	*/
+	public java.lang.String getContainerModelName() {
+		return _wikiNode.getContainerModelName();
+	}
+
+	/**
+	* Returns the parent container model ID of this wiki node.
+	*
+	* @return the parent container model ID of this wiki node
+	*/
+	public long getParentContainerModelId() {
+		return _wikiNode.getParentContainerModelId();
+	}
+
+	/**
+	* Sets the parent container model ID of this wiki node.
+	*
+	* @param parent container model ID of this wiki node
+	*/
+	public void setParentContainerModelId(long parentContainerModelId) {
+		_wikiNode.setParentContainerModelId(parentContainerModelId);
+	}
+
 	public boolean isNew() {
 		return _wikiNode.isNew();
 	}
@@ -605,6 +650,16 @@ public class WikiNodeWrapper implements WikiNode, ModelWrapper<WikiNode> {
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_wikiNode.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_wikiNode.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_wikiNode.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -631,6 +686,10 @@ public class WikiNodeWrapper implements WikiNode, ModelWrapper<WikiNode> {
 		return new WikiNodeWrapper(_wikiNode.toEscapedModel());
 	}
 
+	public com.liferay.portlet.wiki.model.WikiNode toUnescapedModel() {
+		return new WikiNodeWrapper(_wikiNode.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _wikiNode.toString();
@@ -645,6 +704,12 @@ public class WikiNodeWrapper implements WikiNode, ModelWrapper<WikiNode> {
 		_wikiNode.persist();
 	}
 
+	public long getAttachmentsFolderId()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		return _wikiNode.getAttachmentsFolderId();
+	}
+
 	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getDeletedAttachmentsFiles()
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
@@ -652,7 +717,7 @@ public class WikiNodeWrapper implements WikiNode, ModelWrapper<WikiNode> {
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public WikiNode getWrappedWikiNode() {
 		return _wikiNode;

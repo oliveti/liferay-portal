@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -103,6 +103,7 @@ public class PollsQuestionModelImpl extends BaseModelImpl<PollsQuestion>
 	public static long COMPANYID_COLUMN_BITMASK = 1L;
 	public static long GROUPID_COLUMN_BITMASK = 2L;
 	public static long UUID_COLUMN_BITMASK = 4L;
+	public static long CREATEDATE_COLUMN_BITMASK = 8L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -168,7 +169,7 @@ public class PollsQuestionModelImpl extends BaseModelImpl<PollsQuestion>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_questionId);
+		return _questionId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -622,13 +623,12 @@ public class PollsQuestionModelImpl extends BaseModelImpl<PollsQuestion>
 
 	@Override
 	public PollsQuestion toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (PollsQuestion)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (PollsQuestion)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -893,7 +893,7 @@ public class PollsQuestionModelImpl extends BaseModelImpl<PollsQuestion>
 	}
 
 	private static ClassLoader _classLoader = PollsQuestion.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			PollsQuestion.class
 		};
 	private String _uuid;
@@ -917,5 +917,5 @@ public class PollsQuestionModelImpl extends BaseModelImpl<PollsQuestion>
 	private Date _expirationDate;
 	private Date _lastVoteDate;
 	private long _columnBitmask;
-	private PollsQuestion _escapedModelProxy;
+	private PollsQuestion _escapedModel;
 }

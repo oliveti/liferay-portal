@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -591,6 +591,16 @@ public class MDRRuleGroupWrapper implements MDRRuleGroup,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_mdrRuleGroup.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_mdrRuleGroup.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_mdrRuleGroup.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -624,6 +634,10 @@ public class MDRRuleGroupWrapper implements MDRRuleGroup,
 		return new MDRRuleGroupWrapper(_mdrRuleGroup.toEscapedModel());
 	}
 
+	public com.liferay.portlet.mobiledevicerules.model.MDRRuleGroup toUnescapedModel() {
+		return new MDRRuleGroupWrapper(_mdrRuleGroup.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _mdrRuleGroup.toString();
@@ -644,7 +658,7 @@ public class MDRRuleGroupWrapper implements MDRRuleGroup,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public MDRRuleGroup getWrappedMDRRuleGroup() {
 		return _mdrRuleGroup;

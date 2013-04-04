@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -27,7 +27,7 @@ List<PollsChoice> choices = PollsChoiceLocalServiceUtil.getChoices(question.getQ
 
 boolean hasVoted = PollsUtil.hasVoted(request, question.getQuestionId());
 
-boolean viewResults = ParamUtil.getBoolean(request, "viewResults", false);
+boolean viewResults = ParamUtil.getBoolean(request, "viewResults");
 
 if (viewResults && !PollsQuestionPermission.contains(permissionChecker, question, ActionKeys.UPDATE)) {
 	viewResults = false;

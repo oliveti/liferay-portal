@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -370,6 +370,16 @@ public class BlogsStatsUserWrapper implements BlogsStatsUser,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_blogsStatsUser.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_blogsStatsUser.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_blogsStatsUser.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -397,6 +407,10 @@ public class BlogsStatsUserWrapper implements BlogsStatsUser,
 		return new BlogsStatsUserWrapper(_blogsStatsUser.toEscapedModel());
 	}
 
+	public com.liferay.portlet.blogs.model.BlogsStatsUser toUnescapedModel() {
+		return new BlogsStatsUserWrapper(_blogsStatsUser.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _blogsStatsUser.toString();
@@ -412,7 +426,7 @@ public class BlogsStatsUserWrapper implements BlogsStatsUser,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public BlogsStatsUser getWrappedBlogsStatsUser() {
 		return _blogsStatsUser;

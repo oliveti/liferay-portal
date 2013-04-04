@@ -107,47 +107,49 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 	<#if entity.getOrder()??>
 		<#assign orderList = entity.getOrder().getColumns()>
-
-		<#assign orderByJPQL = "">
-
-		<#list orderList as order>
-			<#if entity.hasCompoundPK() && order.isPrimary()>
-				<#assign orderByJPQL = orderByJPQL + entity.alias + ".id." + order.name>
-			<#else>
-				<#assign orderByJPQL = orderByJPQL + entity.alias + "." + order.name>
-			</#if>
-
-			<#if order.isOrderByAscending()>
-				<#assign orderByJPQL = orderByJPQL + " ASC">
-			<#else>
-				<#assign orderByJPQL = orderByJPQL + " DESC">
-			</#if>
-
-			<#if order_has_next>
-				<#assign orderByJPQL = orderByJPQL + ", ">
-			</#if>
-		</#list>
-
-		public static final String ORDER_BY_JPQL = " ORDER BY ${orderByJPQL}";
-
-		<#assign orderBySQL = "">
-
-		<#list orderList as order>
-			<#assign orderBySQL = orderBySQL + entity.table + "." + order.DBName>
-
-			<#if order.isOrderByAscending()>
-				<#assign orderBySQL = orderBySQL + " ASC">
-			<#else>
-				<#assign orderBySQL = orderBySQL + " DESC">
-			</#if>
-
-			<#if order_has_next>
-				<#assign orderBySQL = orderBySQL + ", ">
-			</#if>
-		</#list>
-
-		public static final String ORDER_BY_SQL = " ORDER BY ${orderBySQL}";
+	<#else>
+		<#assign orderList = entity.getPKList()>
 	</#if>
+
+	<#assign orderByJPQL = "">
+
+	<#list orderList as order>
+		<#if entity.hasCompoundPK() && order.isPrimary()>
+			<#assign orderByJPQL = orderByJPQL + entity.alias + ".id." + order.name>
+		<#else>
+			<#assign orderByJPQL = orderByJPQL + entity.alias + "." + order.name>
+		</#if>
+
+		<#if order.isOrderByAscending()>
+			<#assign orderByJPQL = orderByJPQL + " ASC">
+		<#else>
+			<#assign orderByJPQL = orderByJPQL + " DESC">
+		</#if>
+
+		<#if order_has_next>
+			<#assign orderByJPQL = orderByJPQL + ", ">
+		</#if>
+	</#list>
+
+	public static final String ORDER_BY_JPQL = " ORDER BY ${orderByJPQL}";
+
+	<#assign orderBySQL = "">
+
+	<#list orderList as order>
+		<#assign orderBySQL = orderBySQL + entity.table + "." + order.DBName>
+
+		<#if order.isOrderByAscending()>
+			<#assign orderBySQL = orderBySQL + " ASC">
+		<#else>
+			<#assign orderBySQL = orderBySQL + " DESC">
+		</#if>
+
+		<#if order_has_next>
+			<#assign orderBySQL = orderBySQL + ", ">
+		</#if>
+	</#list>
+
+	public static final String ORDER_BY_SQL = " ORDER BY ${orderBySQL}";
 
 	public static final String DATA_SOURCE = "${entity.dataSource}";
 
@@ -202,7 +204,15 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 			<#list entity.finderColumnsList as column>
 				public static long ${column.name?upper_case}_COLUMN_BITMASK = ${columnBitmask}L;
 
-				<#assign columnBitmask = columnBitmask * 2 >
+				<#assign columnBitmask = columnBitmask * 2>
+			</#list>
+
+			<#list orderList as order>
+				<#if !entity.finderColumnsList?seq_contains(order)>
+					public static long ${order.name?upper_case}_COLUMN_BITMASK = ${columnBitmask}L;
+
+					<#assign columnBitmask = columnBitmask * 2>
+				</#if>
 			</#list>
 		</#if>
 	</#if>
@@ -322,19 +332,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 			);
 		<#else>
-			return
-
-			<#if entity.hasPrimitivePK()>
-				new ${serviceBuilder.getPrimitiveObj("${entity.PKClassName}")} (
-			</#if>
-
-			_${entity.PKList[0].name}
-
-			<#if entity.hasPrimitivePK()>
-				)
-			</#if>
-
-			;
+			return _${entity.PKList[0].name};
 		</#if>
 	}
 
@@ -673,7 +671,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 	<#if entity.isWorkflowEnabled()>
 		/**
-		 * @deprecated {@link #isApproved}
+		 * @deprecated As of 6.1.0, replaced by {@link #isApproved}
 		 */
 		public boolean getApproved() {
 			return isApproved();
@@ -803,11 +801,11 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 	@Override
 	public ${entity.name} toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (${entity.name})ProxyUtil.newProxyInstance(_classLoader, _escapedModelProxyInterfaces, new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (${entity.name})ProxyUtil.newProxyInstance(_classLoader, _escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -863,7 +861,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 						<#if column.isCaseSensitive()>
 							value = get${column.methodName}().compareTo(${entity.varName}.get${column.methodName}());
 						<#else>
-							value = get${column.methodName}().toLowerCase().compareTo(${entity.varName}.get${column.methodName}().toLowerCase());
+							value = get${column.methodName}().compareToIgnoreCase(${entity.varName}.get${column.methodName}());
 						</#if>
 					</#if>
 				</#if>
@@ -943,13 +941,15 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 	@Override
 	public void resetOriginalValues() {
 		<#list entity.regularColList as column>
-			<#if column.isFinderPath() || ((parentPKColumn != "") && (parentPKColumn.name == column.name))>
+			<#if column.isFinderPath() || ((parentPKColumn != "") && (parentPKColumn.name == column.name)) || ((column.type == "Blob") && column.lazy)>
 				<#if !cloneCastModelImpl??>
 					<#assign cloneCastModelImpl = true>
 
 					${entity.name}ModelImpl ${entity.varName}ModelImpl = this;
 				</#if>
+			</#if>
 
+			<#if column.isFinderPath() || ((parentPKColumn != "") && (parentPKColumn.name == column.name))>
 				${entity.varName}ModelImpl._original${column.methodName} = ${entity.varName}ModelImpl._${column.name};
 
 				<#if column.isPrimitiveType()>
@@ -1050,7 +1050,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 	private static ClassLoader _classLoader = ${entity.name}.class.getClassLoader();
 
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {${entity.name}.class};
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {${entity.name}.class};
 
 	<#list entity.regularColList as column>
 		<#if (column.type == "Blob") && column.lazy>
@@ -1080,6 +1080,6 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 		private long _columnBitmask;
 	</#if>
 
-	private ${entity.name} _escapedModelProxy;
+	private ${entity.name} _escapedModel;
 
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -35,7 +35,12 @@ public interface WikiPage extends WikiPageModel, PersistedModel {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
-	public int getAttachmentsFilesCount()
+	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getAttachmentsFileEntries(
+		int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public int getAttachmentsFileEntriesCount()
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
@@ -49,11 +54,20 @@ public interface WikiPage extends WikiPageModel, PersistedModel {
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
+	public java.util.List<com.liferay.portal.kernel.repository.model.FileEntry> getDeletedAttachmentsFileEntries(
+		int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
 	public int getDeletedAttachmentsFileEntriesCount()
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	public com.liferay.portlet.wiki.model.WikiNode getNode();
+
+	public long getNodeAttachmentsFolderId()
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
 
 	public com.liferay.portlet.wiki.model.WikiPage getParentPage();
 
@@ -61,7 +75,15 @@ public interface WikiPage extends WikiPageModel, PersistedModel {
 
 	public com.liferay.portlet.wiki.model.WikiPage getRedirectPage();
 
-	public boolean isInTrashFolder();
+	public com.liferay.portlet.wiki.model.WikiNode getTrashContainer();
+
+	public java.util.List<com.liferay.portlet.wiki.model.WikiPage> getViewableChildPages();
+
+	public com.liferay.portlet.wiki.model.WikiPage getViewableParentPage();
+
+	public java.util.List<com.liferay.portlet.wiki.model.WikiPage> getViewableParentPages();
+
+	public boolean isInTrashContainer();
 
 	public boolean isResourceMain();
 

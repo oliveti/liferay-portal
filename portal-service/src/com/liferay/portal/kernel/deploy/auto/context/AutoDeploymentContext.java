@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -21,6 +21,10 @@ import java.io.File;
  */
 public class AutoDeploymentContext {
 
+	public String getAppServerType() {
+		return _appServerType;
+	}
+
 	public String getContext() {
 		return _context;
 	}
@@ -37,6 +41,10 @@ public class AutoDeploymentContext {
 		return _file;
 	}
 
+	public void setAppServerType(String appServerType) {
+		_appServerType = appServerType;
+	}
+
 	public void setContext(String context) {
 		_context = context;
 	}
@@ -49,6 +57,7 @@ public class AutoDeploymentContext {
 		_file = file;
 	}
 
+	private String _appServerType;
 	private String _context;
 	private String _destDir;
 	private File _file;

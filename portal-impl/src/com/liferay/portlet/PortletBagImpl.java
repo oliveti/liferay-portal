@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -16,16 +16,17 @@ package com.liferay.portlet;
 
 import com.liferay.portal.kernel.atom.AtomCollectionAdapter;
 import com.liferay.portal.kernel.lar.PortletDataHandler;
+import com.liferay.portal.kernel.lar.StagedModelDataHandler;
 import com.liferay.portal.kernel.poller.PollerProcessor;
 import com.liferay.portal.kernel.pop.MessageListener;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
 import com.liferay.portal.kernel.portlet.PortletBag;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
-import com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateHandler;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.OpenSearch;
 import com.liferay.portal.kernel.servlet.URLEncoder;
+import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.webdav.WebDAVStorage;
@@ -61,11 +62,12 @@ public class PortletBagImpl implements PortletBag {
 		FriendlyURLMapper friendlyURLMapperInstance,
 		URLEncoder urlEncoderInstance,
 		PortletDataHandler portletDataHandlerInstance,
-		PortletDisplayTemplateHandler portletDisplayTemplateHandlerInstance,
+		List<StagedModelDataHandler<?>> stagedModelDataHandlerInstances,
+		TemplateHandler templateHandlerInstance,
 		PortletLayoutListener portletLayoutListenerInstance,
 		PollerProcessor pollerProcessorInstance,
 		MessageListener popMessageListenerInstance,
-		SocialActivityInterpreter socialActivityInterpreterInstance,
+		List<SocialActivityInterpreter> socialActivityInterpreterInstances,
 		SocialRequestInterpreter socialRequestInterpreterInstance,
 		WebDAVStorage webDAVStorageInstance, Method xmlRpcMethodInstance,
 		ControlPanelEntry controlPanelEntryInstance,
@@ -87,12 +89,13 @@ public class PortletBagImpl implements PortletBag {
 		_friendlyURLMapperInstance = friendlyURLMapperInstance;
 		_urlEncoderInstance = urlEncoderInstance;
 		_portletDataHandlerInstance = portletDataHandlerInstance;
-		_portletDisplayTemplateHandlerInstance =
-			portletDisplayTemplateHandlerInstance;
+		_stagedModelDataHandlerInstances = stagedModelDataHandlerInstances;
+		_templateHandlerInstance = templateHandlerInstance;
 		_portletLayoutListenerInstance = portletLayoutListenerInstance;
 		_pollerProcessorInstance = pollerProcessorInstance;
 		_popMessageListenerInstance = popMessageListenerInstance;
-		_socialActivityInterpreterInstance = socialActivityInterpreterInstance;
+		_socialActivityInterpreterInstances =
+			socialActivityInterpreterInstances;
 		_socialRequestInterpreterInstance = socialRequestInterpreterInstance;
 		_webDAVStorageInstance = webDAVStorageInstance;
 		_xmlRpcMethodInstance = xmlRpcMethodInstance;
@@ -114,10 +117,10 @@ public class PortletBagImpl implements PortletBag {
 			getConfigurationActionInstance(), getIndexerInstances(),
 			getOpenSearchInstance(), getFriendlyURLMapperInstance(),
 			getURLEncoderInstance(), getPortletDataHandlerInstance(),
-			getPortletDisplayTemplateHandlerInstance(),
+			getStagedModelDataHandlerInstances(), getTemplateHandlerInstance(),
 			getPortletLayoutListenerInstance(), getPollerProcessorInstance(),
 			getPopMessageListenerInstance(),
-			getSocialActivityInterpreterInstance(),
+			getSocialActivityInterpreterInstances(),
 			getSocialRequestInterpreterInstance(), getWebDAVStorageInstance(),
 			getXmlRpcMethodInstance(), getControlPanelEntryInstance(),
 			getAssetRendererFactoryInstances(),
@@ -176,12 +179,6 @@ public class PortletBagImpl implements PortletBag {
 		return _portletDataHandlerInstance;
 	}
 
-	public PortletDisplayTemplateHandler
-		getPortletDisplayTemplateHandlerInstance() {
-
-		return _portletDisplayTemplateHandlerInstance;
-	}
-
 	public Portlet getPortletInstance() {
 		return _portletInstance;
 	}
@@ -222,12 +219,24 @@ public class PortletBagImpl implements PortletBag {
 		return _servletContext;
 	}
 
-	public SocialActivityInterpreter getSocialActivityInterpreterInstance() {
-		return _socialActivityInterpreterInstance;
+	public List<SocialActivityInterpreter>
+		getSocialActivityInterpreterInstances() {
+
+		return _socialActivityInterpreterInstances;
 	}
 
 	public SocialRequestInterpreter getSocialRequestInterpreterInstance() {
 		return _socialRequestInterpreterInstance;
+	}
+
+	public List<StagedModelDataHandler<?>>
+		getStagedModelDataHandlerInstances() {
+
+		return _stagedModelDataHandlerInstances;
+	}
+
+	public TemplateHandler getTemplateHandlerInstance() {
+		return _templateHandlerInstance;
 	}
 
 	public List<TrashHandler> getTrashHandlerInstances() {
@@ -270,16 +279,16 @@ public class PortletBagImpl implements PortletBag {
 	private PollerProcessor _pollerProcessorInstance;
 	private MessageListener _popMessageListenerInstance;
 	private PortletDataHandler _portletDataHandlerInstance;
-	private PortletDisplayTemplateHandler
-		_portletDisplayTemplateHandlerInstance;
 	private Portlet _portletInstance;
 	private PortletLayoutListener _portletLayoutListenerInstance;
 	private String _portletName;
 	private PreferencesValidator _preferencesValidatorInstance;
 	private Map<String, ResourceBundle> _resourceBundles;
 	private ServletContext _servletContext;
-	private SocialActivityInterpreter _socialActivityInterpreterInstance;
+	private List<SocialActivityInterpreter> _socialActivityInterpreterInstances;
 	private SocialRequestInterpreter _socialRequestInterpreterInstance;
+	private List<StagedModelDataHandler<?>> _stagedModelDataHandlerInstances;
+	private TemplateHandler _templateHandlerInstance;
 	private List<TrashHandler> _trashHandlerInstances;
 	private URLEncoder _urlEncoderInstance;
 	private WebDAVStorage _webDAVStorageInstance;

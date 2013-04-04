@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -20,13 +20,15 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.ProtectedServletRequest;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.InstancePool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.User;
 import com.liferay.portal.security.auth.AutoLogin;
-import com.liferay.portal.security.pwd.PwdEncryptor;
+import com.liferay.portal.security.pwd.PasswordEncryptorUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.servlet.filters.BasePortalFilter;
+import com.liferay.portal.util.Portal;
 import com.liferay.portal.util.PortalInstances;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PropsValues;
@@ -107,7 +109,8 @@ public class AutoLoginFilter extends BasePortalFilter {
 			session.setAttribute("j_password", jPassword);
 		}
 		else {
-			session.setAttribute("j_password", PwdEncryptor.encrypt(jPassword));
+			session.setAttribute(
+				"j_password", PasswordEncryptorUtil.encrypt(jPassword));
 
 			if (PropsValues.SESSION_STORE_PASSWORD) {
 				session.setAttribute(WebKeys.USER_PASSWORD, jPassword);
@@ -202,34 +205,40 @@ public class AutoLoginFilter extends BasePortalFilter {
 							return;
 						}
 
-						redirect = (String)request.getAttribute(
-							AutoLogin.AUTO_LOGIN_REDIRECT_AND_CONTINUE);
+						if (!PropsValues.AUTH_FORWARD_BY_LAST_PATH) {
+							redirect = Portal.PATH_MAIN;
+						}
+						else {
+							redirect = (String)request.getAttribute(
+								AutoLogin.AUTO_LOGIN_REDIRECT_AND_CONTINUE);
+						}
 
 						if (Validator.isNotNull(redirect)) {
 							response.sendRedirect(redirect);
 
-							break;
+							return;
 						}
 					}
 				}
 				catch (Exception e) {
-					if (_log.isWarnEnabled()) {
-						_log.warn(e, e);
-					}
+					StringBundler sb = new StringBundler(4);
+
+					sb.append("Current URL ");
 
 					String currentURL = PortalUtil.getCurrentURL(request);
 
+					sb.append(currentURL);
+
+					sb.append(" generates exception: ");
+					sb.append(e.getMessage());
+
 					if (currentURL.endsWith(_PATH_CHAT_LATEST)) {
 						if (_log.isWarnEnabled()) {
-							_log.warn(
-								"Current URL " + currentURL +
-									" generates exception: " + e.getMessage());
+							_log.warn(sb.toString());
 						}
 					}
 					else {
-						_log.error(
-							"Current URL " + currentURL +
-								" generates exception: " + e.getMessage());
+						_log.error(sb.toString());
 					}
 				}
 			}

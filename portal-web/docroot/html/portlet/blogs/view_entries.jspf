@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -17,7 +17,7 @@
 <%
 boolean showAddEntryButton = BlogsPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_ENTRY);
 boolean showPermissionsButton = BlogsPermission.contains(permissionChecker, scopeGroupId, ActionKeys.PERMISSIONS);
-boolean showSubscribeButton = BlogsPermission.contains(permissionChecker, scopeGroupId, ActionKeys.SUBSCRIBE);
+boolean showSubscribeButton = BlogsPermission.contains(permissionChecker, scopeGroupId, ActionKeys.SUBSCRIBE) && (BlogsUtil.getEmailEntryAddedEnabled(preferences) || BlogsUtil.getEmailEntryUpdatedEnabled(preferences));
 showSearch = showSearch && !results.isEmpty();
 %>
 
@@ -65,7 +65,7 @@ long portletDisplayDDMTemplateId = PortletDisplayTemplateUtil.getPortletDisplayT
 if (portletDisplayDDMTemplateId > 0) {
 %>
 
-	<%= PortletDisplayTemplateUtil.renderDDMTemplate(pageContext, portletDisplayDDMTemplateId, results) %>
+	<%= PortletDisplayTemplateUtil.renderDDMTemplate(pageContext, portletDisplayDDMTemplateId, _convertToBlogEntries(results)) %>
 
 <%
 }
@@ -86,7 +86,7 @@ else {
 			entry = (BlogsEntry)result;
 		}
 
-		if (((entry.getStatus() == WorkflowConstants.STATUS_DRAFT) || (entry.getDisplayDate().after(new Date()))) && (entry.getUserId() != user.getUserId()) && !permissionChecker.isGroupAdmin(scopeGroupId)) {
+		if (((entry.getStatus() == WorkflowConstants.STATUS_DRAFT) || entry.getDisplayDate().after(new Date())) && (entry.getUserId() != user.getUserId()) && !permissionChecker.isGroupAdmin(scopeGroupId)) {
 			searchContainer.setTotal(searchContainer.getTotal() - 1);
 
 			continue;
@@ -104,39 +104,19 @@ else {
 <%
 	}
 }
-
-ResourceURL rssURL = liferayPortletResponse.createResourceURL();
-
-rssURL.setCacheability(ResourceURL.FULL);
-rssURL.setParameter("struts_action", "/blogs/rss");
-
-if ((rssDelta != SearchContainer.DEFAULT_DELTA) || !rssFormatType.equals(RSSUtil.TYPE_DEFAULT) || (rssFormatVersion != RSSUtil.VERSION_DEFAULT) || !rssDisplayStyle.equals(RSSUtil.DISPLAY_STYLE_FULL_CONTENT)) {
-	if (rssDelta != SearchContainer.DEFAULT_DELTA) {
-		rssURL.setParameter("max", String.valueOf(rssDelta));
-	}
-
-	if (!rssFormatType.equals(RSSUtil.TYPE_DEFAULT)) {
-		rssURL.setParameter("type", rssFormatType);
-	}
-
-	if (rssFormatVersion != RSSUtil.VERSION_DEFAULT) {
-		rssURL.setParameter("version", String.valueOf(rssFormatVersion));
-	}
-
-	if (!rssDisplayStyle.equals(RSSUtil.DISPLAY_STYLE_FULL_CONTENT)) {
-		rssURL.setParameter("displayStyle", rssDisplayStyle);
-	}
-}
 %>
 
 <div class="subscribe">
-	<c:if test="<%= PortalUtil.isRSSFeedsEnabled() %>">
-		<liferay-ui:icon
-			image="rss"
-			label="<%= true %>"
-			method="get"
-			target="_blank"
-			url="<%= rssURL.toString() %>"
+	<c:if test="<%= enableRSS %>">
+		<liferay-portlet:resourceURL varImpl="rssURL">
+			<portlet:param name="struts_action" value="/blogs/rss" />
+		</liferay-portlet:resourceURL>
+
+		<liferay-ui:rss
+			delta="<%= rssDelta %>"
+			displayStyle="<%= rssDisplayStyle %>"
+			feedType="<%= rssFeedType %>"
+			resourceURL="<%= rssURL %>"
 		/>
 	</c:if>
 
@@ -172,8 +152,24 @@ if ((rssDelta != SearchContainer.DEFAULT_DELTA) || !rssFormatType.equals(RSSUtil
 	</c:if>
 </div>
 
-<liferay-util:html-top>
-	<link href="<%= rssURL %>" rel="alternate" title="RSS" type="application/rss+xml" />
-</liferay-util:html-top>
-
 <liferay-ui:search-paginator searchContainer="<%= searchContainer %>" />
+
+<%!
+private List<BlogsEntry> _convertToBlogEntries(List results) throws PortalException, SystemException {
+	if (results.isEmpty() || (results.get(0) instanceof BlogsEntry)) {
+		return results;
+	}
+
+	List<BlogsEntry> entries = new ArrayList<BlogsEntry>(results.size());
+
+	for (Object result : results) {
+		AssetEntry assetEntry = (AssetEntry)result;
+
+		BlogsEntry entry = BlogsEntryLocalServiceUtil.getEntry(assetEntry.getClassPK());
+
+		entries.add(entry);
+	}
+
+	return entries;
+}
+%>

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -171,7 +171,7 @@ public class WikiNodeModelImpl extends BaseModelImpl<WikiNode>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_nodeId);
+		return _nodeId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -533,8 +533,27 @@ public class WikiNodeModelImpl extends BaseModelImpl<WikiNode>
 		_statusDate = statusDate;
 	}
 
+	public long getContainerModelId() {
+		return getNodeId();
+	}
+
+	public void setContainerModelId(long containerModelId) {
+		_nodeId = containerModelId;
+	}
+
+	public String getContainerModelName() {
+		return String.valueOf(getName());
+	}
+
+	public long getParentContainerModelId() {
+		return 0;
+	}
+
+	public void setParentContainerModelId(long parentContainerModelId) {
+	}
+
 	/**
-	 * @deprecated {@link #isApproved}
+	 * @deprecated As of 6.1.0, replaced by {@link #isApproved}
 	 */
 	public boolean getApproved() {
 		return isApproved();
@@ -640,13 +659,12 @@ public class WikiNodeModelImpl extends BaseModelImpl<WikiNode>
 
 	@Override
 	public WikiNode toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (WikiNode)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (WikiNode)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -677,8 +695,7 @@ public class WikiNodeModelImpl extends BaseModelImpl<WikiNode>
 	public int compareTo(WikiNode wikiNode) {
 		int value = 0;
 
-		value = getName().toLowerCase()
-					.compareTo(wikiNode.getName().toLowerCase());
+		value = getName().compareToIgnoreCase(wikiNode.getName());
 
 		if (value != 0) {
 			return value;
@@ -948,7 +965,7 @@ public class WikiNodeModelImpl extends BaseModelImpl<WikiNode>
 	}
 
 	private static ClassLoader _classLoader = WikiNode.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			WikiNode.class
 		};
 	private String _uuid;
@@ -977,5 +994,5 @@ public class WikiNodeModelImpl extends BaseModelImpl<WikiNode>
 	private String _statusByUserName;
 	private Date _statusDate;
 	private long _columnBitmask;
-	private WikiNode _escapedModelProxy;
+	private WikiNode _escapedModel;
 }

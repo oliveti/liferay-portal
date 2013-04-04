@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -20,6 +20,7 @@
 page import="com.liferay.portal.DuplicateTeamException" %><%@
 page import="com.liferay.portal.GroupFriendlyURLException" %><%@
 page import="com.liferay.portal.GroupNameException" %><%@
+page import="com.liferay.portal.GroupParentException" %><%@
 page import="com.liferay.portal.LayoutSetVirtualHostException" %><%@
 page import="com.liferay.portal.LocaleException" %><%@
 page import="com.liferay.portal.MembershipRequestCommentsException" %><%@
@@ -35,7 +36,7 @@ page import="com.liferay.portal.kernel.lar.PortletDataHandler" %><%@
 page import="com.liferay.portal.kernel.staging.StagingConstants" %><%@
 page import="com.liferay.portal.kernel.staging.StagingUtil" %><%@
 page import="com.liferay.portal.liveusers.LiveUsers" %><%@
-page import="com.liferay.portal.service.permission.PortalPermissionUtil" %><%@
+page import="com.liferay.portal.security.membershippolicy.SiteMembershipPolicyUtil" %><%@
 page import="com.liferay.portal.service.permission.TeamPermissionUtil" %><%@
 page import="com.liferay.portal.util.CustomJspRegistryUtil" %><%@
 page import="com.liferay.portal.util.RobotsUtil" %><%@
@@ -44,6 +45,7 @@ page import="com.liferay.portlet.rolesadmin.search.RoleSearch" %><%@
 page import="com.liferay.portlet.rolesadmin.search.RoleSearchTerms" %><%@
 page import="com.liferay.portlet.rolesadmin.util.RolesAdminUtil" %><%@
 page import="com.liferay.portlet.sites.action.ActionUtil" %><%@
+page import="com.liferay.portlet.sites.search.OrganizationRoleUserChecker" %><%@
 page import="com.liferay.portlet.sites.search.UserGroupGroupRoleRoleChecker" %><%@
 page import="com.liferay.portlet.sites.search.UserGroupGroupRoleUserGroupChecker" %><%@
 page import="com.liferay.portlet.sites.search.UserGroupRoleRoleChecker" %><%@

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -111,7 +111,7 @@ public class AssetTagLocalServiceUtil {
 	* Performs a dynamic query on the database and returns a range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetTagModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -131,7 +131,7 @@ public class AssetTagLocalServiceUtil {
 	* Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetTagModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -195,7 +195,7 @@ public class AssetTagLocalServiceUtil {
 	* Returns a range of all the asset tags.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetTagModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param start the lower bound of the range of asset tags
@@ -231,6 +231,144 @@ public class AssetTagLocalServiceUtil {
 		com.liferay.portlet.asset.model.AssetTag assetTag)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return getService().updateAssetTag(assetTag);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void addAssetEntryAssetTag(long entryId, long tagId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().addAssetEntryAssetTag(entryId, tagId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void addAssetEntryAssetTag(long entryId,
+		com.liferay.portlet.asset.model.AssetTag assetTag)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().addAssetEntryAssetTag(entryId, assetTag);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void addAssetEntryAssetTags(long entryId, long[] tagIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().addAssetEntryAssetTags(entryId, tagIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void addAssetEntryAssetTags(long entryId,
+		java.util.List<com.liferay.portlet.asset.model.AssetTag> AssetTags)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().addAssetEntryAssetTags(entryId, AssetTags);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void clearAssetEntryAssetTags(long entryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().clearAssetEntryAssetTags(entryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void deleteAssetEntryAssetTag(long entryId, long tagId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteAssetEntryAssetTag(entryId, tagId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void deleteAssetEntryAssetTag(long entryId,
+		com.liferay.portlet.asset.model.AssetTag assetTag)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteAssetEntryAssetTag(entryId, assetTag);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void deleteAssetEntryAssetTags(long entryId, long[] tagIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteAssetEntryAssetTags(entryId, tagIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void deleteAssetEntryAssetTags(long entryId,
+		java.util.List<com.liferay.portlet.asset.model.AssetTag> AssetTags)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().deleteAssetEntryAssetTags(entryId, AssetTags);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static java.util.List<com.liferay.portlet.asset.model.AssetTag> getAssetEntryAssetTags(
+		long entryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getAssetEntryAssetTags(entryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static java.util.List<com.liferay.portlet.asset.model.AssetTag> getAssetEntryAssetTags(
+		long entryId, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getAssetEntryAssetTags(entryId, start, end);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static java.util.List<com.liferay.portlet.asset.model.AssetTag> getAssetEntryAssetTags(
+		long entryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService()
+				   .getAssetEntryAssetTags(entryId, start, end,
+			orderByComparator);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static int getAssetEntryAssetTagsCount(long entryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().getAssetEntryAssetTagsCount(entryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static boolean hasAssetEntryAssetTag(long entryId, long tagId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().hasAssetEntryAssetTag(entryId, tagId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static boolean hasAssetEntryAssetTags(long entryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().hasAssetEntryAssetTags(entryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public static void setAssetEntryAssetTags(long entryId, long[] tagIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		getService().setAssetEntryAssetTags(entryId, tagIds);
 	}
 
 	/**
@@ -458,6 +596,13 @@ public class AssetTagLocalServiceUtil {
 		return getService().search(groupId, name, tagProperties, start, end);
 	}
 
+	public static java.util.List<com.liferay.portlet.asset.model.AssetTag> search(
+		long[] groupIds, java.lang.String name,
+		java.lang.String[] tagProperties, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return getService().search(groupIds, name, tagProperties, start, end);
+	}
+
 	public static com.liferay.portlet.asset.model.AssetTag updateTag(
 		long userId, long tagId, java.lang.String name,
 		java.lang.String[] tagProperties,
@@ -480,7 +625,7 @@ public class AssetTagLocalServiceUtil {
 	}
 
 	/**
-	 * @deprecated
+	 * @deprecated As of 6.2.0
 	 */
 	public void setService(AssetTagLocalService service) {
 	}

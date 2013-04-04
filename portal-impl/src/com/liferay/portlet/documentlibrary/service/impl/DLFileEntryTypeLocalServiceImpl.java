@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.SortedArrayList;
@@ -144,11 +145,13 @@ public class DLFileEntryTypeLocalServiceImpl
 
 		DDMStructure ddmStructure = ddmStructureLocalService.fetchStructure(
 			dlFileEntryType.getGroupId(),
+			PortalUtil.getClassNameId(DLFileEntryMetadata.class),
 			DLUtil.getDDMStructureKey(dlFileEntryType));
 
 		if (ddmStructure == null) {
 			ddmStructure = ddmStructureLocalService.fetchStructure(
 				dlFileEntryType.getGroupId(),
+				PortalUtil.getClassNameId(DLFileEntryMetadata.class),
 				DLUtil.getDeprecatedDDMStructureKey(dlFileEntryType));
 		}
 
@@ -442,8 +445,8 @@ public class DLFileEntryTypeLocalServiceImpl
 				serviceContext);
 		}
 
-		List<DLFolder> subFolders = dlFolderPersistence.findByG_M_P(
-			groupId, false, folderId);
+		List<DLFolder> subFolders = dlFolderPersistence.findByG_M_P_H(
+			groupId, false, folderId, false);
 
 		for (DLFolder subFolder : subFolders) {
 			long subFolderId = subFolder.getFolderId();
@@ -463,7 +466,8 @@ public class DLFileEntryTypeLocalServiceImpl
 		throws SystemException {
 
 		DDMStructure ddmStructure = ddmStructureLocalService.fetchStructure(
-			groupId, DLUtil.getDeprecatedDDMStructureKey(fileEntryTypeId));
+			groupId, PortalUtil.getClassNameId(DLFileEntryMetadata.class),
+			DLUtil.getDeprecatedDDMStructureKey(fileEntryTypeId));
 
 		if (ddmStructure != null) {
 			ddmStructure.setStructureKey(
@@ -529,7 +533,21 @@ public class DLFileEntryTypeLocalServiceImpl
 		String xsd = ParamUtil.getString(serviceContext, "xsd");
 
 		DDMStructure ddmStructure = ddmStructureLocalService.fetchStructure(
-			groupId, ddmStructureKey);
+			groupId, PortalUtil.getClassNameId(DLFileEntryMetadata.class),
+			ddmStructureKey);
+
+		if ((ddmStructure != null) && Validator.isNull(xsd)) {
+			xsd = ddmStructure.getXsd();
+		}
+
+		Locale[] contentAvailableLocales = LocaleUtil.fromLanguageIds(
+			LocalizationUtil.getAvailableLocales(xsd));
+
+		for (Locale contentAvailableLocale : contentAvailableLocales) {
+			nameMap.put(contentAvailableLocale, name);
+
+			descriptionMap.put(contentAvailableLocale, description);
+		}
 
 		try {
 			if (ddmStructure == null) {
@@ -541,10 +559,6 @@ public class DLFileEntryTypeLocalServiceImpl
 					DDMStructureConstants.TYPE_AUTO, serviceContext);
 			}
 			else {
-				if (Validator.isNull(xsd)) {
-					xsd = ddmStructure.getXsd();
-				}
-
 				ddmStructure = ddmStructureLocalService.updateStructure(
 					ddmStructure.getStructureId(),
 					ddmStructure.getParentStructureId(), nameMap,

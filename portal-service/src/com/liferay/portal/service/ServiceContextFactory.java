@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -73,10 +73,17 @@ public class ServiceContextFactory {
 					PortalUtil.getLayoutURL(themeDisplay), themeDisplay,
 					themeDisplay.getLayout(), true));
 			serviceContext.setPathMain(PortalUtil.getPathMain());
+			serviceContext.setPathFriendlyURLPrivateGroup(
+				PortalUtil.getPathFriendlyURLPrivateGroup());
+			serviceContext.setPathFriendlyURLPrivateUser(
+				PortalUtil.getPathFriendlyURLPrivateUser());
+			serviceContext.setPathFriendlyURLPublic(
+				PortalUtil.getPathFriendlyURLPublic());
 			serviceContext.setPlid(themeDisplay.getPlid());
 			serviceContext.setPortalURL(PortalUtil.getPortalURL(request));
 			serviceContext.setScopeGroupId(themeDisplay.getScopeGroupId());
 			serviceContext.setSignedIn(themeDisplay.isSignedIn());
+			serviceContext.setTimeZone(themeDisplay.getTimeZone());
 
 			User user = themeDisplay.getUser();
 
@@ -88,6 +95,12 @@ public class ServiceContextFactory {
 
 			serviceContext.setCompanyId(companyId);
 
+			serviceContext.setPathFriendlyURLPrivateGroup(
+				PortalUtil.getPathFriendlyURLPrivateGroup());
+			serviceContext.setPathFriendlyURLPrivateUser(
+				PortalUtil.getPathFriendlyURLPrivateUser());
+			serviceContext.setPathFriendlyURLPublic(
+				PortalUtil.getPathFriendlyURLPublic());
 			serviceContext.setPathMain(PortalUtil.getPathMain());
 
 			User user = null;
@@ -283,11 +296,18 @@ public class ServiceContextFactory {
 			serviceContext.setLayoutFullURL(
 				PortalUtil.getLayoutFullURL(themeDisplay));
 			serviceContext.setLayoutURL(PortalUtil.getLayoutURL(themeDisplay));
+			serviceContext.setPathFriendlyURLPrivateGroup(
+				PortalUtil.getPathFriendlyURLPrivateGroup());
+			serviceContext.setPathFriendlyURLPrivateUser(
+				PortalUtil.getPathFriendlyURLPrivateUser());
+			serviceContext.setPathFriendlyURLPublic(
+				PortalUtil.getPathFriendlyURLPublic());
 			serviceContext.setPathMain(PortalUtil.getPathMain());
 			serviceContext.setPlid(themeDisplay.getPlid());
 			serviceContext.setPortalURL(
 				PortalUtil.getPortalURL(portletRequest));
 			serviceContext.setSignedIn(themeDisplay.isSignedIn());
+			serviceContext.setTimeZone(themeDisplay.getTimeZone());
 
 			User user = themeDisplay.getUser();
 
@@ -458,6 +478,21 @@ public class ServiceContextFactory {
 
 		ServiceContext serviceContext = getInstance(portletRequest);
 
+		// Permissions
+
+		String[] groupPermissions = PortalUtil.getGroupPermissions(
+			portletRequest, className);
+		String[] guestPermissions = PortalUtil.getGuestPermissions(
+			portletRequest, className);
+
+		if (groupPermissions != null) {
+			serviceContext.setGroupPermissions(groupPermissions);
+		}
+
+		if (guestPermissions != null) {
+			serviceContext.setGuestPermissions(guestPermissions);
+		}
+
 		// Expando
 
 		Map<String, Serializable> expandoBridgeAttributes =
@@ -476,6 +511,21 @@ public class ServiceContextFactory {
 		throws PortalException, SystemException {
 
 		ServiceContext serviceContext = getInstance(uploadPortletRequest);
+
+		// Permissions
+
+		String[] groupPermissions = PortalUtil.getGroupPermissions(
+			uploadPortletRequest, className);
+		String[] guestPermissions = PortalUtil.getGuestPermissions(
+			uploadPortletRequest, className);
+
+		if (groupPermissions != null) {
+			serviceContext.setGroupPermissions(groupPermissions);
+		}
+
+		if (guestPermissions != null) {
+			serviceContext.setGuestPermissions(guestPermissions);
+		}
 
 		// Expando
 

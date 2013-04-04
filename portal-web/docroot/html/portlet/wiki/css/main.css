@@ -1,9 +1,15 @@
 .portlet-wiki {
-	.wiki-body pre {
-		background : #fff;
-		border: 1px dashed #2f6fab;
-		margin: 5px 0;
-		padding: 0.5em;
+	.wiki-body {
+		ol ol {
+			list-style: decimal outside;
+		}
+
+		pre {
+			background : #fff;
+			border: 1px dashed #2f6fab;
+			margin: 5px 0;
+			padding: 0.5em;
+		}
 	}
 
 	a.createpage {
@@ -251,6 +257,20 @@
 		margin-left: 5px;
 	}
 
+	.page-activities {
+		.activity-status {
+			color: #666;
+			font-weight: bold;
+			text-transform: uppercase;
+		}
+
+		.activity-summary {
+			color: #999;
+			display: block;
+			margin-left: 3em;
+		}
+	}
+
 	.entry-links h2 {
 		border-width: 0;
 		font-size: 1em;
@@ -342,6 +362,11 @@
 		margin: 0 0 0.5em 0.5em;
 	}
 
+	.search-root-entry {
+		color: #999;
+		float: right;
+	}
+
 	.top-links-configuration {
 		float: left;
 	}
@@ -357,6 +382,23 @@
 
 	#wikiCommentsPanelContainer {
 		border-width: 0;
+	}
+}
+
+.trash-restore-popup {
+	.aui-form {
+		fieldset {
+			margin-bottom: 0;
+			padding: 0 15px;
+		}
+
+		.new-file-name .aui-field-input {
+			width: 100%;
+		}
+	}
+
+	.portlet-msg-alert {
+		margin: 10px 0;
 	}
 }
 

@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -155,42 +155,23 @@ int count = 0;
 	</tr>
 </c:if>
 
-<c:if test="<%= PortalUtil.isRSSFeedsEnabled() %>">
+<c:if test="<%= enableRSS %>">
 	<tr class="portlet-section-body<%= MathUtil.isOdd(count++) ? "-alternate" : "" %> results-row <%= MathUtil.isOdd(count) ? "alt" : "" %>">
 		<th>
 			<liferay-ui:message key="rss-subscription" />
 		</th>
 		<td>
-			<liferay-ui:icon-list>
-				<liferay-ui:icon
-					image="rss"
-					label="<%= true %>"
-					message="Atom 1.0"
-					target="_blank"
-					url='<%= themeDisplay.getPathMain() + "/wiki/rss?p_l_id=" + plid + "&companyId=" + company.getCompanyId() + "&nodeId=" + wikiPage.getNodeId() + "&title=" + wikiPage.getTitle() + rssURLAtomParams %>'
-				/>
-
-				<liferay-ui:icon
-					image="rss"
-					label="<%= true %>"
-					message="RSS 1.0"
-					target="_blank"
-					url='<%= themeDisplay.getPathMain() + "/wiki/rss?p_l_id=" + plid + "&companyId=" + company.getCompanyId() + "&nodeId=" + wikiPage.getNodeId() + "&title=" + wikiPage.getTitle() + rssURLRSS10Params %>'
-				/>
-
-				<liferay-ui:icon
-					image="rss"
-					label="<%= true %>"
-					message="RSS 2.0"
-					target="_blank"
-					url='<%= themeDisplay.getPathMain() + "/wiki/rss?p_l_id=" + plid + "&companyId=" + company.getCompanyId() + "&nodeId=" + wikiPage.getNodeId() + "&title=" + wikiPage.getTitle() + rssURLRSS20Params %>'
-				/>
-			</liferay-ui:icon-list>
+			<liferay-ui:rss
+				delta="<%= rssDelta %>"
+				displayStyle="<%= rssDisplayStyle %>"
+				feedType="<%= rssFeedType %>"
+				url='<%= themeDisplay.getPathMain() + "/wiki/rss?p_l_id=" + plid + "&companyId=" + company.getCompanyId() + "&nodeId=" + wikiPage.getNodeId() + "&title=" + wikiPage.getTitle() %>'
+			/>
 		</td>
 	</tr>
 </c:if>
 
-<c:if test="<%= WikiPagePermission.contains(permissionChecker, wikiPage, ActionKeys.SUBSCRIBE) || WikiNodePermission.contains(permissionChecker, node, ActionKeys.SUBSCRIBE) %>">
+<c:if test="<%= (WikiPagePermission.contains(permissionChecker, wikiPage, ActionKeys.SUBSCRIBE) || WikiNodePermission.contains(permissionChecker, node, ActionKeys.SUBSCRIBE)) && (WikiUtil.getEmailPageAddedEnabled(preferences) || WikiUtil.getEmailPageUpdatedEnabled(preferences)) %>">
 	<tr class="portlet-section-body<%= MathUtil.isOdd(count++) ? "-alternate" : "" %> results-row <%= MathUtil.isOdd(count) ? "alt" : "" %>">
 		<th>
 			<liferay-ui:message key="email-subscription" />

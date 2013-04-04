@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -265,6 +265,16 @@ public class RatingsStatsWrapper implements RatingsStats,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_ratingsStats.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_ratingsStats.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_ratingsStats.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -292,6 +302,10 @@ public class RatingsStatsWrapper implements RatingsStats,
 		return new RatingsStatsWrapper(_ratingsStats.toEscapedModel());
 	}
 
+	public com.liferay.portlet.ratings.model.RatingsStats toUnescapedModel() {
+		return new RatingsStatsWrapper(_ratingsStats.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _ratingsStats.toString();
@@ -307,7 +321,7 @@ public class RatingsStatsWrapper implements RatingsStats,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public RatingsStats getWrappedRatingsStats() {
 		return _ratingsStats;

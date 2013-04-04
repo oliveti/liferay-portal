@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -557,6 +557,16 @@ public class LayoutSetWrapper implements LayoutSet, ModelWrapper<LayoutSet> {
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_layoutSet.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_layoutSet.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_layoutSet.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -581,6 +591,10 @@ public class LayoutSetWrapper implements LayoutSet, ModelWrapper<LayoutSet> {
 
 	public com.liferay.portal.model.LayoutSet toEscapedModel() {
 		return new LayoutSetWrapper(_layoutSet.toEscapedModel());
+	}
+
+	public com.liferay.portal.model.LayoutSet toUnescapedModel() {
+		return new LayoutSetWrapper(_layoutSet.toUnescapedModel());
 	}
 
 	@Override
@@ -660,8 +674,12 @@ public class LayoutSetWrapper implements LayoutSet, ModelWrapper<LayoutSet> {
 		_layoutSet.setSettingsProperties(settingsProperties);
 	}
 
+	public void setVirtualHostname(java.lang.String virtualHostname) {
+		_layoutSet.setVirtualHostname(virtualHostname);
+	}
+
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public LayoutSet getWrappedLayoutSet() {
 		return _layoutSet;

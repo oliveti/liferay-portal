@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -63,6 +63,8 @@ public class ClusterGroupModelImpl extends BaseModelImpl<ClusterGroup>
 		};
 	public static final String TABLE_SQL_CREATE = "create table ClusterGroup (clusterGroupId LONG not null primary key,name VARCHAR(75) null,clusterNodeIds VARCHAR(75) null,wholeCluster BOOLEAN)";
 	public static final String TABLE_SQL_DROP = "drop table ClusterGroup";
+	public static final String ORDER_BY_JPQL = " ORDER BY clusterGroup.clusterGroupId ASC";
+	public static final String ORDER_BY_SQL = " ORDER BY ClusterGroup.clusterGroupId ASC";
 	public static final String DATA_SOURCE = "liferayDataSource";
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
 	public static final String TX_MANAGER = "liferayTransactionManager";
@@ -88,7 +90,7 @@ public class ClusterGroupModelImpl extends BaseModelImpl<ClusterGroup>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_clusterGroupId);
+		return _clusterGroupId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -203,13 +205,12 @@ public class ClusterGroupModelImpl extends BaseModelImpl<ClusterGroup>
 
 	@Override
 	public ClusterGroup toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (ClusterGroup)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (ClusterGroup)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -348,12 +349,12 @@ public class ClusterGroupModelImpl extends BaseModelImpl<ClusterGroup>
 	}
 
 	private static ClassLoader _classLoader = ClusterGroup.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			ClusterGroup.class
 		};
 	private long _clusterGroupId;
 	private String _name;
 	private String _clusterNodeIds;
 	private boolean _wholeCluster;
-	private ClusterGroup _escapedModelProxy;
+	private ClusterGroup _escapedModel;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,12 +14,14 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.portal.NoSuchGroupException;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UniqueList;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.GroupConstants;
@@ -28,6 +30,7 @@ import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.security.auth.PrincipalException;
+import com.liferay.portal.security.membershippolicy.SiteMembershipPolicyUtil;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.security.permission.PermissionCheckerFactoryUtil;
@@ -39,6 +42,11 @@ import com.liferay.portal.service.permission.PortletPermissionUtil;
 import com.liferay.portal.service.permission.RolePermissionUtil;
 import com.liferay.portal.service.permission.UserPermissionUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.asset.model.AssetCategory;
+import com.liferay.portlet.asset.model.AssetTag;
+import com.liferay.portlet.expando.model.ExpandoBridge;
+
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +54,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The group remote service is responsible for accessing, creating, modifying
@@ -97,9 +106,15 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 					"a site with parent " + parentGroupId);
 		}
 
-		return groupLocalService.addGroup(
+		Group group = groupLocalService.addGroup(
 			getUserId(), parentGroupId, null, 0, liveGroupId, name, description,
 			type, friendlyURL, site, active, serviceContext);
+
+		if (site) {
+			SiteMembershipPolicyUtil.verifyPolicy(group);
+		}
+
+		return group;
 	}
 
 	/**
@@ -124,8 +139,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	 *             information was invalid, if a layout could not be found, or
 	 *             if a valid friendly URL could not be created for the group
 	 * @throws     SystemException if a system exception occurred
-	 * @deprecated {@link #addGroup(long, long, String, String, int, String,
-	 *             boolean, boolean, ServiceContext)}
+	 * @deprecated As of 6.2.0, replaced by {@link #addGroup(long, long, String,
+	 *             String, int, String, boolean, boolean, ServiceContext)}
 	 */
 	public Group addGroup(
 			long parentGroupId, String name, String description, int type,
@@ -139,8 +154,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated {@link #addGroup(long, String, String, int, String, boolean,
-	 *             boolean, ServiceContext)}
+	 * @deprecated As of 6.2.0, replaced by {@link #addGroup(long, String,
+	 *             String, int, String, boolean, boolean, ServiceContext)}
 	 */
 	public Group addGroup(
 			String name, String description, int type, String friendlyURL,
@@ -168,6 +183,31 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			getPermissionChecker(), roleId, ActionKeys.UPDATE);
 
 		groupLocalService.addRoleGroups(roleId, groupIds);
+	}
+
+	/**
+	 * Checks that the current user is permitted to use the group for Remote
+	 * Staging.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @throws PortalException if a group with the primary key could not be
+	 *         found, if the current user did not have permission to view the
+	 *         group, or if the group's company was different from the current
+	 *         user's company
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void checkRemoteStagingGroup(long groupId)
+		throws PortalException, SystemException {
+
+		Group group = getGroup(groupId);
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (group.getCompanyId() != permissionChecker.getCompanyId()) {
+			throw new NoSuchGroupException(
+				"Group " + groupId + " does not belong in company " +
+					permissionChecker.getCompanyId());
+		}
 	}
 
 	/**
@@ -242,7 +282,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	 * @param  portlets the portlets to manage
 	 * @param  max the upper bound of the range of groups to consider (not
 	 *         inclusive)
-	 * @return the range of site groups for which the user has control panel
+	 * @return the range of site groups for which the user has Control Panel
 	 *         access
 	 * @throws PortalException if a portal exception occurred
 	 * @throws SystemException if a system exception occurred
@@ -285,9 +325,8 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			Group group = itr.next();
 
 			if (!group.isSite() ||
-				!PortletPermissionUtil.contains(
-					permissionChecker, group.getGroupId(), 0L, portlets,
-					ActionKeys.ACCESS_IN_CONTROL_PANEL)) {
+				!PortletPermissionUtil.hasControlPanelAccessPermission(
+					permissionChecker, group.getGroupId(), portlets)) {
 
 				itr.remove();
 			}
@@ -391,6 +430,56 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			int max)
 		throws PortalException, SystemException {
 
+		return getUserPlaces(
+			userId, classNames, null, true, includeControlPanel,
+			QueryUtil.ALL_POS, max);
+	}
+
+	/**
+	 * Returns the user's group &quot;places&quot; associated with the group
+	 * entity class names, including the Control Panel group if the user is
+	 * permitted to view the Control Panel.
+	 *
+	 * <ul>
+	 * <li>
+	 * Class name &quot;User&quot; includes the user's layout set
+	 * group.
+	 * </li>
+	 * <li>
+	 * Class name &quot;Organization&quot; includes the user's
+	 * immediate organization groups and inherited organization groups.
+	 * </li>
+	 * <li>
+	 * Class name &quot;Group&quot; includes the user's immediate
+	 * organization groups and site groups.
+	 * </li>
+	 * <li>
+	 * A <code>classNames</code>
+	 * value of <code>null</code> includes the user's layout set group,
+	 * organization groups, inherited organization groups, and site groups.
+	 * </li>
+	 * </ul>
+	 *
+	 * @param  userId the primary key of the user
+	 * @param  classNames the group entity class names (optionally
+	 *         <code>null</code>). For more information see {@link
+	 *         #getUserPlaces(long, String[], int)}
+	 * @param  max the maximum number of groups to return
+	 * @return the user's group &quot;places&quot;
+	 * @throws PortalException if a portal exception occurred
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Group> getUserPlaces(long userId, String[] classNames, int max)
+		throws PortalException, SystemException {
+
+		return getUserPlaces(userId, classNames, false, max);
+	}
+
+	public List<Group> getUserPlaces(
+			long userId, String[] classNames, String name, boolean active,
+			boolean includeControlPanel, int start, int end)
+		throws PortalException, SystemException {
+
 		User user = userPersistence.fetchByPrimaryKey(userId);
 
 		if (user.isDefaultUser()) {
@@ -399,38 +488,26 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 		List<Group> userPlaces = new UniqueList<Group>();
 
-		int start = QueryUtil.ALL_POS;
-		int end = QueryUtil.ALL_POS;
-
-		if (max != QueryUtil.ALL_POS) {
-			start = 0;
-			end = max;
-		}
-
 		if ((classNames == null) ||
 			ArrayUtil.contains(classNames, Group.class.getName())) {
 
 			LinkedHashMap<String, Object> groupParams =
 				new LinkedHashMap<String, Object>();
 
-			groupParams.put("active", Boolean.TRUE);
+			groupParams.put("active", active);
 			groupParams.put("usersGroups", new Long(userId));
 
 			userPlaces.addAll(
 				groupLocalService.search(
-					user.getCompanyId(), groupParams, start, end));
+					user.getCompanyId(), name, groupParams, start, end));
 		}
 
 		if ((classNames == null) ||
 			ArrayUtil.contains(classNames, Organization.class.getName())) {
 
-			LinkedHashMap<String, Object> organizationParams =
-				new LinkedHashMap<String, Object>();
-
-			organizationParams.put("usersOrgs", new Long(userId));
-
-			List<Organization> userOrgs = organizationLocalService.search(
-				user.getCompanyId(), organizationParams, start, end);
+			List<Organization> userOrgs =
+				organizationLocalService.getOrganizations(
+					userId, start, end, null);
 
 			for (Organization organization : userOrgs) {
 				if (!organization.hasPrivateLayouts() &&
@@ -491,7 +568,11 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			userPlaces.add(0, controlPanelGroup);
 		}
 
-		if ((max != QueryUtil.ALL_POS) && (userPlaces.size() > max)) {
+		if ((end != QueryUtil.ALL_POS) && (userPlaces.size() > end)) {
+			if (start < 0) {
+				start = 0;
+			}
+
 			userPlaces = ListUtil.subList(userPlaces, start, end);
 		}
 
@@ -499,51 +580,29 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 	}
 
 	/**
-	 * Returns the user's group &quot;places&quot; associated with the group
-	 * entity class names, including the control panel group if the user is
-	 * permitted to view the control panel.
-	 *
-	 * <p>
-	 * <ul> <li> Class name &quot;User&quot; includes the user's layout set
-	 * group. </li> <li> Class name &quot;Organization&quot; includes the user's
-	 * immediate organization groups and inherited organization groups. </li>
-	 * <li> Class name &quot;Group&quot; includes the user's immediate
-	 * organization groups and site groups. </li> <li> A <code>classNames</code>
-	 * value of <code>null</code> includes the user's layout set group,
-	 * organization groups, inherited organization groups, and site groups.
-	 * </li> </ul>
-	 * </p>
-	 *
-	 * @param  userId the primary key of the user
-	 * @param  classNames the group entity class names (optionally
-	 *         <code>null</code>). For more information see {@link
-	 *         #getUserPlaces(long, String[], int)}
-	 * @param  max the maximum number of groups to return
-	 * @return the user's group &quot;places&quot;
-	 * @throws PortalException if a portal exception occurred
-	 * @throws SystemException if a system exception occurred
-	 */
-	public List<Group> getUserPlaces(long userId, String[] classNames, int max)
-		throws PortalException, SystemException {
-
-		return getUserPlaces(userId, classNames, false, max);
-	}
-
-	/**
 	 * Returns the guest or current user's group &quot;places&quot; associated
-	 * with the group entity class names, including the control panel group if
-	 * the user is permitted to view the control panel.
+	 * with the group entity class names, including the Control Panel group if
+	 * the user is permitted to view the Control Panel.
 	 *
-	 * <p>
-	 * <ul> <li> Class name &quot;User&quot; includes the user's layout set
-	 * group. </li> <li> Class name &quot;Organization&quot; includes the user's
-	 * immediate organization groups and inherited organization groups. </li>
-	 * <li> Class name &quot;Group&quot; includes the user's immediate
-	 * organization groups and site groups. </li> <li> A <code>classNames</code>
+	 * <ul>
+	 * <li>
+	 * Class name &quot;User&quot; includes the user's layout set
+	 * group.
+	 * </li>
+	 * <li>
+	 * Class name &quot;Organization&quot; includes the user's
+	 * immediate organization groups and inherited organization groups.
+	 * </li>
+	 * <li>
+	 * Class name &quot;Group&quot; includes the user's immediate
+	 * organization groups and site groups.
+	 * </li>
+	 * <li>
+	 * A <code>classNames</code>
 	 * value of <code>null</code> includes the user's layout set group,
 	 * organization groups, inherited organization groups, and site groups.
-	 * </li> </ul>
-	 * </p>
+	 * </li>
+	 * </ul>
 	 *
 	 * @param  classNames the group entity class names (optionally
 	 *         <code>null</code>). For more information see {@link
@@ -557,6 +616,23 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		throws PortalException, SystemException {
 
 		return getUserPlaces(getGuestOrUserId(), classNames, false, max);
+	}
+
+	/**
+	 * Returns the number of the guest or current user's group
+	 * &quot;places&quot; associated with the group entity class names,
+	 * including the Control Panel group if the user is permitted to view the
+	 * Control Panel.
+	 *
+	 * @return the number of user's group &quot;places&quot;
+	 * @throws PortalException if a portal exception occurred
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getUserPlacesCount() throws PortalException, SystemException {
+		List<Group> userPlaces = getUserPlaces(
+			getGuestOrUserId(), null, true, QueryUtil.ALL_POS);
+
+		return userPlaces.size();
 	}
 
 	/**
@@ -770,12 +846,41 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
-		GroupPermissionUtil.check(
-			getPermissionChecker(), groupId, ActionKeys.UPDATE);
+		Group group = groupPersistence.findByPrimaryKey(groupId);
 
-		return groupLocalService.updateGroup(
-			groupId, parentGroupId, name, description, type, friendlyURL,
-			active, serviceContext);
+		GroupPermissionUtil.check(
+			getPermissionChecker(), group, ActionKeys.UPDATE);
+
+		if (group.isSite()) {
+			Group oldGroup = group;
+
+			List<AssetCategory> oldAssetCategories =
+				assetCategoryLocalService.getCategories(
+					Group.class.getName(), groupId);
+
+			List<AssetTag> oldAssetTags = assetTagLocalService.getTags(
+				Group.class.getName(), groupId);
+
+			ExpandoBridge oldExpandoBridge = oldGroup.getExpandoBridge();
+
+			Map<String, Serializable> oldExpandoAttributes =
+				oldExpandoBridge.getAttributes();
+
+			group = groupLocalService.updateGroup(
+				groupId, parentGroupId, name, description, type, friendlyURL,
+				active, serviceContext);
+
+			SiteMembershipPolicyUtil.verifyPolicy(
+				group, oldGroup, oldAssetCategories, oldAssetTags,
+				oldExpandoAttributes, null);
+
+			return group;
+		}
+		else {
+			return groupLocalService.updateGroup(
+				groupId, parentGroupId, name, description, type, friendlyURL,
+				active, serviceContext);
+		}
 	}
 
 	/**
@@ -795,7 +900,24 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 		GroupPermissionUtil.check(
 			getPermissionChecker(), groupId, ActionKeys.UPDATE);
 
-		return groupLocalService.updateGroup(groupId, typeSettings);
+		Group group = groupPersistence.findByPrimaryKey(groupId);
+
+		if (group.isSite()) {
+			Group oldGroup = group;
+
+			UnicodeProperties oldTypeSettingsProperties =
+				oldGroup.getTypeSettingsProperties();
+
+			group = groupLocalService.updateGroup(groupId, typeSettings);
+
+			SiteMembershipPolicyUtil.verifyPolicy(
+				group, oldGroup, null, null, null, oldTypeSettingsProperties);
+
+			return group;
+		}
+		else {
+			return groupLocalService.updateGroup(groupId, typeSettings);
+		}
 	}
 
 	protected List<Group> filterGroups(List<Group> groups)

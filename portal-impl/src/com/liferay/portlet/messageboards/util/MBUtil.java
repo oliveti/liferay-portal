@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,12 +14,21 @@
 
 package com.liferay.portlet.messageboards.util;
 
+import com.liferay.portal.kernel.concurrent.PortalCallable;
+import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.sanitizer.Sanitizer;
+import com.liferay.portal.kernel.sanitizer.SanitizerUtil;
+import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.transaction.TransactionCommitCallbackRegistryUtil;
 import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -30,43 +39,53 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Organization;
 import com.liferay.portal.model.Role;
+import com.liferay.portal.model.Subscription;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.service.RoleLocalServiceUtil;
+import com.liferay.portal.service.SubscriptionLocalServiceUtil;
 import com.liferay.portal.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
-import com.liferay.portlet.PortletURLFactoryUtil;
+import com.liferay.portlet.documentlibrary.model.DLFileEntry;
+import com.liferay.portlet.documentlibrary.service.DLFileEntryLocalServiceUtil;
 import com.liferay.portlet.messageboards.model.MBBan;
 import com.liferay.portlet.messageboards.model.MBCategory;
 import com.liferay.portlet.messageboards.model.MBCategoryConstants;
-import com.liferay.portlet.messageboards.model.MBMailingList;
 import com.liferay.portlet.messageboards.model.MBMessage;
 import com.liferay.portlet.messageboards.model.MBMessageConstants;
 import com.liferay.portlet.messageboards.model.MBStatsUser;
+import com.liferay.portlet.messageboards.model.MBThread;
 import com.liferay.portlet.messageboards.service.MBCategoryLocalServiceUtil;
-import com.liferay.portlet.messageboards.service.MBMailingListLocalServiceUtil;
+import com.liferay.portlet.messageboards.service.MBMessageLocalServiceUtil;
+import com.liferay.portlet.messageboards.service.MBThreadLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.permission.MBMessagePermission;
 import com.liferay.util.ContentUtil;
 import com.liferay.util.mail.JavaMailUtil;
 
 import java.io.InputStream;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -161,17 +180,18 @@ public class MBUtil {
 			RenderResponse renderResponse)
 		throws Exception {
 
-		if ((message.getCategoryId() ==
-				MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) ||
-			(message.getCategoryId() ==
-				MBCategoryConstants.DISCUSSION_CATEGORY_ID)) {
+		if (message.getCategoryId() ==
+				MBCategoryConstants.DISCUSSION_CATEGORY_ID) {
 
 			return;
 		}
 
-		MBCategory category = message.getCategory();
+		if (message.getCategoryId() !=
+				MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) {
 
-		addPortletBreadcrumbEntries(category, request, renderResponse);
+			addPortletBreadcrumbEntries(
+				message.getCategory(), request, renderResponse);
+		}
 
 		PortletURL portletURL = renderResponse.createRenderURL();
 
@@ -228,11 +248,19 @@ public class MBUtil {
 				collectMultipartContent(mimeMultipart, mbMailMessage);
 			}
 			else if (partContent instanceof String) {
-				if (contentType.startsWith("text/html")) {
-					mbMailMessage.setHtmlBody((String)partContent);
+				Map<String, Object> options = new HashMap<String, Object>();
+
+				options.put("emailPartToMBMessageBody", Boolean.TRUE);
+
+				String messageBody = SanitizerUtil.sanitize(
+					0, 0, 0, MBMessage.class.getName(), 0, contentType,
+					Sanitizer.MODE_ALL, (String)partContent, options);
+
+				if (contentType.startsWith(ContentTypes.TEXT_HTML)) {
+					mbMailMessage.setHtmlBody(messageBody);
 				}
 				else {
-					mbMailMessage.setPlainBody((String)partContent);
+					mbMailMessage.setPlainBody(messageBody);
 				}
 			}
 		}
@@ -254,14 +282,14 @@ public class MBUtil {
 
 		List<MBCategory> categories = mbCategory.getAncestors();
 
-		StringBundler sb = new StringBundler((categories.size() * 3) + 6);
+		Collections.reverse(categories);
+
+		StringBundler sb = new StringBundler((categories.size() * 3) + 5);
 
 		sb.append(themeDisplay.translate("home"));
 		sb.append(StringPool.SPACE);
 
-		for (int i = categories.size() - 1; i >= 0; i--) {
-			MBCategory curCategory = categories.get(i);
-
+		for (MBCategory curCategory : categories) {
 			sb.append(StringPool.RAQUO);
 			sb.append(StringPool.SPACE);
 			sb.append(curCategory.getName());
@@ -300,6 +328,22 @@ public class MBUtil {
 		categoryId = ParamUtil.getLong(request, "mbCategoryId", categoryId);
 
 		return categoryId;
+	}
+
+	public static Set<Long> getCategorySubscriptionClassPKs(long userId)
+		throws SystemException {
+
+		List<Subscription> subscriptions =
+			SubscriptionLocalServiceUtil.getUserSubscriptions(
+				userId, MBCategory.class.getName());
+
+		Set<Long> classPKs = new HashSet<Long>(subscriptions.size());
+
+		for (Subscription subscription : subscriptions) {
+			classPKs.add(subscription.getClassPK());
+		}
+
+		return classPKs;
 	}
 
 	public static String getEmailFromAddress(
@@ -450,58 +494,76 @@ public class MBUtil {
 		}
 	}
 
-	public static String getMailingListAddress(
-		long groupId, long categoryId, long messageId, String mx,
-		String defaultMailingListAddress) {
+	public static List<Object> getEntries(Hits hits) {
+		List<Object> entries = new ArrayList<Object>();
 
-		if (PropsValues.POP_SERVER_SUBDOMAIN.length() <= 0) {
-			String mailingListAddress = defaultMailingListAddress;
+		for (Document document : hits.getDocs()) {
+			long categoryId = GetterUtil.getLong(
+				document.get(Field.CATEGORY_ID));
 
 			try {
-				MBMailingList mailingList =
-					MBMailingListLocalServiceUtil.getCategoryMailingList(
-						groupId, categoryId);
-
-				if (mailingList.isActive()) {
-					mailingListAddress = mailingList.getEmailAddress();
-				}
+				MBCategoryLocalServiceUtil.getCategory(categoryId);
 			}
 			catch (Exception e) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Message boards search index is stale and contains " +
+							"category " + categoryId);
+				}
+
+				continue;
 			}
 
-			return mailingListAddress;
+			long threadId = GetterUtil.getLong(document.get("threadId"));
+
+			try {
+				MBThreadLocalServiceUtil.getThread(threadId);
+			}
+			catch (Exception e) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Message boards search index is stale and contains " +
+							"thread " + threadId);
+				}
+
+				continue;
+			}
+
+			String entryClassName = document.get(Field.ENTRY_CLASS_NAME);
+			long entryClassPK = GetterUtil.getLong(
+				document.get(Field.ENTRY_CLASS_PK));
+
+			Object obj = null;
+
+			try {
+				if (entryClassName.equals(DLFileEntry.class.getName())) {
+					long classPK = GetterUtil.getLong(
+						document.get(Field.CLASS_PK));
+
+					MBMessageLocalServiceUtil.getMessage(classPK);
+
+					obj = DLFileEntryLocalServiceUtil.getDLFileEntry(
+						entryClassPK);
+				}
+				else if (entryClassName.equals(MBMessage.class.getName())) {
+					obj = MBMessageLocalServiceUtil.getMessage(entryClassPK);
+				}
+
+				entries.add(obj);
+			}
+			catch (Exception e) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Message boards search index is stale and contains " +
+							"entry {className=" + entryClassName + ", " +
+								"classPK=" + entryClassPK + "}");
+				}
+
+				continue;
+			}
 		}
 
-		StringBundler sb = new StringBundler(8);
-
-		sb.append(MESSAGE_POP_PORTLET_PREFIX);
-		sb.append(categoryId);
-		sb.append(StringPool.PERIOD);
-		sb.append(messageId);
-		sb.append(StringPool.AT);
-		sb.append(PropsValues.POP_SERVER_SUBDOMAIN);
-		sb.append(StringPool.PERIOD);
-		sb.append(mx);
-
-		return sb.toString();
-	}
-
-	public static String getMBControlPanelLink(
-			PortletRequest portletRequest, long mbCategoryId)
-		throws PortalException, SystemException {
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			com.liferay.portal.kernel.util.WebKeys.THEME_DISPLAY);
-
-		PortletURL portletURL = PortletURLFactoryUtil.create(
-			portletRequest, PortletKeys.MESSAGE_BOARDS_ADMIN,
-			PortalUtil.getControlPanelPlid(themeDisplay.getCompanyId()),
-			PortletRequest.RENDER_PHASE);
-
-		portletURL.setParameter("struts_action", "/message_boards_admin/view");
-		portletURL.setParameter("mbCategoryId", String.valueOf(mbCategoryId));
-
-		return portletURL.toString();
+		return entries;
 	}
 
 	public static String getMessageFormat(PortletPreferences preferences) {
@@ -600,6 +662,28 @@ public class MBUtil {
 		return parentHeader;
 	}
 
+	public static String getReplyToAddress(
+		long categoryId, long messageId, String mx,
+		String defaultMailingListAddress) {
+
+		if (PropsValues.POP_SERVER_SUBDOMAIN.length() <= 0) {
+			return defaultMailingListAddress;
+		}
+
+		StringBundler sb = new StringBundler(8);
+
+		sb.append(MESSAGE_POP_PORTLET_PREFIX);
+		sb.append(categoryId);
+		sb.append(StringPool.PERIOD);
+		sb.append(messageId);
+		sb.append(StringPool.AT);
+		sb.append(PropsValues.POP_SERVER_SUBDOMAIN);
+		sb.append(StringPool.PERIOD);
+		sb.append(mx);
+
+		return sb.toString();
+	}
+
 	public static String getSubjectWithoutMessageId(Message message)
 		throws Exception {
 
@@ -640,6 +724,22 @@ public class MBUtil {
 		}
 
 		return priorityPair;
+	}
+
+	public static Set<Long> getThreadSubscriptionClassPKs(long userId)
+		throws SystemException {
+
+		List<Subscription> subscriptions =
+			SubscriptionLocalServiceUtil.getUserSubscriptions(
+				userId, MBThread.class.getName());
+
+		Set<Long> classPKs = new HashSet<Long>(subscriptions.size());
+
+		for (Subscription subscription : subscriptions) {
+			classPKs.add(subscription.getClassPK());
+		}
+
+		return classPKs;
 	}
 
 	public static Date getUnbanDate(MBBan ban, int expireInterval) {
@@ -819,6 +919,125 @@ public class MBUtil {
 			});
 	}
 
+	public static void updateCategoryMessageCount(
+		long companyId, final long categoryId) {
+
+		Callable<Void> callable = new PortalCallable<Void>(companyId) {
+
+			@Override
+			protected Void doCall() throws Exception {
+				MBCategory category =
+					MBCategoryLocalServiceUtil.fetchMBCategory(categoryId);
+
+				if (category == null) {
+					return null;
+				}
+
+				int messageCount = _getMessageCount(category);
+
+				category.setMessageCount(messageCount);
+
+				MBCategoryLocalServiceUtil.updateMBCategory(category);
+
+				return null;
+			}
+		};
+
+		TransactionCommitCallbackRegistryUtil.registerCallback(callable);
+	}
+
+	public static void updateCategoryStatistics(
+		long companyId, final long categoryId) {
+
+		Callable<Void> callable = new PortalCallable<Void>(companyId) {
+
+			@Override
+			protected Void doCall() throws Exception {
+				MBCategory category =
+					MBCategoryLocalServiceUtil.fetchMBCategory(categoryId);
+
+				if (category == null) {
+					return null;
+				}
+
+				int messageCount = _getMessageCount(category);
+
+				int threadCount =
+					MBThreadLocalServiceUtil.getCategoryThreadsCount(
+						category.getGroupId(), category.getCategoryId(),
+						WorkflowConstants.STATUS_APPROVED);
+
+				category.setMessageCount(messageCount);
+				category.setThreadCount(threadCount);
+
+				MBCategoryLocalServiceUtil.updateMBCategory(category);
+
+				return null;
+			}
+		};
+
+		TransactionCommitCallbackRegistryUtil.registerCallback(callable);
+	}
+
+	public static void updateCategoryThreadCount(
+		long companyId, final long categoryId) {
+
+		Callable<Void> callable = new PortalCallable<Void>(companyId) {
+
+			@Override
+			protected Void doCall() throws Exception {
+				MBCategory category =
+					MBCategoryLocalServiceUtil.fetchMBCategory(categoryId);
+
+				if (category == null) {
+					return null;
+				}
+
+				int threadCount =
+					MBThreadLocalServiceUtil.getCategoryThreadsCount(
+						category.getGroupId(), category.getCategoryId(),
+						WorkflowConstants.STATUS_APPROVED);
+
+				category.setThreadCount(threadCount);
+
+				MBCategoryLocalServiceUtil.updateMBCategory(category);
+
+				return null;
+			}
+		};
+
+		TransactionCommitCallbackRegistryUtil.registerCallback(callable);
+	}
+
+	public static void updateThreadMessageCount(
+		long companyId, final long threadId) {
+
+		Callable<Void> callable = new PortalCallable<Void>(companyId) {
+
+			@Override
+			protected Void doCall() throws Exception {
+				MBThread thread = MBThreadLocalServiceUtil.fetchThread(
+					threadId);
+
+				if (thread == null) {
+					return null;
+				}
+
+				int messageCount =
+					MBMessageLocalServiceUtil.getThreadMessagesCount(
+						threadId, WorkflowConstants.STATUS_APPROVED);
+
+				thread.setMessageCount(messageCount);
+
+				MBThreadLocalServiceUtil.updateMBThread(thread);
+
+				return null;
+			}
+		};
+
+		TransactionCommitCallbackRegistryUtil.registerCallback(callable);
+	}
+
 	private static String[] _findThreadPriority(
 		double value, ThemeDisplay themeDisplay, String[] priorities) {
 
@@ -845,6 +1064,26 @@ public class MBUtil {
 		}
 
 		return null;
+	}
+
+	private static int _getMessageCount(MBCategory category)
+		throws SystemException {
+
+		int messageCount = MBMessageLocalServiceUtil.getCategoryMessagesCount(
+			category.getGroupId(), category.getCategoryId(),
+			WorkflowConstants.STATUS_APPROVED);
+
+		QueryDefinition queryDefinition = new QueryDefinition(
+			WorkflowConstants.STATUS_IN_TRASH);
+
+		List<MBThread> threads = MBThreadLocalServiceUtil.getGroupThreads(
+			category.getGroupId(), queryDefinition);
+
+		for (MBThread thread : threads) {
+			messageCount = messageCount - thread.getMessageCount();
+		}
+
+		return messageCount;
 	}
 
 	private static String _getParentMessageIdFromSubject(Message message)

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -56,8 +56,6 @@ public class TrashEmptyTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
-		super.cleanUp();
-
 		_confirmMessage = _CONFIRM_MESSAGE;
 		_emptyMessage = _EMPTY_MESSAGE;
 		_infoMessage = _INFO_MESSAGE;
@@ -96,7 +94,7 @@ public class TrashEmptyTag extends IncludeTag {
 	private static final String _EMPTY_MESSAGE = "empty-the-recycle-bin";
 
 	private static final String _INFO_MESSAGE =
-		"entries-that-have-been-in-recycle-bin-for-more-than-x-days-will-be-" +
+		"entries-that-have-been-in-the-recycle-bin-for-more-than-x-will-be-" +
 			"automatically-deleted";
 
 	private static final String _PAGE = "/html/taglib/ui/trash_empty/page.jsp";

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -70,6 +70,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 			{ "classPK", Types.BIGINT },
 			{ "parentGroupId", Types.BIGINT },
 			{ "liveGroupId", Types.BIGINT },
+			{ "treePath", Types.VARCHAR },
 			{ "name", Types.VARCHAR },
 			{ "description", Types.VARCHAR },
 			{ "type_", Types.INTEGER },
@@ -78,7 +79,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 			{ "site", Types.BOOLEAN },
 			{ "active_", Types.BOOLEAN }
 		};
-	public static final String TABLE_SQL_CREATE = "create table Group_ (groupId LONG not null primary key,companyId LONG,creatorUserId LONG,classNameId LONG,classPK LONG,parentGroupId LONG,liveGroupId LONG,name VARCHAR(150) null,description STRING null,type_ INTEGER,typeSettings STRING null,friendlyURL VARCHAR(100) null,site BOOLEAN,active_ BOOLEAN)";
+	public static final String TABLE_SQL_CREATE = "create table Group_ (groupId LONG not null primary key,companyId LONG,creatorUserId LONG,classNameId LONG,classPK LONG,parentGroupId LONG,liveGroupId LONG,treePath VARCHAR(75) null,name VARCHAR(150) null,description STRING null,type_ INTEGER,typeSettings STRING null,friendlyURL VARCHAR(255) null,site BOOLEAN,active_ BOOLEAN)";
 	public static final String TABLE_SQL_DROP = "drop table Group_";
 	public static final String ORDER_BY_JPQL = " ORDER BY group_.name ASC";
 	public static final String ORDER_BY_SQL = " ORDER BY Group_.name ASC";
@@ -125,6 +126,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 		model.setClassPK(soapModel.getClassPK());
 		model.setParentGroupId(soapModel.getParentGroupId());
 		model.setLiveGroupId(soapModel.getLiveGroupId());
+		model.setTreePath(soapModel.getTreePath());
 		model.setName(soapModel.getName());
 		model.setDescription(soapModel.getDescription());
 		model.setType(soapModel.getType());
@@ -203,7 +205,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_groupId);
+		return _groupId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -229,6 +231,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 		attributes.put("classPK", getClassPK());
 		attributes.put("parentGroupId", getParentGroupId());
 		attributes.put("liveGroupId", getLiveGroupId());
+		attributes.put("treePath", getTreePath());
 		attributes.put("name", getName());
 		attributes.put("description", getDescription());
 		attributes.put("type", getType());
@@ -282,6 +285,12 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 
 		if (liveGroupId != null) {
 			setLiveGroupId(liveGroupId);
+		}
+
+		String treePath = (String)attributes.get("treePath");
+
+		if (treePath != null) {
+			setTreePath(treePath);
 		}
 
 		String name = (String)attributes.get("name");
@@ -478,6 +487,20 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 	}
 
 	@JSON
+	public String getTreePath() {
+		if (_treePath == null) {
+			return StringPool.BLANK;
+		}
+		else {
+			return _treePath;
+		}
+	}
+
+	public void setTreePath(String treePath) {
+		_treePath = treePath;
+	}
+
+	@JSON
 	public String getName() {
 		if (_name == null) {
 			return StringPool.BLANK;
@@ -643,13 +666,12 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 
 	@Override
 	public Group toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (Group)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (Group)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -663,6 +685,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 		groupImpl.setClassPK(getClassPK());
 		groupImpl.setParentGroupId(getParentGroupId());
 		groupImpl.setLiveGroupId(getLiveGroupId());
+		groupImpl.setTreePath(getTreePath());
 		groupImpl.setName(getName());
 		groupImpl.setDescription(getDescription());
 		groupImpl.setType(getType());
@@ -679,7 +702,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 	public int compareTo(Group group) {
 		int value = 0;
 
-		value = getName().toLowerCase().compareTo(group.getName().toLowerCase());
+		value = getName().compareToIgnoreCase(group.getName());
 
 		if (value != 0) {
 			return value;
@@ -779,6 +802,14 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 
 		groupCacheModel.liveGroupId = getLiveGroupId();
 
+		groupCacheModel.treePath = getTreePath();
+
+		String treePath = groupCacheModel.treePath;
+
+		if ((treePath != null) && (treePath.length() == 0)) {
+			groupCacheModel.treePath = null;
+		}
+
 		groupCacheModel.name = getName();
 
 		String name = groupCacheModel.name;
@@ -822,7 +853,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(29);
+		StringBundler sb = new StringBundler(31);
 
 		sb.append("{groupId=");
 		sb.append(getGroupId());
@@ -838,6 +869,8 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 		sb.append(getParentGroupId());
 		sb.append(", liveGroupId=");
 		sb.append(getLiveGroupId());
+		sb.append(", treePath=");
+		sb.append(getTreePath());
 		sb.append(", name=");
 		sb.append(getName());
 		sb.append(", description=");
@@ -858,7 +891,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 	}
 
 	public String toXmlString() {
-		StringBundler sb = new StringBundler(46);
+		StringBundler sb = new StringBundler(49);
 
 		sb.append("<model><model-name>");
 		sb.append("com.liferay.portal.model.Group");
@@ -891,6 +924,10 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 		sb.append(
 			"<column><column-name>liveGroupId</column-name><column-value><![CDATA[");
 		sb.append(getLiveGroupId());
+		sb.append("]]></column-value></column>");
+		sb.append(
+			"<column><column-name>treePath</column-name><column-value><![CDATA[");
+		sb.append(getTreePath());
 		sb.append("]]></column-value></column>");
 		sb.append(
 			"<column><column-name>name</column-name><column-value><![CDATA[");
@@ -927,9 +964,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 	}
 
 	private static ClassLoader _classLoader = Group.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
-			Group.class
-		};
+	private static Class<?>[] _escapedModelInterfaces = new Class[] { Group.class };
 	private long _groupId;
 	private long _companyId;
 	private long _originalCompanyId;
@@ -948,6 +983,7 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 	private long _liveGroupId;
 	private long _originalLiveGroupId;
 	private boolean _setOriginalLiveGroupId;
+	private String _treePath;
 	private String _name;
 	private String _originalName;
 	private String _description;
@@ -964,5 +1000,5 @@ public class GroupModelImpl extends BaseModelImpl<Group> implements GroupModel {
 	private boolean _originalActive;
 	private boolean _setOriginalActive;
 	private long _columnBitmask;
-	private Group _escapedModelProxy;
+	private Group _escapedModel;
 }

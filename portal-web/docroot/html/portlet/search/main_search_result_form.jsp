@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -33,6 +33,8 @@ String viewURL = null;
 AssetRendererFactory assetRendererFactory = AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(className);
 
 AssetRenderer assetRenderer = null;
+
+boolean inheritRedirect = false;
 
 if (assetRendererFactory != null) {
 	long classPK = GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK));
@@ -69,6 +71,8 @@ if (assetRendererFactory != null) {
 	}
 
 	if (viewInContext) {
+		inheritRedirect = true;
+
 		String viewFullContentURLString = viewFullContentURL.toString();
 
 		viewFullContentURLString = HttpUtil.setParameter(viewFullContentURLString, "redirect", currentURL);
@@ -110,7 +114,7 @@ if ((assetRendererFactory == null) && viewInContext) {
 	viewURL = viewFullContentURL.toString();
 }
 
-viewURL = _checkViewURL(themeDisplay, viewURL, currentURL);
+viewURL = _checkViewURL(themeDisplay, viewURL, currentURL, inheritRedirect);
 
 String[] queryTerms = (String[])request.getAttribute("search.jsp-queryTerms");
 

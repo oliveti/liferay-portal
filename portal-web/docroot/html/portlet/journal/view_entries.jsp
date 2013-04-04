@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -19,8 +19,6 @@
 <%
 long folderId = GetterUtil.getLong((String)request.getAttribute("view.jsp-folderId"));
 
-String structureName = LanguageUtil.get(pageContext, "basic-web-content");
-
 String displayStyle = ParamUtil.getString(request, "displayStyle");
 
 if (Validator.isNull(displayStyle)) {
@@ -37,6 +35,8 @@ else {
 if (!ArrayUtil.contains(displayViews, displayStyle)) {
 	displayStyle = displayViews[0];
 }
+
+String ddmStructureName = LanguageUtil.get(pageContext, "basic-web-content");
 
 PortletURL portletURL = liferayPortletResponse.createRenderURL();
 
@@ -88,11 +88,18 @@ boolean showAddArticleButton = JournalPermission.contains(permissionChecker, sco
 			String structureId = StringPool.BLANK;
 
 			if (!displayTerms.getStructureId().equals("0")) {
-				JournalStructure structure = JournalStructureLocalServiceUtil.getStructure(scopeGroupId, displayTerms.getStructureId());
-
-				structureName = structure.getName(locale);
-
 				structureId = displayTerms.getStructureId();
+
+				DDMStructure ddmStructure = null;
+
+				try {
+					ddmStructure = DDMStructureLocalServiceUtil.getStructure(scopeGroupId, PortalUtil.getClassNameId(JournalArticle.class), displayTerms.getStructureId());
+				}
+				catch (NoSuchStructureException nsse) {
+					ddmStructure = DDMStructureLocalServiceUtil.getStructure(themeDisplay.getCompanyGroupId(), PortalUtil.getClassNameId(JournalArticle.class), displayTerms.getStructureId());
+				}
+
+				ddmStructureName = ddmStructure.getName(locale);
 			}
 			%>
 
@@ -105,7 +112,7 @@ boolean showAddArticleButton = JournalPermission.contains(permissionChecker, sco
 				<portlet:param name="structureId" value="<%= structureId %>" />
 			</liferay-portlet:renderURL>
 
-			<liferay-ui:message arguments="<%= HtmlUtil.escape(structureName) %>" key="showing-content-filtered-by-structure-x" /> (<a href="<%= addArticlesURL.toString() %>"><liferay-ui:message arguments="<%= HtmlUtil.escape(structureName) %>" key="add-new-x" /></a>)
+			<liferay-ui:message arguments="<%= HtmlUtil.escape(ddmStructureName) %>" key="showing-content-filtered-by-structure-x" /> (<a href="<%= addArticlesURL.toString() %>"><liferay-ui:message arguments="<%= HtmlUtil.escape(ddmStructureName) %>" key="add-new-x" /></a>)
 		</div>
 	</c:if>
 </c:if>
@@ -117,8 +124,9 @@ boolean showAddArticleButton = JournalPermission.contains(permissionChecker, sco
 		<div class="portlet-msg-info">
 
 			<%
-			JournalTemplate template = JournalTemplateLocalServiceUtil.getTemplate(scopeGroupId, displayTerms.getTemplateId());
-			JournalStructure structure = JournalStructureLocalServiceUtil.getStructure(scopeGroupId, template.getStructureId());
+			DDMTemplate ddmTemplate = DDMTemplateLocalServiceUtil.getTemplate(scopeGroupId, PortalUtil.getClassNameId(DDMStructure.class), displayTerms.getTemplateId());
+
+			DDMStructure ddmStructure = DDMStructureLocalServiceUtil.getStructure(ddmTemplate.getClassPK());
 			%>
 
 			<liferay-portlet:renderURL varImpl="addArticlesURL" windowState="<%= LiferayWindowState.MAXIMIZED.toString() %>">
@@ -127,11 +135,11 @@ boolean showAddArticleButton = JournalPermission.contains(permissionChecker, sco
 				<portlet:param name="redirect" value="<%= currentURL %>" />
 				<portlet:param name="backURL" value="<%= currentURL %>" />
 				<portlet:param name="folderId" value="<%= String.valueOf(JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID) %>" />
-				<portlet:param name="structureId" value="<%= template.getStructureId() %>" />
+				<portlet:param name="structureId" value="<%= ddmStructure.getStructureKey() %>" />
 				<portlet:param name="templateId" value="<%= displayTerms.getTemplateId() %>" />
 			</liferay-portlet:renderURL>
 
-			<liferay-ui:message arguments="<%= template.getName(locale) %>" key="showing-content-filtered-by-template-x" /> (<a href="<%= addArticlesURL.toString() %>"><liferay-ui:message arguments="<%= structure.getName(locale) %>" key="add-new-x" /></a>)
+			<liferay-ui:message arguments="<%= ddmTemplate.getName(locale) %>" key="showing-content-filtered-by-template-x" /> (<a href="<%= addArticlesURL.toString() %>"><liferay-ui:message arguments="<%= ddmStructure.getName(locale) %>" key="add-new-x" /></a>)
 		</div>
 	</c:if>
 </c:if>
@@ -160,7 +168,7 @@ if (Validator.isNotNull(displayTerms.getStructureId())) {
 
 searchTerms.setVersion(-1);
 
-if (displayTerms.getNavigation().equals("recent")) {
+if (displayTerms.isNavigationRecent()) {
 	searchContainer.setOrderByCol("create-date");
 	searchContainer.setOrderByType(orderByType);
 }
@@ -177,28 +185,35 @@ int total = 0;
 %>
 
 <c:choose>
-	<c:when test="<%= (Validator.isNotNull(keywords) || advancedSearch) %>">
-		<c:choose>
-			<c:when test="<%= PropsValues.JOURNAL_ARTICLES_SEARCH_WITH_INDEX %>">
-				<%@ include file="/html/portlet/journal/article_search_results_index.jspf" %>
-			</c:when>
-			<c:otherwise>
-				<%@ include file="/html/portlet/journal/article_search_results_database.jspf" %>
-			</c:otherwise>
-		</c:choose>
-	</c:when>
-	<c:when test='<%= displayTerms.getNavigation().equals("mine") %>'>
+	<c:when test='<%= displayTerms.getNavigation().equals("mine") || displayTerms.isNavigationRecent() %>'>
 
 		<%
-		results = JournalArticleServiceUtil.getArticlesByUserId(scopeGroupId, themeDisplay.getUserId(), JournalArticleConstants.CLASSNAME_ID_DEFAULT, entryStart, entryEnd, searchContainer.getOrderByComparator());
-		total = JournalArticleServiceUtil.getArticlesCountByUserId(scopeGroupId, themeDisplay.getUserId(), JournalArticleConstants.CLASSNAME_ID_DEFAULT);
+		long userId = 0;
+
+		if (displayTerms.getNavigation().equals("mine")) {
+			userId = themeDisplay.getUserId();
+		}
+
+		results = JournalArticleServiceUtil.getGroupArticles(scopeGroupId, userId, folderId, searchContainer.getStart(), searchContainer.getEnd(), searchContainer.getOrderByComparator());
+		total = JournalArticleServiceUtil.getGroupArticlesCount(scopeGroupId, userId, folderId);
 
 		searchContainer.setResults(results);
 		searchContainer.setTotal(total);
 		%>
 
 	</c:when>
-	<c:when test='<%= Validator.isNotNull(displayTerms.getStructureId()) || Validator.isNotNull(displayTerms.getTemplateId()) || displayTerms.getNavigation().equals("recent") %>'>
+	<c:when test="<%= Validator.isNotNull(displayTerms.getStructureId()) %>">
+
+		<%
+		results = JournalArticleServiceUtil.getArticlesByStructureId(scopeGroupId, displayTerms.getStructureId(), entryStart, entryEnd, searchContainer.getOrderByComparator());
+		total = JournalArticleServiceUtil.getArticlesCountByStructureId(scopeGroupId, searchTerms.getStructureId());
+
+		searchContainer.setResults(results);
+		searchContainer.setTotal(total);
+		%>
+
+	</c:when>
+	<c:when test="<%= Validator.isNotNull(displayTerms.getTemplateId()) %>">
 
 		<%
 		results = JournalArticleServiceUtil.search(company.getCompanyId(), searchTerms.getGroupId(), searchTerms.getFolderIds(), JournalArticleConstants.CLASSNAME_ID_DEFAULT, searchTerms.getKeywords(), searchTerms.getVersionObj(), null, searchTerms.getStructureId(), searchTerms.getTemplateId(), searchTerms.getDisplayDateGT(), searchTerms.getDisplayDateLT(), searchTerms.getStatusCode(), searchTerms.getReviewDate(), searchContainer.getStart(), searchContainer.getEnd(), searchContainer.getOrderByComparator());
@@ -232,10 +247,10 @@ request.setAttribute("view.jsp-total", String.valueOf(total));
 			<c:when test="<%= Validator.isNotNull(displayTerms.getStructureId()) %>">
 				<c:choose>
 					<c:when test="<%= total == 0 %>">
-						<liferay-ui:message arguments="<%= HtmlUtil.escape(structureName) %>" key="there-is-no-web-content-with-structure-x" />
+						<liferay-ui:message arguments="<%= HtmlUtil.escape(ddmStructureName) %>" key="there-is-no-web-content-with-structure-x" />
 					</c:when>
 					<c:otherwise>
-						<liferay-ui:message arguments="<%= HtmlUtil.escape(structureName) %>" key="there-is-no-web-content-with-structure-x-on-this-page" />
+						<liferay-ui:message arguments="<%= HtmlUtil.escape(ddmStructureName) %>" key="there-is-no-web-content-with-structure-x-on-this-page" />
 					</c:otherwise>
 				</c:choose>
 			</c:when>
@@ -270,7 +285,6 @@ for (int i = 0; i < results.size(); i++) {
 
 					tempRowURL.setParameter("struts_action", "/journal/edit_article");
 					tempRowURL.setParameter("redirect", currentURL);
-					tempRowURL.setParameter("originalRedirect", currentURL);
 					tempRowURL.setParameter("groupId", String.valueOf(curArticle.getGroupId()));
 					tempRowURL.setParameter("folderId", String.valueOf(curArticle.getFolderId()));
 					tempRowURL.setParameter("articleId", curArticle.getArticleId());
@@ -297,7 +311,6 @@ for (int i = 0; i < results.size(); i++) {
 
 						rowURL.setParameter("struts_action", "/journal/edit_article");
 						rowURL.setParameter("redirect", currentURL);
-						rowURL.setParameter("originalRedirect", currentURL);
 						rowURL.setParameter("groupId", String.valueOf(curArticle.getGroupId()));
 						rowURL.setParameter("folderId", String.valueOf(curArticle.getFolderId()));
 						rowURL.setParameter("articleId", curArticle.getArticleId());
@@ -354,12 +367,9 @@ for (int i = 0; i < results.size(); i++) {
 		<c:when test="<%= curFolder != null %>">
 
 			<%
-			int foldersCount = JournalFolderServiceUtil.getFoldersCount(scopeGroupId, curFolder.getFolderId());
-			int articlesCount = JournalArticleServiceUtil.getArticlesCount(scopeGroupId, curFolder.getFolderId());
-
 			String folderImage = "folder_empty";
 
-			if ((foldersCount + articlesCount) > 0) {
+			if (JournalFolderServiceUtil.getFoldersAndArticlesCount(scopeGroupId, curFolder.getFolderId()) > 0) {
 				folderImage = "folder_full_document";
 			}
 			%>
@@ -372,7 +382,6 @@ for (int i = 0; i < results.size(); i++) {
 
 					tempRowURL.setParameter("struts_action", "/journal/view");
 					tempRowURL.setParameter("redirect", currentURL);
-					tempRowURL.setParameter("originalRedirect", currentURL);
 					tempRowURL.setParameter("groupId", String.valueOf(curFolder.getGroupId()));
 					tempRowURL.setParameter("folderId", String.valueOf(curFolder.getFolderId()));
 
@@ -405,7 +414,6 @@ for (int i = 0; i < results.size(); i++) {
 
 						rowURL.setParameter("struts_action", "/journal/view");
 						rowURL.setParameter("redirect", currentURL);
-						rowURL.setParameter("originalRedirect", currentURL);
 						rowURL.setParameter("groupId", String.valueOf(curFolder.getGroupId()));
 						rowURL.setParameter("folderId", String.valueOf(curFolder.getFolderId()));
 						%>

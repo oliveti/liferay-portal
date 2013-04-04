@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -303,6 +303,16 @@ public class DLContentWrapper implements DLContent, ModelWrapper<DLContent> {
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_dlContent.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_dlContent.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_dlContent.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -330,6 +340,10 @@ public class DLContentWrapper implements DLContent, ModelWrapper<DLContent> {
 		return new DLContentWrapper(_dlContent.toEscapedModel());
 	}
 
+	public com.liferay.portlet.documentlibrary.model.DLContent toUnescapedModel() {
+		return new DLContentWrapper(_dlContent.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _dlContent.toString();
@@ -345,7 +359,7 @@ public class DLContentWrapper implements DLContent, ModelWrapper<DLContent> {
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public DLContent getWrappedDLContent() {
 		return _dlContent;

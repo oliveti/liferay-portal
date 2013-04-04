@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,21 +22,6 @@ int cur = ParamUtil.getInteger(request, SearchContainer.DEFAULT_CUR_PARAM);
 String redirect = ParamUtil.getString(request, "redirect");
 
 groupId = ParamUtil.getLong(request, "groupId", groupId);
-
-JournalStructure structure= null;
-
-if (Validator.isNotNull(structureId)) {
-	try {
-		structure = JournalStructureLocalServiceUtil.getStructure(groupId, structureId, true);
-	}
-	catch (NoSuchStructureException nsse) {
-		structureId = StringPool.BLANK;
-
-		preferences.setValue("structure-id", structureId);
-
-		preferences.store();
-	}
-}
 %>
 
 <liferay-portlet:actionURL portletConfiguration="true" var="configurationActionURL" />
@@ -45,7 +30,7 @@ if (Validator.isNotNull(structureId)) {
 <aui:form action="<%= configurationActionURL %>" method="post" name="fm1">
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= Constants.UPDATE %>" />
 	<aui:input name="redirect" type="hidden" value='<%= configurationRenderURL + StringPool.AMPERSAND + renderResponse.getNamespace() + "cur=" + cur %>' />
-	<aui:input name="preferences--structureId--" type="hidden" value="<%= structureId %>" />
+	<aui:input name="preferences--ddmStructureKey--" type="hidden" value="<%= ddmStructureKey %>" />
 
 	<liferay-ui:panel-container extended="<%= true %>" id="journalArticlesSettingsPanelContainer" persistState="<%= true %>">
 		<liferay-ui:panel collapsible="<%= true %>" extended="<%= true %>" id="journalArticlesFilterPanel" persistState="<%= true %>" title="filter">
@@ -92,23 +77,23 @@ if (Validator.isNotNull(structureId)) {
 				<aui:field-wrapper label="structure">
 
 					<%
-					String structureName = StringPool.BLANK;
-					String structureDescription = StringPool.BLANK;
+					String ddmStructureName = StringPool.BLANK;
+					String ddmStructureDescription = StringPool.BLANK;
 
-					if (structure != null) {
-						structureName = HtmlUtil.escape(structure.getName(locale));
-						structureDescription = HtmlUtil.escape(structure.getDescription(locale));
+					if (ddmStructure != null) {
+						ddmStructureName = HtmlUtil.escape(ddmStructure.getName(locale));
+						ddmStructureDescription = HtmlUtil.escape(ddmStructure.getDescription(locale));
 					}
 					else {
-						structureName = LanguageUtil.get(pageContext, "any");
+						ddmStructureName = LanguageUtil.get(pageContext, "any");
 					}
 					%>
 
 					<div id="<portlet:namespace />structure">
-						<%= structureName %>
+						<%= ddmStructureName %>
 
-						<c:if test="<%= Validator.isNotNull (structureDescription) %>">
-							<em>(<%= structureDescription %>)</em>
+						<c:if test="<%= Validator.isNotNull (ddmStructureDescription) %>">
+							<em>(<%= ddmStructureDescription %>)</em>
 						</c:if>
 					</div>
 
@@ -166,22 +151,33 @@ if (Validator.isNotNull(structureId)) {
 </aui:form>
 
 <aui:script>
-	Liferay.provide(
-		window,
-		'<portlet:namespace />openStructureSelector',
-		function() {
-			Liferay.Util.openWindow(
-				{
-					dialog: {
-						width: 680
-					},
-					id: '<portlet:namespace />structureSelector',
-					title: '<%= UnicodeLanguageUtil.get(pageContext, "structure") %>',
-					uri: '<liferay-portlet:renderURL portletName="<%= PortletKeys.JOURNAL %>" windowState="<%= LiferayWindowState.POP_UP.toString() %>"><portlet:param name="struts_action" value="/journal/select_structure" /><portlet:param name="structureId" value="<%= structureId %>" /></liferay-portlet:renderURL>'
-				}
-			);
-		}
-	);
+	function <portlet:namespace />openStructureSelector() {
+		Liferay.Util.openDDMPortlet(
+			{
+				availableFields: 'Liferay.FormBuilder.AVAILABLE_FIELDS.WCM_STRUCTURE',
+				classNameId: '<%= PortalUtil.getClassNameId(DDMStructure.class) %>',
+				classPK: <%= (ddmStructure != null) ? ddmStructure.getPrimaryKey() : 0 %>,
+				ddmResource: '<%= ddmResource %>',
+				dialog: {
+					width: 820
+				},
+				eventName: '<portlet:namespace />selectStructure',
+				groupId: <%= groupId %>,
+				storageType: '<%= PropsValues.JOURNAL_ARTICLE_STORAGE_TYPE %>',
+				structureName: 'structure',
+				structureType: 'com.liferay.portlet.journal.model.JournalArticle',
+				struts_action: '/dynamic_data_mapping/select_structure',
+				title: '<%= UnicodeLanguageUtil.get(pageContext, "structures") %>'
+			},
+			function(event){
+				var A = AUI();
+
+				document.<portlet:namespace />fm1.<portlet:namespace />ddmStructureKey.value = event.ddmstructurekey;
+
+				A.one('#<portlet:namespace />structure').html(event.name + ' <em>(' + event.ddmstructureid + ')</em>');
+			}
+		);
+	}
 
 	Liferay.provide(
 		window,
@@ -189,26 +185,9 @@ if (Validator.isNotNull(structureId)) {
 		function() {
 			var A = AUI();
 
-			document.<portlet:namespace />fm1.<portlet:namespace />structureId.value = "";
+			document.<portlet:namespace />fm1.<portlet:namespace />ddmStructureKey.value = "";
 
 			A.one('#<portlet:namespace />structure').html('<%= UnicodeLanguageUtil.get(pageContext, "any") %>');
-		},
-		['aui-base']
-	);
-
-	Liferay.provide(
-		window,
-		'<%= PortalUtil.getPortletNamespace(PortletKeys.JOURNAL) %>selectStructure',
-		function(structureId, name, dialog) {
-			var A = AUI();
-
-			document.<portlet:namespace />fm1.<portlet:namespace />structureId.value = structureId;
-
-			A.one('#<portlet:namespace />structure').html(structureId + ' <em>(' + name + ')</em>');
-
-			if (dialog) {
-				dialog.close();
-			}
 		},
 		['aui-base']
 	);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -95,6 +95,12 @@ public class ExpandoColumnImpl extends ExpandoColumnBaseImpl {
 			}
 			else if (type == ExpandoColumnConstants.STRING_ARRAY) {
 				return value.getStringArray();
+			}
+			else if (type == ExpandoColumnConstants.STRING_ARRAY_LOCALIZED) {
+				return (Serializable)value.getStringArrayMap();
+			}
+			else if (type == ExpandoColumnConstants.STRING_LOCALIZED) {
+				return (Serializable)value.getStringMap();
 			}
 			else {
 				return value.getString();

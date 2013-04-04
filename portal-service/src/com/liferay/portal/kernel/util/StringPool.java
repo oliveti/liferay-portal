@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -55,6 +55,8 @@ public class StringPool {
 
 	public static final String COMMA_AND_SPACE = ", ";
 
+	public static final String CONTENT = "content";
+
 	public static final String DASH = "-";
 
 	public static final String DEFAULT_CHARSET_NAME =
@@ -87,6 +89,8 @@ public class StringPool {
 	public static final String DOUBLE_SPACE = "  ";
 
 	public static final String DOUBLE_UNDERLINE = "__";
+
+	public static final String[] EMPTY_ARRAY = new String[0];
 
 	public static final String EQUAL = "=";
 
@@ -177,6 +181,8 @@ public class StringPool {
 	public static final String THREE_SPACES = "   ";
 
 	public static final String TILDE = "~";
+
+	public static final String TRIPLE_PERIOD = "...";
 
 	public static final String TRUE = "true";
 

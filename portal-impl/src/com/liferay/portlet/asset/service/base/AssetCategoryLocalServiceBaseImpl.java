@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -171,7 +171,7 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -191,7 +191,7 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -244,12 +244,12 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 	}
 
 	/**
-	 * Returns the asset category with the UUID in the group.
+	 * Returns the asset category matching the UUID and group.
 	 *
-	 * @param uuid the UUID of asset category
-	 * @param groupId the group id of the asset category
-	 * @return the asset category
-	 * @throws PortalException if a asset category with the UUID in the group could not be found
+	 * @param uuid the asset category's UUID
+	 * @param groupId the primary key of the group
+	 * @return the matching asset category
+	 * @throws PortalException if a matching asset category could not be found
 	 * @throws SystemException if a system exception occurred
 	 */
 	public AssetCategory getAssetCategoryByUuidAndGroupId(String uuid,
@@ -261,7 +261,7 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 	 * Returns a range of all the asset categories.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of asset categories
@@ -295,6 +295,136 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 	public AssetCategory updateAssetCategory(AssetCategory assetCategory)
 		throws SystemException {
 		return assetCategoryPersistence.update(assetCategory);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addAssetEntryAssetCategory(long entryId, long categoryId)
+		throws SystemException {
+		assetEntryPersistence.addAssetCategory(entryId, categoryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addAssetEntryAssetCategory(long entryId,
+		AssetCategory assetCategory) throws SystemException {
+		assetEntryPersistence.addAssetCategory(entryId, assetCategory);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addAssetEntryAssetCategories(long entryId, long[] categoryIds)
+		throws SystemException {
+		assetEntryPersistence.addAssetCategories(entryId, categoryIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addAssetEntryAssetCategories(long entryId,
+		List<AssetCategory> AssetCategories) throws SystemException {
+		assetEntryPersistence.addAssetCategories(entryId, AssetCategories);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void clearAssetEntryAssetCategories(long entryId)
+		throws SystemException {
+		assetEntryPersistence.clearAssetCategories(entryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteAssetEntryAssetCategory(long entryId, long categoryId)
+		throws SystemException {
+		assetEntryPersistence.removeAssetCategory(entryId, categoryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteAssetEntryAssetCategory(long entryId,
+		AssetCategory assetCategory) throws SystemException {
+		assetEntryPersistence.removeAssetCategory(entryId, assetCategory);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteAssetEntryAssetCategories(long entryId, long[] categoryIds)
+		throws SystemException {
+		assetEntryPersistence.removeAssetCategories(entryId, categoryIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteAssetEntryAssetCategories(long entryId,
+		List<AssetCategory> AssetCategories) throws SystemException {
+		assetEntryPersistence.removeAssetCategories(entryId, AssetCategories);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<AssetCategory> getAssetEntryAssetCategories(long entryId)
+		throws SystemException {
+		return assetEntryPersistence.getAssetCategories(entryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<AssetCategory> getAssetEntryAssetCategories(long entryId,
+		int start, int end) throws SystemException {
+		return assetEntryPersistence.getAssetCategories(entryId, start, end);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<AssetCategory> getAssetEntryAssetCategories(long entryId,
+		int start, int end, OrderByComparator orderByComparator)
+		throws SystemException {
+		return assetEntryPersistence.getAssetCategories(entryId, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getAssetEntryAssetCategoriesCount(long entryId)
+		throws SystemException {
+		return assetEntryPersistence.getAssetCategoriesSize(entryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasAssetEntryAssetCategory(long entryId, long categoryId)
+		throws SystemException {
+		return assetEntryPersistence.containsAssetCategory(entryId, categoryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasAssetEntryAssetCategories(long entryId)
+		throws SystemException {
+		return assetEntryPersistence.containsAssetCategories(entryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void setAssetEntryAssetCategories(long entryId, long[] categoryIds)
+		throws SystemException {
+		assetEntryPersistence.setAssetCategories(entryId, categoryIds);
 	}
 
 	/**

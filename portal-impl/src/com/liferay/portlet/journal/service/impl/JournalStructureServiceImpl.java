@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -79,6 +79,17 @@ public class JournalStructureServiceImpl
 			getPermissionChecker(), groupId, structureId, ActionKeys.VIEW);
 
 		return journalStructureLocalService.getStructure(groupId, structureId);
+	}
+
+	public JournalStructure getStructure(
+			long groupId, String structureId, boolean includeGlobalStructures)
+		throws PortalException, SystemException {
+
+		JournalStructurePermission.check(
+			getPermissionChecker(), groupId, structureId, ActionKeys.VIEW);
+
+		return journalStructureLocalService.getStructure(
+			groupId, structureId, includeGlobalStructures);
 	}
 
 	public List<JournalStructure> getStructures(long groupId)

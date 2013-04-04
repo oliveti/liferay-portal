@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -123,6 +123,7 @@ public class ShoppingItemModelImpl extends BaseModelImpl<ShoppingItem>
 	public static long MEDIUMIMAGEID_COLUMN_BITMASK = 16L;
 	public static long SKU_COLUMN_BITMASK = 32L;
 	public static long SMALLIMAGEID_COLUMN_BITMASK = 64L;
+	public static long ITEMID_COLUMN_BITMASK = 128L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -210,7 +211,7 @@ public class ShoppingItemModelImpl extends BaseModelImpl<ShoppingItem>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_itemId);
+		return _itemId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -973,13 +974,12 @@ public class ShoppingItemModelImpl extends BaseModelImpl<ShoppingItem>
 
 	@Override
 	public ShoppingItem toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (ShoppingItem)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (ShoppingItem)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -1479,7 +1479,7 @@ public class ShoppingItemModelImpl extends BaseModelImpl<ShoppingItem>
 	}
 
 	private static ClassLoader _classLoader = ShoppingItem.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			ShoppingItem.class
 		};
 	private long _itemId;
@@ -1531,5 +1531,5 @@ public class ShoppingItemModelImpl extends BaseModelImpl<ShoppingItem>
 	private boolean _setOriginalLargeImageId;
 	private String _largeImageURL;
 	private long _columnBitmask;
-	private ShoppingItem _escapedModelProxy;
+	private ShoppingItem _escapedModel;
 }

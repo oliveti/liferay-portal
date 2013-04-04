@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -65,6 +65,20 @@ public abstract class BaseModelImpl<T> implements BaseModel<T> {
 		_cachedModel = cachedModel;
 	}
 
+	public void setExpandoBridgeAttributes(BaseModel<?> baseModel) {
+		ExpandoBridge thisExpandoBridge = getExpandoBridge();
+
+		ExpandoBridge baseModelExpandoBridge = baseModel.getExpandoBridge();
+
+		thisExpandoBridge.setAttributes(baseModelExpandoBridge.getAttributes());
+	}
+
+	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge) {
+		ExpandoBridge thisExpandoBridge = getExpandoBridge();
+
+		thisExpandoBridge.setAttributes(expandoBridge.getAttributes());
+	}
+
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext) {
 		throw new UnsupportedOperationException();
 	}
@@ -82,6 +96,10 @@ public abstract class BaseModelImpl<T> implements BaseModel<T> {
 
 	public T toEscapedModel() {
 		throw new UnsupportedOperationException();
+	}
+
+	public T toUnescapedModel() {
+		return (T)this;
 	}
 
 	protected Locale getLocale(String languageId) {

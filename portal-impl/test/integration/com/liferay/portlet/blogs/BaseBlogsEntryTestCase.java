@@ -19,12 +19,11 @@ import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.service.AssetEntryLocalServiceUtil;
 import com.liferay.portlet.blogs.model.BlogsEntry;
 import com.liferay.portlet.blogs.service.BlogsEntryLocalServiceUtil;
-import com.liferay.portlet.blogs.service.BlogsEntryServiceUtil;
 
 import java.io.InputStream;
 
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -45,9 +44,9 @@ public class BaseBlogsEntryTestCase {
 	protected BlogsEntry addBlogsEntry(Group group, boolean approved)
 		throws Exception {
 
-		ServiceContext serviceContext = ServiceTestUtil.getServiceContext();
+		ServiceContext serviceContext = ServiceTestUtil.getServiceContext(
+			group.getGroupId());
 
-		serviceContext.setScopeGroupId(group.getGroupId());
 		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_SAVE_DRAFT);
 
 		String title = "Title";
@@ -66,11 +65,12 @@ public class BaseBlogsEntryTestCase {
 		String smallImageFileName = StringPool.BLANK;
 		InputStream smallImageInputStream = null;
 
-		BlogsEntry blogsEntry = BlogsEntryServiceUtil.addEntry(
-			title, description, content, displayDateMonth, displayDateDay,
-			displayDateYear, displayDateHour, displayDateMinute, allowPingbacks,
-			allowTrackbacks, trackbacks, smallImage, smallImageURL,
-			smallImageFileName, smallImageInputStream, serviceContext);
+		BlogsEntry blogsEntry = BlogsEntryLocalServiceUtil.addEntry(
+			getUserId(), title, description, content, displayDateMonth,
+			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
+			allowPingbacks, allowTrackbacks, trackbacks, smallImage,
+			smallImageURL, smallImageFileName, smallImageInputStream,
+			serviceContext);
 
 		if (approved) {
 			BlogsEntryLocalServiceUtil.updateStatus(

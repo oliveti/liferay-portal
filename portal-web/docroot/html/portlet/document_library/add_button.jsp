@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -113,8 +113,8 @@ if ((folder == null) || folder.isSupportsMetadata()) {
 	</c:if>
 </liferay-ui:icon-menu>
 
-<aui:script use="aui-base,aui-swf">
-	if (A.SWF.isFlashVersionAtLeast(9)) {
+<aui:script use="aui-base,uploader">
+	if (!A.UA.ios && (A.Uploader.TYPE != 'none')) {
 		var uploadMultipleDocumentsIcon = A.all('.upload-multiple-documents:hidden');
 
 		uploadMultipleDocumentsIcon.show();

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -48,6 +48,14 @@ public class DLFileShortcutTrashRenderer extends BaseTrashRenderer {
 			fileShortcut.getToFileEntryId());
 	}
 
+	public String getClassName() {
+		return DLFileShortcut.class.getName();
+	}
+
+	public long getClassPK() {
+		return _fileShortcut.getPrimaryKey();
+	}
+
 	@Override
 	public String getIconPath(ThemeDisplay themeDisplay) {
 		return themeDisplay.getPathThemeImages() + "/file_system/small/" +
@@ -56,21 +64,6 @@ public class DLFileShortcutTrashRenderer extends BaseTrashRenderer {
 
 	public String getPortletId() {
 		return PortletKeys.DOCUMENT_LIBRARY;
-	}
-
-	@Override
-	public String getRestorePath(RenderRequest renderRequest) {
-		if (_fileShortcut.isInTrashFolder()) {
-			renderRequest.setAttribute(
-				WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY, _fileEntry);
-			renderRequest.setAttribute(
-				WebKeys.DOCUMENT_LIBRARY_FILE_SHORTCUT, _fileShortcut);
-
-			return
-				"/html/portlet/document_library/trash/file_entry_restore.jsp";
-		}
-
-		return null;
 	}
 
 	public String getSummary(Locale locale) {
@@ -86,6 +79,7 @@ public class DLFileShortcutTrashRenderer extends BaseTrashRenderer {
 		return TYPE;
 	}
 
+	@Override
 	public String render(
 			RenderRequest renderRequest, RenderResponse renderResponse,
 			String template)

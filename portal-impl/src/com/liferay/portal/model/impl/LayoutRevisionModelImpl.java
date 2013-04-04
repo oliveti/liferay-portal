@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -125,6 +125,7 @@ public class LayoutRevisionModelImpl extends BaseModelImpl<LayoutRevision>
 	public static long PARENTLAYOUTREVISIONID_COLUMN_BITMASK = 8L;
 	public static long PLID_COLUMN_BITMASK = 16L;
 	public static long STATUS_COLUMN_BITMASK = 32L;
+	public static long MODIFIEDDATE_COLUMN_BITMASK = 64L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -209,7 +210,7 @@ public class LayoutRevisionModelImpl extends BaseModelImpl<LayoutRevision>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_layoutRevisionId);
+		return _layoutRevisionId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -1266,7 +1267,7 @@ public class LayoutRevisionModelImpl extends BaseModelImpl<LayoutRevision>
 	}
 
 	/**
-	 * @deprecated {@link #isApproved}
+	 * @deprecated As of 6.1.0, replaced by {@link #isApproved}
 	 */
 	public boolean getApproved() {
 		return isApproved();
@@ -1387,13 +1388,12 @@ public class LayoutRevisionModelImpl extends BaseModelImpl<LayoutRevision>
 
 	@Override
 	public LayoutRevision toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (LayoutRevision)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (LayoutRevision)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -1890,7 +1890,7 @@ public class LayoutRevisionModelImpl extends BaseModelImpl<LayoutRevision>
 	}
 
 	private static ClassLoader _classLoader = LayoutRevision.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			LayoutRevision.class
 		};
 	private long _layoutRevisionId;
@@ -1944,5 +1944,5 @@ public class LayoutRevisionModelImpl extends BaseModelImpl<LayoutRevision>
 	private String _statusByUserName;
 	private Date _statusDate;
 	private long _columnBitmask;
-	private LayoutRevision _escapedModelProxy;
+	private LayoutRevision _escapedModel;
 }

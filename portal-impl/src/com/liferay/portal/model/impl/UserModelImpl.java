@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -106,6 +106,8 @@ public class UserModelImpl extends BaseModelImpl<User> implements UserModel {
 		};
 	public static final String TABLE_SQL_CREATE = "create table User_ (uuid_ VARCHAR(75) null,userId LONG not null primary key,companyId LONG,createDate DATE null,modifiedDate DATE null,defaultUser BOOLEAN,contactId LONG,password_ VARCHAR(75) null,passwordEncrypted BOOLEAN,passwordReset BOOLEAN,passwordModifiedDate DATE null,digest VARCHAR(255) null,reminderQueryQuestion VARCHAR(75) null,reminderQueryAnswer VARCHAR(75) null,graceLoginCount INTEGER,screenName VARCHAR(75) null,emailAddress VARCHAR(75) null,facebookId LONG,ldapServerId LONG,openId VARCHAR(1024) null,portraitId LONG,languageId VARCHAR(75) null,timeZoneId VARCHAR(75) null,greeting VARCHAR(255) null,comments STRING null,firstName VARCHAR(75) null,middleName VARCHAR(75) null,lastName VARCHAR(75) null,jobTitle VARCHAR(100) null,loginDate DATE null,loginIP VARCHAR(75) null,lastLoginDate DATE null,lastLoginIP VARCHAR(75) null,lastFailedLoginDate DATE null,failedLoginAttempts INTEGER,lockout BOOLEAN,lockoutDate DATE null,agreedToTermsOfUse BOOLEAN,emailAddressVerified BOOLEAN,status INTEGER)";
 	public static final String TABLE_SQL_DROP = "drop table User_";
+	public static final String ORDER_BY_JPQL = " ORDER BY user.userId ASC";
+	public static final String ORDER_BY_SQL = " ORDER BY User_.userId ASC";
 	public static final String DATA_SOURCE = "liferayDataSource";
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
 	public static final String TX_MANAGER = "liferayTransactionManager";
@@ -264,7 +266,7 @@ public class UserModelImpl extends BaseModelImpl<User> implements UserModel {
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_userId);
+		return _userId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -1218,13 +1220,12 @@ public class UserModelImpl extends BaseModelImpl<User> implements UserModel {
 
 	@Override
 	public User toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (User)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (User)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -1877,9 +1878,7 @@ public class UserModelImpl extends BaseModelImpl<User> implements UserModel {
 	}
 
 	private static ClassLoader _classLoader = User.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
-			User.class
-		};
+	private static Class<?>[] _escapedModelInterfaces = new Class[] { User.class };
 	private String _uuid;
 	private String _originalUuid;
 	private long _userId;
@@ -1942,5 +1941,5 @@ public class UserModelImpl extends BaseModelImpl<User> implements UserModel {
 	private int _originalStatus;
 	private boolean _setOriginalStatus;
 	private long _columnBitmask;
-	private User _escapedModelProxy;
+	private User _escapedModel;
 }

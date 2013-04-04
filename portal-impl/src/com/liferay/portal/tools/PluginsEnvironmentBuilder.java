@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -15,7 +15,6 @@
 package com.liferay.portal.tools;
 
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.SortedArrayList;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -34,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.oro.io.GlobFilenameFilter;
 import org.apache.tools.ant.DirectoryScanner;
@@ -65,10 +66,27 @@ public class PluginsEnvironmentBuilder {
 
 		String dirName = dir.getCanonicalPath();
 
-		String[] fileNames = ds.getIncludedFiles();
+		for (String fileName : ds.getIncludedFiles()) {
+			setupWarProject(dirName, fileName);
+		}
 
-		for (String fileName : fileNames) {
-			setupProject(dirName, fileName);
+		ds = new DirectoryScanner();
+
+		ds.setBasedir(dir);
+		ds.setIncludes(new String[] {"**\\build.xml"});
+
+		ds.scan();
+
+		for (String fileName : ds.getIncludedFiles()) {
+			String content = _fileUtil.read(dirName + "/" + fileName);
+
+			if (!content.contains(
+					"<import file=\"../build-common-shared.xml\" />")) {
+
+				continue;
+			}
+
+			setupJarProject(dirName, fileName);
 		}
 	}
 
@@ -145,6 +163,17 @@ public class PluginsEnvironmentBuilder {
 
 		for (String currentImportShared : importShared) {
 			jars.add(currentImportShared + ".jar");
+
+			File currentImportSharedLibDir = new File(
+				projectDir, "/../../shared/" + currentImportShared + "/lib");
+
+			if (!currentImportSharedLibDir.exists()) {
+				continue;
+			}
+
+			for (File f : currentImportSharedLibDir.listFiles()) {
+				jars.add(f.getName());
+			}
 		}
 
 		return jars;
@@ -180,7 +209,21 @@ public class PluginsEnvironmentBuilder {
 		return jars;
 	}
 
-	protected void setupProject(String dirName, String fileName)
+	protected void setupJarProject(String dirName, String fileName)
+		throws Exception {
+
+		File buildFile = new File(dirName + "/" + fileName);
+
+		File projectDir = new File(buildFile.getParent());
+
+		File libDir = new File(projectDir, "lib");
+
+		List<String> dependencyJars = Collections.emptyList();
+
+		writeEclipseFiles(libDir, projectDir, dependencyJars);
+	}
+
+	protected void setupWarProject(String dirName, String fileName)
 		throws Exception {
 
 		File propertiesFile = new File(dirName + "/" + fileName);
@@ -189,7 +232,7 @@ public class PluginsEnvironmentBuilder {
 
 		properties.load(new FileInputStream(propertiesFile));
 
-		List<String> jars = new SortedArrayList<String>();
+		Set<String> jars = new TreeSet<String>();
 
 		jars.addAll(getCommonJars());
 
@@ -352,6 +395,10 @@ public class PluginsEnvironmentBuilder {
 
 		if (addJunitJars) {
 			addClasspathEntry(sb, "/portal/lib/development/junit.jar");
+			addClasspathEntry(sb, "/portal/lib/development/mockito.jar");
+			addClasspathEntry(
+				sb, "/portal/lib/development/powermock-mockito.jar");
+			addClasspathEntry(sb, "/portal/lib/development/spring-test.jar");
 			addClasspathEntry(sb, "/portal/lib/portal/commons-io.jar");
 		}
 
@@ -392,8 +439,11 @@ public class PluginsEnvironmentBuilder {
 			if (libDirPath.contains("/tmp/WEB-INF/lib")) {
 				addClasspathEntry(sb, "tmp/WEB-INF/lib/" + jar);
 			}
-			else {
+			else if (libDirPath.contains("/docroot/WEB-INF/lib")) {
 				addClasspathEntry(sb, "docroot/WEB-INF/lib/" + jar);
+			}
+			else {
+				addClasspathEntry(sb, "lib/" + jar);
 			}
 		}
 
@@ -530,14 +580,14 @@ public class PluginsEnvironmentBuilder {
 		_fileUtil.write(projectFile, sb.toString());
 	}
 
-	private static final String _BRANCH = "trunk";
+	private static final String _BRANCH = "master";
 
 	private static final String[] _SOURCE_DIR_NAMES = new String[] {
 		"docroot/WEB-INF/ext-impl/src", "docroot/WEB-INF/ext-service/src",
 		"docroot/WEB-INF/ext-util-bridges/src",
 		"docroot/WEB-INF/ext-util-java/src",
 		"docroot/WEB-INF/ext-util-taglib/src", "docroot/WEB-INF/service",
-		"docroot/WEB-INF/src"
+		"docroot/WEB-INF/src", "src"
 	};
 
 	private static final String[] _TEST_TYPES = {"integration", "unit"};

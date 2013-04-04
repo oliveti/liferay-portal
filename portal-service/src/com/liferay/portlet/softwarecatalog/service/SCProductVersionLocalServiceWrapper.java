@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -107,7 +107,7 @@ public class SCProductVersionLocalServiceWrapper
 	* Performs a dynamic query on the database and returns a range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCProductVersionModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -128,7 +128,7 @@ public class SCProductVersionLocalServiceWrapper
 	* Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCProductVersionModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -193,7 +193,7 @@ public class SCProductVersionLocalServiceWrapper
 	* Returns a range of all the s c product versions.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCProductVersionModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param start the lower bound of the range of s c product versions
@@ -229,6 +229,166 @@ public class SCProductVersionLocalServiceWrapper
 		com.liferay.portlet.softwarecatalog.model.SCProductVersion scProductVersion)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _scProductVersionLocalService.updateSCProductVersion(scProductVersion);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addSCFrameworkVersionSCProductVersion(long frameworkVersionId,
+		long productVersionId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.addSCFrameworkVersionSCProductVersion(frameworkVersionId,
+			productVersionId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addSCFrameworkVersionSCProductVersion(long frameworkVersionId,
+		com.liferay.portlet.softwarecatalog.model.SCProductVersion scProductVersion)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.addSCFrameworkVersionSCProductVersion(frameworkVersionId,
+			scProductVersion);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId, long[] productVersionIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.addSCFrameworkVersionSCProductVersions(frameworkVersionId,
+			productVersionIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId,
+		java.util.List<com.liferay.portlet.softwarecatalog.model.SCProductVersion> SCProductVersions)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.addSCFrameworkVersionSCProductVersions(frameworkVersionId,
+			SCProductVersions);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void clearSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.clearSCFrameworkVersionSCProductVersions(frameworkVersionId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteSCFrameworkVersionSCProductVersion(
+		long frameworkVersionId, long productVersionId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.deleteSCFrameworkVersionSCProductVersion(frameworkVersionId,
+			productVersionId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteSCFrameworkVersionSCProductVersion(
+		long frameworkVersionId,
+		com.liferay.portlet.softwarecatalog.model.SCProductVersion scProductVersion)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.deleteSCFrameworkVersionSCProductVersion(frameworkVersionId,
+			scProductVersion);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId, long[] productVersionIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.deleteSCFrameworkVersionSCProductVersions(frameworkVersionId,
+			productVersionIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId,
+		java.util.List<com.liferay.portlet.softwarecatalog.model.SCProductVersion> SCProductVersions)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.deleteSCFrameworkVersionSCProductVersions(frameworkVersionId,
+			SCProductVersions);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public java.util.List<com.liferay.portlet.softwarecatalog.model.SCProductVersion> getSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scProductVersionLocalService.getSCFrameworkVersionSCProductVersions(frameworkVersionId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public java.util.List<com.liferay.portlet.softwarecatalog.model.SCProductVersion> getSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scProductVersionLocalService.getSCFrameworkVersionSCProductVersions(frameworkVersionId,
+			start, end);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public java.util.List<com.liferay.portlet.softwarecatalog.model.SCProductVersion> getSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scProductVersionLocalService.getSCFrameworkVersionSCProductVersions(frameworkVersionId,
+			start, end, orderByComparator);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public int getSCFrameworkVersionSCProductVersionsCount(
+		long frameworkVersionId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scProductVersionLocalService.getSCFrameworkVersionSCProductVersionsCount(frameworkVersionId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public boolean hasSCFrameworkVersionSCProductVersion(
+		long frameworkVersionId, long productVersionId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scProductVersionLocalService.hasSCFrameworkVersionSCProductVersion(frameworkVersionId,
+			productVersionId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public boolean hasSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scProductVersionLocalService.hasSCFrameworkVersionSCProductVersions(frameworkVersionId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void setSCFrameworkVersionSCProductVersions(
+		long frameworkVersionId, long[] productVersionIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scProductVersionLocalService.setSCFrameworkVersionSCProductVersions(frameworkVersionId,
+			productVersionIds);
 	}
 
 	/**
@@ -319,14 +479,14 @@ public class SCProductVersionLocalServiceWrapper
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedService}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedService}
 	 */
 	public SCProductVersionLocalService getWrappedSCProductVersionLocalService() {
 		return _scProductVersionLocalService;
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #setWrappedService}
+	 * @deprecated As of 6.1.0, replaced by {@link #setWrappedService}
 	 */
 	public void setWrappedSCProductVersionLocalService(
 		SCProductVersionLocalService scProductVersionLocalService) {

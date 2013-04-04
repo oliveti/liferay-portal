@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -63,7 +63,10 @@ portletURL.setParameter("struts_action", "/document_library/view");
 portletURL.setParameter("folderId", String.valueOf(folderId));
 portletURL.setParameter("displayStyle", String.valueOf(displayStyle));
 
-SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, null, null, "cur2", entriesPerPage, portletURL, null, null);
+int entryStart = ParamUtil.getInteger(request, "entryStart");
+int entryEnd = ParamUtil.getInteger(request, "entryEnd", entriesPerPage);
+
+SearchContainer searchContainer = new SearchContainer(liferayPortletRequest, null, null, "cur2", entryEnd / (entryEnd - entryStart), entryEnd - entryStart, portletURL, null, null);
 
 List<String> headerNames = new ArrayList<String>();
 
@@ -118,9 +121,6 @@ searchContainer.setOrderByComparator(orderByComparator);
 searchContainer.setOrderByJS("javascript:" + liferayPortletResponse.getNamespace() + "sortEntries('" + folderId + "', 'orderKey', 'orderByType');");
 searchContainer.setOrderByType(orderByType);
 
-int entryStart = ParamUtil.getInteger(request, "entryStart", searchContainer.getStart());
-int entryEnd = ParamUtil.getInteger(request, "entryEnd", searchContainer.getEnd());
-
 List results = null;
 int total = 0;
 
@@ -140,6 +140,20 @@ if (fileEntryTypeId >= 0) {
 	searchContext.setStart(entryStart);
 
 	Hits hits = indexer.search(searchContext);
+
+	total = hits.getLength();
+
+	searchContainer.setTotal(total);
+
+	if (total <= entryStart) {
+		entryStart = (searchContainer.getCur() - 1) * searchContainer.getDelta();
+		entryEnd = entryStart + searchContainer.getDelta();
+
+		searchContext.setEnd(entryEnd);
+		searchContext.setStart(entryStart);
+
+		hits = indexer.search(searchContext);
+	}
 
 	results = new ArrayList();
 
@@ -163,8 +177,6 @@ if (fileEntryTypeId >= 0) {
 
 		results.add(fileEntry);
 	}
-
-	total = hits.getLength();
 }
 else {
 	if (navigation.equals("home")) {
@@ -177,12 +189,31 @@ else {
 			assetEntryQuery.setExcludeZeroViewCount(false);
 			assetEntryQuery.setStart(entryStart);
 
-			results = AssetEntryServiceUtil.getEntries(assetEntryQuery);
 			total = AssetEntryServiceUtil.getEntriesCount(assetEntryQuery);
+
+			searchContainer.setTotal(total);
+
+			if (total <= entryStart) {
+				entryStart = (searchContainer.getCur() - 1) * searchContainer.getDelta();
+				entryEnd = entryStart + searchContainer.getDelta();
+
+				assetEntryQuery.setEnd(entryEnd);
+				assetEntryQuery.setStart(entryStart);
+			}
+
+			results = AssetEntryServiceUtil.getEntries(assetEntryQuery);
 		}
 		else {
-			results = DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcuts(repositoryId, folderId, status, false, entryStart, entryEnd, searchContainer.getOrderByComparator());
 			total = DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcutsCount(repositoryId, folderId, status, false);
+
+			searchContainer.setTotal(total);
+
+			if (total <= entryStart) {
+				entryStart = (searchContainer.getCur() - 1) * searchContainer.getDelta();
+				entryEnd = entryStart + searchContainer.getDelta();
+			}
+
+			results = DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcuts(repositoryId, folderId, status, false, entryStart, entryEnd, searchContainer.getOrderByComparator());
 		}
 	}
 	else if (navigation.equals("mine") || navigation.equals("recent")) {
@@ -192,16 +223,107 @@ else {
 			groupFileEntriesUserId = user.getUserId();
 		}
 
-		results = DLAppServiceUtil.getGroupFileEntries(repositoryId, groupFileEntriesUserId, folderId, null, status, entryStart, entryEnd, null);
 		total = DLAppServiceUtil.getGroupFileEntriesCount(repositoryId, groupFileEntriesUserId, folderId, null, status);
+
+		searchContainer.setTotal(total);
+
+		if (total <= entryStart) {
+			entryStart = (searchContainer.getCur() - 1) * searchContainer.getDelta();
+			entryEnd = entryStart + searchContainer.getDelta();
+		}
+
+		results = DLAppServiceUtil.getGroupFileEntries(repositoryId, groupFileEntriesUserId, folderId, null, status, entryStart, entryEnd, null);
 	}
 }
 
 searchContainer.setResults(results);
-searchContainer.setTotal(total);
 
 request.setAttribute("view.jsp-total", String.valueOf(total));
+
+request.setAttribute("view_entries.jsp-entryStart", String.valueOf(entryStart));
+request.setAttribute("view_entries.jsp-entryEnd", String.valueOf(entryEnd));
 %>
+
+<div class="subscribe-action">
+	<c:if test="<%= DLPermission.contains(permissionChecker, scopeGroupId, ActionKeys.SUBSCRIBE) && ((folder == null) || folder.isSupportsSubscribing()) && (DLUtil.getEmailFileEntryAddedEnabled(preferences) || DLUtil.getEmailFileEntryUpdatedEnabled(preferences)) %>">
+
+		<%
+		boolean subscribed = false;
+		boolean unsubscribable = true;
+
+		if (fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL) {
+			subscribed = DLUtil.isSubscribedToFolder(themeDisplay.getCompanyId(), scopeGroupId, user.getUserId(), folderId);
+
+			if (subscribed) {
+				if (!DLUtil.isSubscribedToFolder(themeDisplay.getCompanyId(), scopeGroupId, user.getUserId(), folderId, false)) {
+					unsubscribable = false;
+				}
+			}
+		}
+		else {
+			subscribed = DLUtil.isSubscribedToFileEntryType(themeDisplay.getCompanyId(), scopeGroupId, user.getUserId(), fileEntryTypeId);
+		}
+		%>
+
+		<c:choose>
+			<c:when test="<%= subscribed %>">
+				<c:choose>
+					<c:when test="<%= unsubscribable %>">
+						<portlet:actionURL var="unsubscribeURL">
+							<portlet:param name="struts_action" value='<%= (fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL) ? "/document_library/edit_folder" : "/document_library/edit_file_entry_type" %>' />
+							<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.UNSUBSCRIBE %>" />
+							<portlet:param name="redirect" value="<%= currentURL %>" />
+
+							<c:choose>
+								<c:when test="<%= fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL %>">
+									<portlet:param name="folderId" value="<%= String.valueOf(folderId) %>" />
+								</c:when>
+								<c:otherwise>
+									<portlet:param name="fileEntryTypeId" value="<%= String.valueOf(fileEntryTypeId) %>" />
+								</c:otherwise>
+							</c:choose>
+						</portlet:actionURL>
+
+						<liferay-ui:icon
+							image="unsubscribe"
+							label="<%= true %>"
+							url="<%= unsubscribeURL %>"
+						/>
+					</c:when>
+					<c:otherwise>
+						<liferay-ui:icon
+							image="unsubscribe"
+							label="<%= true %>"
+							message="subscribed-to-a-parent-folder"
+						/>
+					</c:otherwise>
+				</c:choose>
+			</c:when>
+			<c:otherwise>
+				<portlet:actionURL var="subscribeURL">
+					<portlet:param name="struts_action" value='<%= (fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL) ? "/document_library/edit_folder" : "/document_library/edit_file_entry_type" %>' />
+					<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.SUBSCRIBE %>" />
+					<portlet:param name="redirect" value="<%= currentURL %>" />
+
+					<c:choose>
+						<c:when test="<%= fileEntryTypeId == DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_ALL %>">
+							<portlet:param name="folderId" value="<%= String.valueOf(folderId) %>" />
+						</c:when>
+						<c:otherwise>
+							<portlet:param name="fileEntryTypeId" value="<%= String.valueOf(fileEntryTypeId) %>" />
+						</c:otherwise>
+					</c:choose>
+				</portlet:actionURL>
+
+				<liferay-ui:icon
+					image="subscribe"
+					label="<%= true %>"
+					url="<%= subscribeURL %>"
+				/>
+			</c:otherwise>
+		</c:choose>
+	</c:if>
+</div>
 
 <c:if test="<%= results.isEmpty() %>">
 	<div class="entries-empty portlet-msg-info">
@@ -294,6 +416,7 @@ for (int i = 0; i < results.size(); i++) {
 
 						<liferay-ui:app-view-entry
 							displayStyle="list"
+							locked="<%= fileEntry.isCheckedOut() %>"
 							showCheckbox="<%= true %>"
 							status="<%= latestFileVersion.getStatus() %>"
 							thumbnailSrc='<%= "../file_system/small/" + DLUtil.getFileIcon(fileEntry.getExtension()) %>'
@@ -314,7 +437,7 @@ for (int i = 0; i < results.size(); i++) {
 						row = new ResultRow(fileShortcut, fileShortcut.getFileShortcutId(), i);
 					}
 
-					row.setClassName("app-view-entry-taglib entry-display-style");
+					row.setClassName("app-view-entry-taglib entry-display-style selectable");
 
 					Map<String, Object> data = new HashMap<String, Object>();
 
@@ -363,12 +486,9 @@ for (int i = 0; i < results.size(); i++) {
 		<c:when test="<%= curFolder != null %>">
 
 			<%
-			int foldersCount = DLAppServiceUtil.getFoldersCount(curFolder.getRepositoryId(), curFolder.getFolderId());
-			int fileEntriesCount = DLAppServiceUtil.getFileEntriesAndFileShortcutsCount(curFolder.getRepositoryId(), curFolder.getFolderId(), status);
-
 			String folderImage = "folder_empty";
 
-			if ((foldersCount + fileEntriesCount) > 0) {
+			if (DLAppServiceUtil.getFoldersAndFileEntriesAndFileShortcutsCount(curFolder.getRepositoryId(), curFolder.getFolderId(), status, true) > 0) {
 				folderImage = "folder_full_document";
 			}
 			%>
@@ -434,7 +554,7 @@ for (int i = 0; i < results.size(); i++) {
 
 					ResultRow row = new ResultRow(curFolder, curFolder.getPrimaryKey(), i);
 
-					row.setClassName("app-view-entry-taglib entry-display-style");
+					row.setClassName("app-view-entry-taglib entry-display-style selectable");
 
 					Map<String, Object> data = new HashMap<String, Object>();
 
@@ -498,8 +618,8 @@ for (int i = 0; i < results.size(); i++) {
 			paginator: {
 				name: 'entryPaginator',
 				state: {
-					page: <%= (total == 0) ? 0 : (entryEnd / (entryEnd - entryStart)) %>,
-					rowsPerPage: <%= (entryEnd - entryStart) %>,
+					page: <%= (total == 0) ? 0 : searchContainer.getCur() %>,
+					rowsPerPage: <%= searchContainer.getDelta() %>,
 					total: <%= total %>
 				}
 			}

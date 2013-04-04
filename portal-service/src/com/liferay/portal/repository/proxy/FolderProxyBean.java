@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -43,6 +43,12 @@ public class FolderProxyBean
 		throws PortalException, SystemException {
 
 		return _folder.containsPermission(permissionChecker, actionId);
+	}
+
+	public List<Long> getAncestorFolderIds()
+		throws PortalException, SystemException {
+
+		return _folder.getAncestorFolderIds();
 	}
 
 	public List<Folder> getAncestors() throws PortalException, SystemException {
@@ -192,6 +198,10 @@ public class FolderProxyBean
 		return _folder.isSupportsSocial();
 	}
 
+	public boolean isSupportsSubscribing() {
+		return _folder.isSupportsSubscribing();
+	}
+
 	public void setCompanyId(long companyId) {
 		_folder.setCompanyId(companyId);
 	}
@@ -226,6 +236,12 @@ public class FolderProxyBean
 
 	public Folder toEscapedModel() {
 		Folder folder = _folder.toEscapedModel();
+
+		return newFolderProxyBean(folder);
+	}
+
+	public Folder toUnescapedModel() {
+		Folder folder = _folder.toUnescapedModel();
 
 		return newFolderProxyBean(folder);
 	}

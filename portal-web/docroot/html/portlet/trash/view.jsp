@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -37,39 +37,39 @@ portletURL.setParameter("struts_action", "/trash/view");
 portletURL.setParameter("tabs1", tabs1);
 %>
 
-<c:if test="<%= SessionMessages.contains(renderRequest, portletDisplay.getId() + SessionMessages.KEY_SUFFIX_DELETE_SUCCESS_DATA) %>">
-	<div class="portlet-msg-success">
+<liferay-util:include page="/html/portlet/trash/restore_path.jsp" />
 
-		<%
-		Map<String, List<String>> data = (HashMap<String, List<String>>)SessionMessages.get(renderRequest, portletDisplay.getId() + SessionMessages.KEY_SUFFIX_DELETE_SUCCESS_DATA);
+<liferay-ui:error exception="<%= TrashPermissionException.class %>">
 
-		List<String> restoreLinks = data.get("restoreLinks");
-		List<String> restoreMessages = data.get("restoreMessages");
-		%>
+	<%
+	TrashPermissionException tpe = (TrashPermissionException)errorException;
+	%>
 
-		<c:choose>
-			<c:when test="<%= (data != null) && (restoreLinks != null) && (restoreMessages != null) && (restoreLinks.size() > 0) && (restoreMessages.size() > 0) %>">
+	<c:if test="<%= tpe.getType() == TrashPermissionException.DELETE %>">
+		<liferay-ui:message key="you-do-not-have-permission-to-delete-this-item" />
+	</c:if>
 
-				<%
-				StringBundler sb = new StringBundler(5 * restoreMessages.size());
+	<c:if test="<%= tpe.getType() == TrashPermissionException.EMPTY_TRASH %>">
+		<liferay-ui:message key="unable-to-completely-empty-trash-you-do-not-have-permission-to-delete-one-or-more-items" />
+	</c:if>
 
-				for (int i = 0; i < restoreLinks.size(); i++) {
-					sb.append("<a href=\"");
-					sb.append(restoreLinks.get(i));
-					sb.append("\">");
-					sb.append(restoreMessages.get(i));
-					sb.append("</a> ");
-				}
-				%>
+	<c:if test="<%= tpe.getType() == TrashPermissionException.MOVE %>">
+		<liferay-ui:message key="you-do-not-have-permission-to-move-this-item-to-the-selected-destination" />
+	</c:if>
 
-				<liferay-ui:message arguments="<%= sb.toString() %>" key="the-item-has-been-restored-to-x" />
-			</c:when>
-			<c:otherwise>
-				<liferay-ui:message key="the-item-has-been-restored" />
-			</c:otherwise>
-		</c:choose>
-	</div>
-</c:if>
+	<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE %>">
+		<liferay-ui:message key="you-do-not-have-permission-to-restore-this-item" />
+	</c:if>
+
+	<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE_OVERWRITE %>">
+		<liferay-ui:message key="you-do-not-have-permission-to-replace-an-existing-item-with-the-selected-one" />
+	</c:if>
+
+	<c:if test="<%= tpe.getType() == TrashPermissionException.RESTORE_RENAME %>">
+		<liferay-ui:message key="you-do-not-have-permission-to-rename-this-item" />
+	</c:if>
+
+</liferay-ui:error>
 
 <c:if test="<%= group.isStagingGroup() %>">
 	<liferay-ui:tabs
@@ -87,7 +87,6 @@ portletURL.setParameter("tabs1", tabs1);
 
 <liferay-portlet:renderURL varImpl="searchURL">
 	<portlet:param name="struts_action" value="/trash/view" />
-	<portlet:param name="redirect" value="<%= redirect %>" />
 </liferay-portlet:renderURL>
 
 <liferay-ui:search-container
@@ -234,14 +233,29 @@ portletURL.setParameter("tabs1", tabs1);
 		/>
 
 		<c:choose>
-			<c:when test="<%= entry.getRootEntry() == null || Validator.isNotNull(trashRenderer.renderActions(renderRequest, renderResponse)) %>">
+			<c:when test="<%= Validator.isNotNull(trashRenderer.renderActions(renderRequest, renderResponse)) %>">
 				<liferay-ui:search-container-column-jsp
 					align="right"
-					path='<%= entry.getRootEntry() == null ? "/html/portlet/trash/entry_action.jsp" : trashRenderer.renderActions(renderRequest, renderResponse) %>'
+					path="<%= trashRenderer.renderActions(renderRequest, renderResponse) %>"
+				/>
+			</c:when>
+			<c:when test="<%= entry.getRootEntry() == null %>">
+				<liferay-ui:search-container-column-jsp
+					align="right"
+					path="/html/portlet/trash/entry_action.jsp"
 				/>
 			</c:when>
 			<c:otherwise>
-				<liferay-ui:search-container-column-text> </liferay-ui:search-container-column-text>
+				<liferay-ui:search-container-column-text align="right">
+
+					<%
+					request.removeAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
+
+					request.setAttribute(WebKeys.TRASH_RENDERER, trashRenderer);
+					%>
+
+					<liferay-util:include page="/html/portlet/trash/view_content_action.jsp" />
+				</liferay-ui:search-container-column-text>
 			</c:otherwise>
 		</c:choose>
 	</liferay-ui:search-container-row>
@@ -250,12 +264,15 @@ portletURL.setParameter("tabs1", tabs1);
 		<portlet:param name="struts_action" value="/trash/edit_entry" />
 	</portlet:actionURL>
 
-	<liferay-ui:trash-empty portletURL="<%= emptyTrashURL %>" totalEntries="<%= total %>" />
+	<liferay-ui:trash-empty
+		portletURL="<%= emptyTrashURL %>"
+		totalEntries="<%= total %>"
+	/>
 
 	<aui:form action="<%= searchURL.toString() %>" method="get" name="fm">
 		<liferay-portlet:renderURLParams varImpl="searchURL" />
 		<aui:input name="<%= Constants.CMD %>" type="hidden" value="" />
-		<aui:input name="redirect" type="hidden" value="<%= portletURL.toString() %>" />
+		<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 		<aui:input name="deleteTrashEntryIds" type="hidden" />
 		<aui:input name="restoreTrashEntryIds" type="hidden" />
 
@@ -270,16 +287,6 @@ portletURL.setParameter("tabs1", tabs1);
 
 	<liferay-ui:search-iterator type='<%= approximate ? "more" : "regular" %>' />
 </liferay-ui:search-container>
-
-<aui:script use="liferay-restore-entry">
-	new Liferay.RestoreEntry(
-		{
-			checkEntryURL: '<portlet:actionURL><portlet:param name="<%= Constants.CMD %>" value="<%= Constants.CHECK %>" /><portlet:param name="struts_action" value="/trash/edit_entry" /></portlet:actionURL>',
-			namespace: '<portlet:namespace />',
-			restoreEntryURL: '<portlet:renderURL windowState="<%= LiferayWindowState.EXCLUSIVE.toString() %>"><portlet:param name="struts_action" value="/trash/restore_entry" /><portlet:param name="redirect" value="<%= currentURL %>" /></portlet:renderURL>'
-		}
-	);
-</aui:script>
 
 <%
 if (Validator.isNotNull(keywords)) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -310,7 +310,7 @@ public abstract class TeamLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.TeamModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -329,7 +329,7 @@ public abstract class TeamLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.TeamModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -383,7 +383,7 @@ public abstract class TeamLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * Returns a range of all the teams.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.TeamModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of teams
@@ -415,6 +415,256 @@ public abstract class TeamLocalServiceBaseImpl extends BaseLocalServiceImpl
 	@Indexable(type = IndexableType.REINDEX)
 	public Team updateTeam(Team team) throws SystemException {
 		return teamPersistence.update(team);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserTeam(long userId, long teamId) throws SystemException {
+		userPersistence.addTeam(userId, teamId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserTeam(long userId, Team team) throws SystemException {
+		userPersistence.addTeam(userId, team);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserTeams(long userId, long[] teamIds)
+		throws SystemException {
+		userPersistence.addTeams(userId, teamIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserTeams(long userId, List<Team> Teams)
+		throws SystemException {
+		userPersistence.addTeams(userId, Teams);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void clearUserTeams(long userId) throws SystemException {
+		userPersistence.clearTeams(userId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserTeam(long userId, long teamId)
+		throws SystemException {
+		userPersistence.removeTeam(userId, teamId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserTeam(long userId, Team team)
+		throws SystemException {
+		userPersistence.removeTeam(userId, team);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserTeams(long userId, long[] teamIds)
+		throws SystemException {
+		userPersistence.removeTeams(userId, teamIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserTeams(long userId, List<Team> Teams)
+		throws SystemException {
+		userPersistence.removeTeams(userId, Teams);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Team> getUserTeams(long userId) throws SystemException {
+		return userPersistence.getTeams(userId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Team> getUserTeams(long userId, int start, int end)
+		throws SystemException {
+		return userPersistence.getTeams(userId, start, end);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Team> getUserTeams(long userId, int start, int end,
+		OrderByComparator orderByComparator) throws SystemException {
+		return userPersistence.getTeams(userId, start, end, orderByComparator);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getUserTeamsCount(long userId) throws SystemException {
+		return userPersistence.getTeamsSize(userId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasUserTeam(long userId, long teamId)
+		throws SystemException {
+		return userPersistence.containsTeam(userId, teamId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasUserTeams(long userId) throws SystemException {
+		return userPersistence.containsTeams(userId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void setUserTeams(long userId, long[] teamIds)
+		throws SystemException {
+		userPersistence.setTeams(userId, teamIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserGroupTeam(long userGroupId, long teamId)
+		throws SystemException {
+		userGroupPersistence.addTeam(userGroupId, teamId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserGroupTeam(long userGroupId, Team team)
+		throws SystemException {
+		userGroupPersistence.addTeam(userGroupId, team);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserGroupTeams(long userGroupId, long[] teamIds)
+		throws SystemException {
+		userGroupPersistence.addTeams(userGroupId, teamIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserGroupTeams(long userGroupId, List<Team> Teams)
+		throws SystemException {
+		userGroupPersistence.addTeams(userGroupId, Teams);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void clearUserGroupTeams(long userGroupId) throws SystemException {
+		userGroupPersistence.clearTeams(userGroupId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserGroupTeam(long userGroupId, long teamId)
+		throws SystemException {
+		userGroupPersistence.removeTeam(userGroupId, teamId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserGroupTeam(long userGroupId, Team team)
+		throws SystemException {
+		userGroupPersistence.removeTeam(userGroupId, team);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserGroupTeams(long userGroupId, long[] teamIds)
+		throws SystemException {
+		userGroupPersistence.removeTeams(userGroupId, teamIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserGroupTeams(long userGroupId, List<Team> Teams)
+		throws SystemException {
+		userGroupPersistence.removeTeams(userGroupId, Teams);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Team> getUserGroupTeams(long userGroupId)
+		throws SystemException {
+		return userGroupPersistence.getTeams(userGroupId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Team> getUserGroupTeams(long userGroupId, int start, int end)
+		throws SystemException {
+		return userGroupPersistence.getTeams(userGroupId, start, end);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Team> getUserGroupTeams(long userGroupId, int start, int end,
+		OrderByComparator orderByComparator) throws SystemException {
+		return userGroupPersistence.getTeams(userGroupId, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getUserGroupTeamsCount(long userGroupId)
+		throws SystemException {
+		return userGroupPersistence.getTeamsSize(userGroupId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasUserGroupTeam(long userGroupId, long teamId)
+		throws SystemException {
+		return userGroupPersistence.containsTeam(userGroupId, teamId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasUserGroupTeams(long userGroupId)
+		throws SystemException {
+		return userGroupPersistence.containsTeams(userGroupId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void setUserGroupTeams(long userGroupId, long[] teamIds)
+		throws SystemException {
+		userGroupPersistence.setTeams(userGroupId, teamIds);
 	}
 
 	/**

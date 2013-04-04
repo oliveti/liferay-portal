@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -421,10 +421,10 @@ public interface Portlet extends PortletModel, PersistedModel {
 	public boolean getInclude();
 
 	/**
-	* Returns the name of the classes that represent indexers associated with
+	* Returns the names of the classes that represent indexers associated with
 	* the portlet.
 	*
-	* @return the name of the classes that represent indexers associated with
+	* @return the names of the classes that represent indexers associated with
 	the portlet
 	*/
 	public java.util.List<java.lang.String> getIndexerClasses();
@@ -605,20 +605,6 @@ public interface Portlet extends PortletModel, PersistedModel {
 	* @return the portlet data handler instance of the portlet
 	*/
 	public com.liferay.portal.kernel.lar.PortletDataHandler getPortletDataHandlerInstance();
-
-	/**
-	* Returns the name of the portlet display style class of the portlet.
-	*
-	* @return the name of the portlet display style class of the portlet
-	*/
-	public java.lang.String getPortletDisplayTemplateHandlerClass();
-
-	/**
-	* Returns the portlet display style instance of the portlet.
-	*
-	* @return the portlet display style instance of the portlet
-	*/
-	public com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateHandler getPortletDisplayTemplateHandlerInstance();
 
 	/**
 	* Returns the filters of the portlet.
@@ -879,20 +865,20 @@ public interface Portlet extends PortletModel, PersistedModel {
 	public boolean getShowPortletInactive();
 
 	/**
-	* Returns the name of the social activity interpreter class of the portlet.
+	* Returns the names of the classes that represent social activity
+	* interpreters associated with the portlet.
 	*
-	* @return the name of the social activity interpreter class of the portlet
+	* @return the names of the classes that represent social activity
+	interpreters associated with the portlet
 	*/
-	public java.lang.String getSocialActivityInterpreterClass();
+	public java.util.List<java.lang.String> getSocialActivityInterpreterClasses();
 
 	/**
-	* Returns the name of the social activity interpreter instance of the
-	* portlet.
+	* Returns the social activity interpreter instances of the portlet.
 	*
-	* @return the name of the social activity interpreter instance of the
-	portlet
+	* @return the social activity interpreter instances of the portlet
 	*/
-	public com.liferay.portlet.social.model.SocialActivityInterpreter getSocialActivityInterpreterInstance();
+	public java.util.List<com.liferay.portlet.social.model.SocialActivityInterpreter> getSocialActivityInterpreterInstances();
 
 	/**
 	* Returns the name of the social request interpreter class of the portlet.
@@ -909,6 +895,22 @@ public interface Portlet extends PortletModel, PersistedModel {
 	portlet
 	*/
 	public com.liferay.portlet.social.model.SocialRequestInterpreter getSocialRequestInterpreterInstance();
+
+	/**
+	* Returns the names of the classes that represent staged model data
+	* handlers associated with the portlet.
+	*
+	* @return the names of the classes that represent staged model data
+	handlers associated with the portlet
+	*/
+	public java.util.List<java.lang.String> getStagedModelDataHandlerClasses();
+
+	/**
+	* Returns the staged model data handler instances of the portlet.
+	*
+	* @return the staged model data handler instances of the portlet
+	*/
+	public java.util.List<com.liferay.portal.kernel.lar.StagedModelDataHandler<?>> getStagedModelDataHandlerInstances();
 
 	/**
 	* Returns <code>true</code> if the portlet is a static portlet that is
@@ -966,6 +968,20 @@ public interface Portlet extends PortletModel, PersistedModel {
 	cannot manually add to their page
 	*/
 	public boolean getSystem();
+
+	/**
+	* Returns the name of the template handler class of the portlet.
+	*
+	* @return the name of the template handler class of the portlet
+	*/
+	public java.lang.String getTemplateHandlerClass();
+
+	/**
+	* Returns the template handler instance of the portlet.
+	*
+	* @return the template handler instance of the portlet
+	*/
+	public com.liferay.portal.kernel.template.TemplateHandler getTemplateHandlerInstance();
 
 	/**
 	* Returns the timestamp of the portlet.
@@ -1419,7 +1435,7 @@ public interface Portlet extends PortletModel, PersistedModel {
 	public void setAjaxable(boolean ajaxable);
 
 	/**
-	* Sets the name of the classes that represent asset types associated with
+	* Sets the names of the classes that represent asset types associated with
 	* the portlet.
 	*
 	* @param assetRendererFactoryClasses the names of the classes that
@@ -1429,7 +1445,7 @@ public interface Portlet extends PortletModel, PersistedModel {
 		java.util.List<java.lang.String> assetRendererFactoryClasses);
 
 	/**
-	* Sets the name of the classes that represent atom collection adapters
+	* Sets the names of the classes that represent atom collection adapters
 	* associated with the portlet.
 	*
 	* @param atomCollectionAdapterClasses the names of the classes that
@@ -1497,7 +1513,7 @@ public interface Portlet extends PortletModel, PersistedModel {
 	public void setCssClassWrapper(java.lang.String cssClassWrapper);
 
 	/**
-	* Sets the name of the classes that represent custom attribute displays
+	* Sets the names of the classes that represent custom attribute displays
 	* associated with the portlet.
 	*
 	* @param customAttributesDisplayClasses the names of the classes that
@@ -1669,10 +1685,10 @@ public interface Portlet extends PortletModel, PersistedModel {
 	public void setInclude(boolean include);
 
 	/**
-	* Sets the name of the classes that represent indexers associated with the
+	* Sets the names of the classes that represent indexers associated with the
 	* portlet.
 	*
-	* @param indexerClasses the name of the classes that represent indexers
+	* @param indexerClasses the names of the classes that represent indexers
 	associated with the portlet
 	*/
 	public void setIndexerClasses(
@@ -1798,16 +1814,6 @@ public interface Portlet extends PortletModel, PersistedModel {
 	*/
 	public void setPortletDataHandlerClass(
 		java.lang.String portletDataHandlerClass);
-
-	/**
-	* Sets the name of the portlet display template handler class of the
-	* portlet.
-	*
-	* @param portletDisplayTemplateHandlerClass the name of display template
-	handler class of the portlet
-	*/
-	public void setPortletDisplayTemplateHandlerClass(
-		java.lang.String portletDisplayTemplateHandlerClass);
 
 	/**
 	* Sets the filters of the portlet.
@@ -2037,13 +2043,14 @@ public interface Portlet extends PortletModel, PersistedModel {
 	public void setShowPortletInactive(boolean showPortletInactive);
 
 	/**
-	* Sets the name of the social activity interpreter class of the portlet.
+	* Sets the names of the classes that represent social activity interpreters
+	* associated with the portlet.
 	*
-	* @param socialActivityInterpreterClass the name of the activity
-	interpreter class of the portlet
+	* @param socialActivityInterpreterClasses the names of the classes that
+	represent social activity interpreters associated with the portlet
 	*/
-	public void setSocialActivityInterpreterClass(
-		java.lang.String socialActivityInterpreterClass);
+	public void setSocialActivityInterpreterClasses(
+		java.util.List<java.lang.String> socialActivityInterpreterClasses);
 
 	/**
 	* Sets the name of the social request interpreter class of the portlet.
@@ -2053,6 +2060,16 @@ public interface Portlet extends PortletModel, PersistedModel {
 	*/
 	public void setSocialRequestInterpreterClass(
 		java.lang.String socialRequestInterpreterClass);
+
+	/**
+	* Sets the names of the classes that represent staged model data handlers
+	* associated with the portlet.
+	*
+	* @param stagedModelDataHandlerClasses the names of the classes that
+	represent staged model data handlers associated with the portlet
+	*/
+	public void setStagedModelDataHandlerClasses(
+		java.util.List<java.lang.String> stagedModelDataHandlerClasses);
 
 	/**
 	* Set to <code>true</code> if the portlet is a static portlet that is
@@ -2097,6 +2114,14 @@ public interface Portlet extends PortletModel, PersistedModel {
 	public void setSystem(boolean system);
 
 	/**
+	* Sets the name of the template handler class of the portlet.
+	*
+	* @param templateHandlerClass the name of template handler class of the
+	portlet
+	*/
+	public void setTemplateHandlerClass(java.lang.String templateHandlerClass);
+
+	/**
 	* Sets the timestamp of the portlet.
 	*
 	* @param timestamp the timestamp of the portlet
@@ -2104,7 +2129,7 @@ public interface Portlet extends PortletModel, PersistedModel {
 	public void setTimestamp(long timestamp);
 
 	/**
-	* Sets the name of the classes that represent trash handlers associated to
+	* Sets the names of the classes that represent trash handlers associated to
 	* the portlet.
 	*
 	* @param trashHandlerClasses the names of the classes that represent trash
@@ -2182,7 +2207,7 @@ public interface Portlet extends PortletModel, PersistedModel {
 		java.util.Map<java.lang.String, java.util.Set<java.lang.String>> windowStates);
 
 	/**
-	* Sets the name of the classes that represent workflow handlers associated
+	* Sets the names of the classes that represent workflow handlers associated
 	* to the portlet.
 	*
 	* @param workflowHandlerClasses the names of the classes that represent

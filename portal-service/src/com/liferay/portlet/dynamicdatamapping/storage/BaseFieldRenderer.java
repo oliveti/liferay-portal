@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -30,15 +30,28 @@ public abstract class BaseFieldRenderer implements FieldRenderer {
 			return doRender(field, locale);
 		}
 		catch (Exception e) {
-			if (_log.isErrorEnabled()) {
-				_log.error("Unable to render field", e);
-			}
+			_log.error("Unable to render field", e);
+		}
+
+		return null;
+	}
+
+	public String render(Field field, Locale locale, int valueIndex) {
+		try {
+			return doRender(field, locale, valueIndex);
+		}
+		catch (Exception e) {
+			_log.error("Unable to render field", e);
 		}
 
 		return null;
 	}
 
 	protected abstract String doRender(Field field, Locale locale)
+		throws Exception;
+
+	protected abstract String doRender(
+			Field field, Locale locale, int valueIndex)
 		throws Exception;
 
 	private static Log _log = LogFactoryUtil.getLog(BaseFieldRenderer.class);

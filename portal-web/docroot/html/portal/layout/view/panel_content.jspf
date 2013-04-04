@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -47,8 +47,28 @@ if (!denyAccess && (themeDisplay.isStatePopUp() || (layoutTypePortlet.hasStateMa
 		content = LayoutTemplateLocalServiceUtil.getContent("max", true, theme.getThemeId());
 	}
 
+	StringBundler sb = null;
+
 	if (Validator.isNotNull(velocityTemplateId) && Validator.isNotNull(content)) {
-		RuntimePageUtil.processTemplate(pageContext, ppid, new StringTemplateResource(velocityTemplateId, content));
+		sb = RuntimePageUtil.getProcessedTemplate(pageContext, ppid, new StringTemplateResource(velocityTemplateId, content));
+	}
+	%>
+
+	<c:if test="<%= controlPanelCategory.equals(StringPool.BLANK) || controlPanelCategory.equals(StringPool.CONTENT) %>">
+		<div class="site-breadcrumbs" id="breadcrumbs">
+			<h1>
+				<span>
+					<liferay-ui:message key="breadcrumb" />
+				</span>
+			</h1>
+
+			<liferay-ui:breadcrumb />
+		</div>
+	</c:if>
+
+	<%
+	if (sb != null) {
+		sb.writeTo(pageContext.getOut());
 	}
 }
 else {

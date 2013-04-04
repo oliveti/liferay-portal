@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -107,7 +107,7 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 	* Performs a dynamic query on the database and returns a range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.expando.model.impl.ExpandoValueModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -125,7 +125,7 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 	* Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.expando.model.impl.ExpandoValueModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -182,7 +182,7 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 	* Returns a range of all the expando values.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.expando.model.impl.ExpandoValueModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param start the lower bound of the range of expando values
@@ -310,6 +310,14 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		long companyId, java.lang.String className, java.lang.String tableName,
+		java.lang.String columnName, long classPK,
+		java.util.Map<java.util.Locale, ?> dataMap,
+		java.util.Locale defautlLocale)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	public com.liferay.portlet.expando.model.ExpandoValue addValue(
+		long companyId, java.lang.String className, java.lang.String tableName,
 		java.lang.String columnName, long classPK, java.lang.Number data)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException;
@@ -351,8 +359,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	boolean[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, boolean[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -361,8 +369,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	boolean[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, boolean[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -371,7 +379,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long, Date[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, Date[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -380,7 +389,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long, Date[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, Date[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -389,8 +399,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	double[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, double[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -399,8 +409,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	double[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, double[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -409,8 +419,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	float[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, float[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -419,8 +429,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	float[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, float[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -429,7 +439,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long, int[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, int[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -438,7 +449,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long, int[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, int[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -447,7 +459,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long, long[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, long[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -456,7 +469,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long, long[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, long[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -465,7 +479,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long, Object)}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, Object)}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -474,8 +489,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	short[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, short[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -484,8 +499,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	short[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, short[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -494,8 +509,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	String[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, String[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -504,8 +519,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #addValue(long, String, String, String, long,
-	String[])}
+	* @deprecated As of 6.1.0, replaced by {@link #addValue(long, String,
+	String, String, long, String[])}
 	*/
 	public com.liferay.portlet.expando.model.ExpandoValue addValue(
 		java.lang.String className, java.lang.String tableName,
@@ -598,8 +613,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getColumnValues(long, String, String, String, String,
-	int, int)}
+	* @deprecated As of 6.1.0, replaced by {@link #getColumnValues(long,
+	String, String, String, String, int, int)}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.util.List<com.liferay.portlet.expando.model.ExpandoValue> getColumnValues(
@@ -634,8 +649,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getColumnValuesCount(long, String, String, String,
-	String)}
+	* @deprecated As of 6.1.0, replaced by {@link #getColumnValuesCount(long,
+	String, String, String, String)}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getColumnValuesCount(java.lang.String className,
@@ -742,6 +757,14 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public java.util.Map<?, ?> getData(long companyId,
+		java.lang.String className, java.lang.String tableName,
+		java.lang.String columnName, long classPK,
+		java.util.Map<?, ?> defaultData)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.lang.Number getData(long companyId, java.lang.String className,
 		java.lang.String tableName, java.lang.String columnName, long classPK,
 		java.lang.Number defaultData)
@@ -786,7 +809,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long)}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long)}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.io.Serializable getData(java.lang.String className,
@@ -795,8 +819,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long,
-	boolean[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, boolean[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public boolean getData(java.lang.String className,
@@ -806,8 +830,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long,
-	boolean[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, boolean[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public boolean[] getData(java.lang.String className,
@@ -817,7 +841,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, Date[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, Date[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.util.Date getData(java.lang.String className,
@@ -827,7 +852,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, Date[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, Date[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.util.Date[] getData(java.lang.String className,
@@ -837,8 +863,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long,
-	double[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, double[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public double getData(java.lang.String className,
@@ -848,8 +874,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long,
-	double[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, double[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public double[] getData(java.lang.String className,
@@ -859,7 +885,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, float[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, float[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public float getData(java.lang.String className,
@@ -869,7 +896,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, float[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, float[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public float[] getData(java.lang.String className,
@@ -879,7 +907,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, int[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, int[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getData(java.lang.String className, java.lang.String tableName,
@@ -888,7 +917,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, int[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, int[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int[] getData(java.lang.String className,
@@ -898,7 +928,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, long[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, long[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public long getData(java.lang.String className, java.lang.String tableName,
@@ -907,7 +938,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, long[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, long[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public long[] getData(java.lang.String className,
@@ -917,7 +949,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, short[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, short[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public short getData(java.lang.String className,
@@ -927,7 +960,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long, short[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, short[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public short[] getData(java.lang.String className,
@@ -937,8 +971,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long,
-	String[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, String[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.lang.String getData(java.lang.String className,
@@ -948,8 +982,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 			com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getData(long, String, String, String, long,
-	String[])}
+	* @deprecated As of 6.1.0, replaced by {@link #getData(long, String,
+	String, String, long, String[])}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.lang.String[] getData(java.lang.String className,
@@ -1038,7 +1072,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getValue(long, long, String, String, long)}
+	* @deprecated As of 6.1.0, replaced by {@link #getValue(long, long, String,
+	String, long)}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public com.liferay.portlet.expando.model.ExpandoValue getValue(
@@ -1053,7 +1088,8 @@ public interface ExpandoValueLocalService extends BaseLocalService,
 		throws com.liferay.portal.kernel.exception.SystemException;
 
 	/**
-	* @deprecated {@link #getValue(long, String, String, String, long)}
+	* @deprecated As of 6.1.0, replaced by {@link #getValue(long, String,
+	String, String, long)}
 	*/
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public com.liferay.portlet.expando.model.ExpandoValue getValue(

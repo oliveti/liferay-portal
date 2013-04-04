@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -57,6 +57,8 @@ userSearch.setEmptyResultsMessage(emptyResultsMessage);
 <aui:input name="addUserIds" type="hidden" />
 <aui:input name="removeUserIds" type="hidden" />
 
+<liferay-ui:membership-policy-error />
+
 <liferay-ui:search-container
 	rowChecker="<%= userGroupChecker %>"
 	searchContainer="<%= userSearch %>"
@@ -75,13 +77,28 @@ userSearch.setEmptyResultsMessage(emptyResultsMessage);
 	LinkedHashMap<String, Object> userParams = new LinkedHashMap<String, Object>();
 
 	if (tabs1.equals("summary") || tabs2.equals("current")) {
-		userParams.put("inherit", true);
+		userParams.put("inherit", Boolean.TRUE);
 		userParams.put("usersGroups", new Long(group.getGroupId()));
 	}
 	%>
 
 	<liferay-ui:search-container-results>
-		<%@ include file="/html/portlet/users_admin/user_search_results.jspf" %>
+		<c:choose>
+			<c:when test='<%= tabs1.equals("summary") || tabs2.equals("current") || !group.isLimitedToParentSiteMembers() %>'>
+				<%@ include file="/html/portlet/users_admin/user_search_results.jspf" %>
+			</c:when>
+			<c:otherwise>
+
+				<%
+				results = UserLocalServiceUtil.getGroupUsers(group.getParentGroupId(), searchContainer.getStart(), searchContainer.getEnd());
+				total = UserLocalServiceUtil.getGroupUsersCount(group.getParentGroupId());
+
+				pageContext.setAttribute("results", results);
+				pageContext.setAttribute("total", total);
+				%>
+
+			</c:otherwise>
+		</c:choose>
 	</liferay-ui:search-container-results>
 
 	<liferay-ui:search-container-row
@@ -97,9 +114,44 @@ userSearch.setEmptyResultsMessage(emptyResultsMessage);
 		/>
 
 		<liferay-ui:search-container-column-text
+			buffer="buffer"
 			name="name"
-			property="fullName"
-		/>
+		>
+
+			<%
+			buffer.append(HtmlUtil.escape(user2.getFullName()));
+
+			List<String> names = new ArrayList<String>();
+
+			boolean organizationUser = SitesUtil.isOrganizationUser(company.getCompanyId(), group, user2, names);
+
+			row.setParameter("organizationUser", organizationUser);
+
+			boolean userGroupUser = SitesUtil.isUserGroupUser(company.getCompanyId(), group, user2, names);
+
+			row.setParameter("userGroupUser", userGroupUser);
+
+			String message = StringPool.BLANK;
+
+			if (organizationUser || userGroupUser) {
+				if (names.size() == 1) {
+					message = LanguageUtil.format(pageContext, "this-user-is-a-member-of-x-because-he-belongs-to-x", new Object[] {HtmlUtil.escape(group.getDescriptiveName(locale)), names.get(0)});
+				}
+				else {
+					message = LanguageUtil.format(pageContext, "this-user-is-a-member-of-x-because-he-belongs-to-x-and-x", new Object[] {HtmlUtil.escape(group.getDescriptiveName(locale)), StringUtil.merge(names.subList(0, names.size() - 1).toArray(new String[names.size() - 1]), ", "), names.get(names.size() - 1)});
+				}
+			%>
+
+				<liferay-util:buffer var="iconHelp">
+					<liferay-ui:icon-help message="<%= message %>" />
+				</liferay-util:buffer>
+
+			<%
+				buffer.append(iconHelp);
+			}
+			%>
+
+		</liferay-ui:search-container-column-text>
 
 		<liferay-ui:search-container-column-text
 			name="screen-name"
@@ -189,9 +241,11 @@ userSearch.setEmptyResultsMessage(emptyResultsMessage);
 	<c:choose>
 		<c:when test='<%= tabs1.equals("summary") && (total > 0) %>'>
 			<liferay-ui:panel collapsible="<%= true %>" extended="<%= false %>" persistState="<%= true %>" title='<%= LanguageUtil.format(pageContext, (total > 1) ? "x-users" : "x-user", total) %>'>
-				<aui:input inlineField="<%= true %>" label="" name='<%= DisplayTerms.KEYWORDS + "_users" %>' size="30" value="" />
+				<span class="aui-search-bar">
+					<aui:input inlineField="<%= true %>" label="" name='<%= DisplayTerms.KEYWORDS + "_users" %>' size="30" value="" />
 
-				<aui:button type="submit" value="search" />
+					<aui:button type="submit" value="search" />
+				</span>
 
 				<br /><br />
 

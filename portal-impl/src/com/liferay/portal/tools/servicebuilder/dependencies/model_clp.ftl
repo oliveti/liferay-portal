@@ -17,6 +17,7 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
@@ -26,8 +27,6 @@ import com.liferay.portal.model.impl.BaseModelImpl;
 import com.liferay.portal.util.PortalUtil;
 
 import java.io.Serializable;
-
-import java.lang.reflect.Proxy;
 
 import java.sql.Blob;
 
@@ -91,19 +90,7 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 
 			);
 		<#else>
-			return
-
-			<#if entity.hasPrimitivePK()>
-				new ${serviceBuilder.getPrimitiveObj("${entity.PKClassName}")} (
-			</#if>
-
-			_${entity.PKList[0].name}
-
-			<#if entity.hasPrimitivePK()>
-				)
-			</#if>
-
-			;
+			return _${entity.PKList[0].name};
 		</#if>
 	}
 
@@ -385,7 +372,7 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 
 	<#if entity.isWorkflowEnabled()>
 		/**
-		 * @deprecated {@link #isApproved}
+		 * @deprecated As of 6.1.0, replaced by {@link #isApproved}
 		 */
 		public boolean getApproved() {
 			return isApproved();
@@ -506,7 +493,7 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 
 	@Override
 	public ${entity.name} toEscapedModel() {
-		return (${entity.name})Proxy.newProxyInstance(${entity.name}.class.getClassLoader(), new Class[] {${entity.name}.class}, new AutoEscapeBeanHandler(this));
+		return (${entity.name})ProxyUtil.newProxyInstance(${entity.name}.class.getClassLoader(), new Class[] {${entity.name}.class}, new AutoEscapeBeanHandler(this));
 	}
 
 	@Override
@@ -558,7 +545,7 @@ public class ${entity.name}Clp extends BaseModelImpl<${entity.name}> implements 
 						<#if column.isCaseSensitive()>
 							value = get${column.methodName}().compareTo(${entity.varName}.get${column.methodName}());
 						<#else>
-							value = get${column.methodName}().toLowerCase().compareTo(${entity.varName}.get${column.methodName}().toLowerCase());
+							value = get${column.methodName}().compareToIgnoreCase(${entity.varName}.get${column.methodName}());
 						</#if>
 					</#if>
 				</#if>

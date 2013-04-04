@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -22,9 +22,11 @@ DDLRecordSet recordSet = (DDLRecordSet)request.getAttribute(WebKeys.DYNAMIC_DATA
 long formDDMTemplateId = ParamUtil.getLong(request, "formDDMTemplateId");
 
 boolean editable = false;
+boolean showAddRecordButton = false;
 
-if (DDLRecordSetPermission.contains(permissionChecker, recordSet.getRecordSetId(), ActionKeys.UPDATE)) {
-	editable = DDLUtil.isEditable(request, portletDisplay.getId(), themeDisplay.getScopeGroupId());
+if (DDLUtil.isEditable(request, portletDisplay.getId(), themeDisplay.getScopeGroupId())) {
+	editable = DDLRecordSetPermission.contains(permissionChecker, recordSet.getRecordSetId(), ActionKeys.UPDATE);
+	showAddRecordButton = DDLRecordSetPermission.contains(permissionChecker, recordSet.getRecordSetId(), ActionKeys.ADD_RECORD);
 }
 
 PortletURL portletURL = renderResponse.createRenderURL();
@@ -56,16 +58,10 @@ portletURL.setParameter("recordSetId", String.valueOf(recordSet.getRecordSetId()
 		headerNames.add("author");
 		headerNames.add(StringPool.BLANK);
 	}
-
-	boolean showAddRecordButton = false;
-
-	if (editable) {
-		showAddRecordButton = DDLRecordSetPermission.contains(permissionChecker, recordSet, ActionKeys.ADD_RECORD);
-	}
 	%>
 
 	<liferay-ui:search-container
-		searchContainer='<%= new SearchContainer(renderRequest, new DisplayTerms(request), null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, portletURL, headerNames, LanguageUtil.get(pageContext, "no-records-were-found")) %>'
+		searchContainer='<%= new SearchContainer(renderRequest, new DisplayTerms(request), null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, portletURL, headerNames, LanguageUtil.format(pageContext, "no-x-records-were-found", ddmStructure.getName(locale))) %>'
 	>
 
 		<liferay-ui:search-form
@@ -104,7 +100,7 @@ portletURL.setParameter("recordSetId", String.valueOf(recordSet.getRecordSetId()
 			rowURL.setParameter("struts_action", "/dynamic_data_lists/view_record");
 			rowURL.setParameter("redirect", currentURL);
 			rowURL.setParameter("recordId", String.valueOf(record.getRecordId()));
-			rowURL.setParameter("editable", String.valueOf(editable));
+			rowURL.setParameter("version", recordVersion.getVersion());
 			rowURL.setParameter("formDDMTemplateId", String.valueOf(formDDMTemplateId));
 
 			// Columns

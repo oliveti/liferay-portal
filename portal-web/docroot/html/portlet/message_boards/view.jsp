@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -33,23 +33,8 @@ Set<Long> categorySubscriptionClassPKs = null;
 Set<Long> threadSubscriptionClassPKs = null;
 
 if (themeDisplay.isSignedIn()) {
-	List<Subscription> categorySubscriptions = SubscriptionLocalServiceUtil.getUserSubscriptions(user.getUserId(), MBCategory.class.getName());
-
-	categorySubscriptionClassPKs = new HashSet<Long>(categorySubscriptions.size());
-
-	for (Subscription subscription : categorySubscriptions) {
-		categorySubscriptionClassPKs.add(subscription.getClassPK());
-	}
-
-	threadSubscriptionClassPKs = new HashSet<Long>();
-
-	List<Subscription> threadSubscriptions = SubscriptionLocalServiceUtil.getUserSubscriptions(user.getUserId(), MBThread.class.getName());
-
-	threadSubscriptionClassPKs = new HashSet<Long>(threadSubscriptions.size());
-
-	for (Subscription subscription : threadSubscriptions) {
-		threadSubscriptionClassPKs.add(subscription.getClassPK());
-	}
+	categorySubscriptionClassPKs = MBUtil.getCategorySubscriptionClassPKs(user.getUserId());
+	threadSubscriptionClassPKs = MBUtil.getThreadSubscriptionClassPKs(user.getUserId());
 }
 
 long groupThreadsUserId = ParamUtil.getLong(request, "groupThreadsUserId");
@@ -75,7 +60,7 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 %>
 
 <portlet:actionURL var="undoTrashURL">
-	<portlet:param name="struts_action" value="/message_boards/restore_thread" />
+	<portlet:param name="struts_action" value="/message_boards/edit_entry" />
 	<portlet:param name="<%= Constants.CMD %>" value="<%= Constants.RESTORE %>" />
 </portlet:actionURL>
 
@@ -184,11 +169,9 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 
 			<div class="thread-actions">
 				<liferay-ui:icon-list>
-					<c:if test="<%= PortalUtil.isRSSFeedsEnabled() %>">
+					<c:if test="<%= enableRSS %>">
 
 						<%
-						rssURL.setParameter("p_l_id", String.valueOf(plid));
-
 						if (category.getCategoryId() > 0) {
 							rssURL.setParameter("mbCategoryId", String.valueOf(category.getCategoryId()));
 						}
@@ -197,16 +180,15 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 						}
 						%>
 
-						<liferay-ui:icon
-							image="rss"
-							label="<%= true %>"
-							method="get"
-							target="_blank"
-							url="<%= rssURL.toString() %>"
+						<liferay-ui:rss
+							delta="<%= rssDelta %>"
+							displayStyle="<%= rssDisplayStyle %>"
+							feedType="<%= rssFeedType %>"
+							resourceURL="<%= rssURL %>"
 						/>
 					</c:if>
 
-					<c:if test="<%= MBCategoryPermission.contains(permissionChecker, category, ActionKeys.SUBSCRIBE) %>">
+					<c:if test="<%= MBCategoryPermission.contains(permissionChecker, category, ActionKeys.SUBSCRIBE) && (MBUtil.getEmailMessageAddedEnabled(preferences) || MBUtil.getEmailMessageUpdatedEnabled(preferences)) %>">
 						<c:choose>
 							<c:when test="<%= (categorySubscriptionClassPKs != null) && categorySubscriptionClassPKs.contains(category.getCategoryId()) %>">
 								<portlet:actionURL var="unsubscribeURL">
@@ -309,7 +291,7 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 
 		<%@ include file="/html/portlet/message_boards/view_threads.jspf" %>
 
-		<c:if test='<%= PortalUtil.isRSSFeedsEnabled() && topLink.equals("recent-posts") %>'>
+		<c:if test='<%= enableRSS && topLink.equals("recent-posts") %>'>
 
 			<%
 			rssURL.setParameter("groupId", String.valueOf(scopeGroupId));
@@ -323,20 +305,13 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 
 			<br />
 
-			<table class="lfr-table">
-			<tr>
-				<td>
-					<liferay-ui:icon
-						image="rss"
-						label="<%= true %>"
-						message="subscribe-to-recent-posts"
-						method="get"
-						target="_blank"
-						url="<%= rssURL.toString() %>"
-					/>
-				</td>
-			</tr>
-			</table>
+			<liferay-ui:rss
+				delta="<%= rssDelta %>"
+				displayStyle="<%= rssDisplayStyle %>"
+				feedType="<%= rssFeedType %>"
+				message="subscribe-to-recent-posts"
+				resourceURL="<%= rssURL %>"
+			/>
 		</c:if>
 
 		<%

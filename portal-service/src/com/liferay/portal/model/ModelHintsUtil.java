@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -42,6 +42,10 @@ public class ModelHintsUtil {
 		return getModelHints().getHints(model, field);
 	}
 
+	public static int getMaxLength(String model, String field) {
+		return getModelHints().getMaxLength(model, field);
+	}
+
 	public static ModelHints getModelHints() {
 		PortalRuntimePermission.checkGetBeanProperty(ModelHintsUtil.class);
 
@@ -66,6 +70,12 @@ public class ModelHintsUtil {
 
 	public static List<Tuple> getValidators(String model, String field) {
 		return getModelHints().getValidators(model, field);
+	}
+
+	public static String getValue(
+		String model, String field, String name, String defaultValue) {
+
+		return getModelHints().getValue(model, field, name, defaultValue);
 	}
 
 	public static boolean isCustomValidator(String validatorName) {

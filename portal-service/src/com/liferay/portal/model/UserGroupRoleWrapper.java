@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -196,6 +196,16 @@ public class UserGroupRoleWrapper implements UserGroupRole,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_userGroupRole.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_userGroupRole.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_userGroupRole.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -220,6 +230,10 @@ public class UserGroupRoleWrapper implements UserGroupRole,
 
 	public com.liferay.portal.model.UserGroupRole toEscapedModel() {
 		return new UserGroupRoleWrapper(_userGroupRole.toEscapedModel());
+	}
+
+	public com.liferay.portal.model.UserGroupRole toUnescapedModel() {
+		return new UserGroupRoleWrapper(_userGroupRole.toUnescapedModel());
 	}
 
 	@Override
@@ -255,7 +269,7 @@ public class UserGroupRoleWrapper implements UserGroupRole,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public UserGroupRole getWrappedUserGroupRole() {
 		return _userGroupRole;

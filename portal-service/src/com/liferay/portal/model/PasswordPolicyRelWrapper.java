@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -213,6 +213,16 @@ public class PasswordPolicyRelWrapper implements PasswordPolicyRel,
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_passwordPolicyRel.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_passwordPolicyRel.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_passwordPolicyRel.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -240,6 +250,10 @@ public class PasswordPolicyRelWrapper implements PasswordPolicyRel,
 		return new PasswordPolicyRelWrapper(_passwordPolicyRel.toEscapedModel());
 	}
 
+	public com.liferay.portal.model.PasswordPolicyRel toUnescapedModel() {
+		return new PasswordPolicyRelWrapper(_passwordPolicyRel.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _passwordPolicyRel.toString();
@@ -255,7 +269,7 @@ public class PasswordPolicyRelWrapper implements PasswordPolicyRel,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public PasswordPolicyRel getWrappedPasswordPolicyRel() {
 		return _passwordPolicyRel;

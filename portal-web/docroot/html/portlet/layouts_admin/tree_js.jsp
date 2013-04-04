@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -26,6 +26,7 @@ String treeLoading = PortalUtil.generateRandomKey(request, "treeLoading");
 String treeId = ParamUtil.getString(request, "treeId");
 boolean checkContentDisplayPage = ParamUtil.getBoolean(request, "checkContentDisplayPage", false);
 boolean defaultStateChecked = ParamUtil.getBoolean(request, "defaultStateChecked", false);
+boolean draggableTree = ParamUtil.getBoolean(request, "draggableTree", true);
 boolean expandFirstNode = ParamUtil.getBoolean(request, "expandFirstNode", true);
 boolean saveState = ParamUtil.getBoolean(request, "saveState", true);
 boolean selectableTree = ParamUtil.getBoolean(request, "selectableTree");
@@ -157,6 +158,7 @@ if (!selectableTree) {
 					var childLayouts = [];
 					var total = 0;
 
+					var hasChildren = node.hasChildren;
 					var nodeChildren = node.children;
 
 					if (nodeChildren) {
@@ -165,6 +167,12 @@ if (!selectableTree) {
 					}
 
 					var expanded = (total > 0);
+
+					var type = 'task';
+
+					<c:if test="<%= !selectableTree %>">
+						type = (nodeChildren && expanded) ? 'node' : 'io';
+					</c:if>
 
 					var newNode = {
 						<c:if test="<%= saveState %>">
@@ -193,22 +201,23 @@ if (!selectableTree) {
 							},
 						</c:if>
 
-						alwaysShowHitArea: node.hasChildren,
+						alwaysShowHitArea: hasChildren,
 
 						<c:if test="<%= !saveState && defaultStateChecked %>">
 							checked: true,
 						</c:if>
 
-						draggable: node.updateable,
+						draggable: node.sortable,
 						expanded: expanded,
 						id: TreeUtil.createListItemId(node.groupId, node.layoutId, node.plid),
+						leaf: !hasChildren,
 						paginator: {
 							limit: TreeUtil.PAGINATION_LIMIT,
 							offsetParam: 'start',
 							start: Math.max(childLayouts.length - TreeUtil.PAGINATION_LIMIT, 0),
 							total: total
 						},
-						type: '<%= selectableTree ? "task" : "io" %>'
+						type: type
 					};
 
 					if (nodeChildren && expanded) {
@@ -235,7 +244,7 @@ if (!selectableTree) {
 						}
 					}
 
-					if (!node.updateable) {
+					if (!node.sortable) {
 						newNode.cssClass = 'lfr-page-locked';
 					}
 
@@ -467,7 +476,10 @@ if (!selectableTree) {
 
 	<c:if test="<%= !selectableTree %>">
 		RootNodeType = A.TreeNodeIO;
-		TreeViewType = A.TreeViewDD;
+
+		<c:if test="<%= draggableTree %>">
+			TreeViewType = A.TreeViewDD;
+		</c:if>
 
 		<c:if test="<%= !checkContentDisplayPage %>">
 		rootLabel = TreeUtil.createLink(
@@ -578,7 +590,9 @@ if (!selectableTree) {
 								instance.syncUI();
 							}
 
-							TreeUtil.updatePagination(instance);
+							<c:if test="<%= saveState %>">
+								TreeUtil.updatePagination(instance);
+							</c:if>
 						}
 					}
 				},
@@ -592,6 +606,15 @@ if (!selectableTree) {
 					},
 				</c:if>
 
+				'drop:hit': function(event) {
+					var dropNode = event.drop.get('node').get('parentNode');
+
+					var dropTreeNode = dropNode.getData('tree-node');
+
+					if (!dropTreeNode.get('draggable')) {
+						event.halt();
+					}
+				},
 				dropAppend: function(event) {
 					var tree = event.tree;
 

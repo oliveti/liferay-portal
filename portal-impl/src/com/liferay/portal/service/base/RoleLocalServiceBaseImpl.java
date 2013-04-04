@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -210,6 +210,10 @@ import com.liferay.portal.service.persistence.WebsitePersistence;
 import com.liferay.portal.service.persistence.WorkflowDefinitionLinkPersistence;
 import com.liferay.portal.service.persistence.WorkflowInstanceLinkPersistence;
 
+import com.liferay.portlet.expando.service.ExpandoValueLocalService;
+import com.liferay.portlet.expando.service.ExpandoValueService;
+import com.liferay.portlet.expando.service.persistence.ExpandoValuePersistence;
+
 import java.io.Serializable;
 
 import java.util.List;
@@ -310,7 +314,7 @@ public abstract class RoleLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.RoleModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -329,7 +333,7 @@ public abstract class RoleLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.RoleModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -383,7 +387,7 @@ public abstract class RoleLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * Returns a range of all the roles.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.RoleModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of roles
@@ -415,6 +419,254 @@ public abstract class RoleLocalServiceBaseImpl extends BaseLocalServiceImpl
 	@Indexable(type = IndexableType.REINDEX)
 	public Role updateRole(Role role) throws SystemException {
 		return rolePersistence.update(role);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addGroupRole(long groupId, long roleId)
+		throws SystemException {
+		groupPersistence.addRole(groupId, roleId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addGroupRole(long groupId, Role role) throws SystemException {
+		groupPersistence.addRole(groupId, role);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addGroupRoles(long groupId, long[] roleIds)
+		throws SystemException {
+		groupPersistence.addRoles(groupId, roleIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addGroupRoles(long groupId, List<Role> Roles)
+		throws SystemException {
+		groupPersistence.addRoles(groupId, Roles);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void clearGroupRoles(long groupId) throws SystemException {
+		groupPersistence.clearRoles(groupId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteGroupRole(long groupId, long roleId)
+		throws SystemException {
+		groupPersistence.removeRole(groupId, roleId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteGroupRole(long groupId, Role role)
+		throws SystemException {
+		groupPersistence.removeRole(groupId, role);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteGroupRoles(long groupId, long[] roleIds)
+		throws SystemException {
+		groupPersistence.removeRoles(groupId, roleIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteGroupRoles(long groupId, List<Role> Roles)
+		throws SystemException {
+		groupPersistence.removeRoles(groupId, Roles);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Role> getGroupRoles(long groupId) throws SystemException {
+		return groupPersistence.getRoles(groupId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Role> getGroupRoles(long groupId, int start, int end)
+		throws SystemException {
+		return groupPersistence.getRoles(groupId, start, end);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Role> getGroupRoles(long groupId, int start, int end,
+		OrderByComparator orderByComparator) throws SystemException {
+		return groupPersistence.getRoles(groupId, start, end, orderByComparator);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getGroupRolesCount(long groupId) throws SystemException {
+		return groupPersistence.getRolesSize(groupId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasGroupRole(long groupId, long roleId)
+		throws SystemException {
+		return groupPersistence.containsRole(groupId, roleId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasGroupRoles(long groupId) throws SystemException {
+		return groupPersistence.containsRoles(groupId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void setGroupRoles(long groupId, long[] roleIds)
+		throws SystemException {
+		groupPersistence.setRoles(groupId, roleIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserRole(long userId, long roleId) throws SystemException {
+		userPersistence.addRole(userId, roleId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserRole(long userId, Role role) throws SystemException {
+		userPersistence.addRole(userId, role);
+	}
+
+	/**
+	 * @throws PortalException
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserRoles(long userId, long[] roleIds)
+		throws PortalException, SystemException {
+		userPersistence.addRoles(userId, roleIds);
+	}
+
+	/**
+	 * @throws PortalException
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addUserRoles(long userId, List<Role> Roles)
+		throws PortalException, SystemException {
+		userPersistence.addRoles(userId, Roles);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void clearUserRoles(long userId) throws SystemException {
+		userPersistence.clearRoles(userId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserRole(long userId, long roleId)
+		throws SystemException {
+		userPersistence.removeRole(userId, roleId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserRole(long userId, Role role)
+		throws SystemException {
+		userPersistence.removeRole(userId, role);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserRoles(long userId, long[] roleIds)
+		throws SystemException {
+		userPersistence.removeRoles(userId, roleIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteUserRoles(long userId, List<Role> Roles)
+		throws SystemException {
+		userPersistence.removeRoles(userId, Roles);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Role> getUserRoles(long userId) throws SystemException {
+		return userPersistence.getRoles(userId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Role> getUserRoles(long userId, int start, int end)
+		throws SystemException {
+		return userPersistence.getRoles(userId, start, end);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<Role> getUserRoles(long userId, int start, int end,
+		OrderByComparator orderByComparator) throws SystemException {
+		return userPersistence.getRoles(userId, start, end, orderByComparator);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getUserRolesCount(long userId) throws SystemException {
+		return userPersistence.getRolesSize(userId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasUserRole(long userId, long roleId)
+		throws SystemException {
+		return userPersistence.containsRole(userId, roleId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasUserRoles(long userId) throws SystemException {
+		return userPersistence.containsRoles(userId);
+	}
+
+	/**
+	 * @throws PortalException
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void setUserRoles(long userId, long[] roleIds)
+		throws PortalException, SystemException {
+		userPersistence.setRoles(userId, roleIds);
 	}
 
 	/**
@@ -3739,6 +3991,62 @@ public abstract class RoleLocalServiceBaseImpl extends BaseLocalServiceImpl
 		this.counterLocalService = counterLocalService;
 	}
 
+	/**
+	 * Returns the expando value local service.
+	 *
+	 * @return the expando value local service
+	 */
+	public ExpandoValueLocalService getExpandoValueLocalService() {
+		return expandoValueLocalService;
+	}
+
+	/**
+	 * Sets the expando value local service.
+	 *
+	 * @param expandoValueLocalService the expando value local service
+	 */
+	public void setExpandoValueLocalService(
+		ExpandoValueLocalService expandoValueLocalService) {
+		this.expandoValueLocalService = expandoValueLocalService;
+	}
+
+	/**
+	 * Returns the expando value remote service.
+	 *
+	 * @return the expando value remote service
+	 */
+	public ExpandoValueService getExpandoValueService() {
+		return expandoValueService;
+	}
+
+	/**
+	 * Sets the expando value remote service.
+	 *
+	 * @param expandoValueService the expando value remote service
+	 */
+	public void setExpandoValueService(ExpandoValueService expandoValueService) {
+		this.expandoValueService = expandoValueService;
+	}
+
+	/**
+	 * Returns the expando value persistence.
+	 *
+	 * @return the expando value persistence
+	 */
+	public ExpandoValuePersistence getExpandoValuePersistence() {
+		return expandoValuePersistence;
+	}
+
+	/**
+	 * Sets the expando value persistence.
+	 *
+	 * @param expandoValuePersistence the expando value persistence
+	 */
+	public void setExpandoValuePersistence(
+		ExpandoValuePersistence expandoValuePersistence) {
+		this.expandoValuePersistence = expandoValuePersistence;
+	}
+
 	public void afterPropertiesSet() {
 		persistedModelLocalServiceRegistry.register("com.liferay.portal.model.Role",
 			roleLocalService);
@@ -4152,6 +4460,12 @@ public abstract class RoleLocalServiceBaseImpl extends BaseLocalServiceImpl
 	protected WorkflowInstanceLinkPersistence workflowInstanceLinkPersistence;
 	@BeanReference(type = CounterLocalService.class)
 	protected CounterLocalService counterLocalService;
+	@BeanReference(type = ExpandoValueLocalService.class)
+	protected ExpandoValueLocalService expandoValueLocalService;
+	@BeanReference(type = ExpandoValueService.class)
+	protected ExpandoValueService expandoValueService;
+	@BeanReference(type = ExpandoValuePersistence.class)
+	protected ExpandoValuePersistence expandoValuePersistence;
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
 	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
 	private String _beanIdentifier;

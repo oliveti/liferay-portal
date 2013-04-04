@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -109,6 +109,10 @@ public interface ClassNameModel extends BaseModel<ClassName> {
 
 	public ExpandoBridge getExpandoBridge();
 
+	public void setExpandoBridgeAttributes(BaseModel<?> baseModel);
+
+	public void setExpandoBridgeAttributes(ExpandoBridge expandoBridge);
+
 	public void setExpandoBridgeAttributes(ServiceContext serviceContext);
 
 	public Object clone();
@@ -120,6 +124,8 @@ public interface ClassNameModel extends BaseModel<ClassName> {
 	public CacheModel<ClassName> toCacheModel();
 
 	public ClassName toEscapedModel();
+
+	public ClassName toUnescapedModel();
 
 	public String toString();
 

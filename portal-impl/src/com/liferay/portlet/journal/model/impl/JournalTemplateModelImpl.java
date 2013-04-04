@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -183,7 +183,7 @@ public class JournalTemplateModelImpl extends BaseModelImpl<JournalTemplate>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_id);
+		return _id;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -796,13 +796,12 @@ public class JournalTemplateModelImpl extends BaseModelImpl<JournalTemplate>
 
 	@Override
 	public JournalTemplate toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (JournalTemplate)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (JournalTemplate)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -1142,7 +1141,7 @@ public class JournalTemplateModelImpl extends BaseModelImpl<JournalTemplate>
 	}
 
 	private static ClassLoader _classLoader = JournalTemplate.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			JournalTemplate.class
 		};
 	private String _uuid;
@@ -1176,5 +1175,5 @@ public class JournalTemplateModelImpl extends BaseModelImpl<JournalTemplate>
 	private boolean _setOriginalSmallImageId;
 	private String _smallImageURL;
 	private long _columnBitmask;
-	private JournalTemplate _escapedModelProxy;
+	private JournalTemplate _escapedModel;
 }

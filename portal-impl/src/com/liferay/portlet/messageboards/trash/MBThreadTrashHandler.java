@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,23 +18,26 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.trash.BaseTrashHandler;
 import com.liferay.portal.kernel.trash.TrashRenderer;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.model.CompanyConstants;
-import com.liferay.portal.model.Group;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.model.ContainerModel;
+import com.liferay.portal.model.LayoutConstants;
 import com.liferay.portal.security.permission.PermissionChecker;
-import com.liferay.portlet.documentlibrary.NoSuchDirectoryException;
-import com.liferay.portlet.documentlibrary.store.DLStoreUtil;
+import com.liferay.portal.service.ServiceContext;
+import com.liferay.portal.util.PortalUtil;
+import com.liferay.portal.util.PortletKeys;
+import com.liferay.portlet.PortletURLFactoryUtil;
+import com.liferay.portlet.messageboards.model.MBCategory;
 import com.liferay.portlet.messageboards.model.MBThread;
+import com.liferay.portlet.messageboards.service.MBCategoryLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBThreadLocalServiceUtil;
-import com.liferay.portlet.messageboards.service.MBThreadServiceUtil;
 import com.liferay.portlet.messageboards.service.permission.MBMessagePermission;
 import com.liferay.portlet.messageboards.util.MBUtil;
-import com.liferay.portlet.trash.util.TrashUtil;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletURL;
 
 /**
  * Implements trash handling for message boards thread entity.
@@ -43,77 +46,90 @@ import javax.portlet.PortletRequest;
  */
 public class MBThreadTrashHandler extends BaseTrashHandler {
 
-	public static final String CLASS_NAME = MBThread.class.getName();
-
-	@Override
-	public void deleteTrashAttachments(Group group, Date date)
+	public void deleteTrashEntry(long classPK)
 		throws PortalException, SystemException {
 
-		long repositoryId = CompanyConstants.SYSTEM;
-
-		String[] threadFileNames = null;
-
-		try {
-			threadFileNames = DLStoreUtil.getFileNames(
-				group.getCompanyId(), repositoryId, "messageboards");
-		}
-		catch (NoSuchDirectoryException nsde) {
-			return;
-		}
-
-		for (String threadFileName : threadFileNames) {
-			String[] messageFileNames = null;
-
-			try {
-				messageFileNames = DLStoreUtil.getFileNames(
-					group.getCompanyId(), repositoryId, threadFileName);
-			}
-			catch (NoSuchDirectoryException nsde) {
-				continue;
-			}
-
-			for (String messageFileName : messageFileNames) {
-				String fileTitle = StringUtil.extractLast(
-					messageFileName, StringPool.FORWARD_SLASH);
-
-				if (fileTitle.startsWith(TrashUtil.TRASH_ATTACHMENTS_DIR)) {
-					String[] attachmentFileNames = DLStoreUtil.getFileNames(
-						group.getCompanyId(), repositoryId,
-						threadFileName + StringPool.FORWARD_SLASH + fileTitle);
-
-					TrashUtil.deleteEntriesAttachments(
-						group.getCompanyId(), repositoryId, date,
-						attachmentFileNames);
-				}
-			}
-		}
-	}
-
-	public void deleteTrashEntries(long[] classPKs, boolean checkPermission)
-		throws PortalException, SystemException {
-
-		for (long classPK : classPKs) {
-			if (checkPermission) {
-				MBThreadServiceUtil.deleteThread(classPK);
-			}
-			else {
-				MBThreadLocalServiceUtil.deleteThread(classPK);
-			}
-		}
+		MBThreadLocalServiceUtil.deleteThread(classPK);
 	}
 
 	public String getClassName() {
-		return CLASS_NAME;
+		return MBThread.class.getName();
+	}
+
+	@Override
+	public String getContainerModelClassName() {
+		return MBCategory.class.getName();
+	}
+
+	@Override
+	public String getContainerModelName() {
+		return "category";
+	}
+
+	@Override
+	public List<ContainerModel> getContainerModels(
+			long classPK, long parentContainerModelId, int start, int end)
+		throws PortalException, SystemException {
+
+		List<ContainerModel> containerModels = new ArrayList<ContainerModel>();
+
+		MBThread thread = MBThreadLocalServiceUtil.getThread(classPK);
+
+		List<MBCategory> categories = MBCategoryLocalServiceUtil.getCategories(
+			thread.getGroupId(), parentContainerModelId,
+			WorkflowConstants.STATUS_APPROVED, start, end);
+
+		for (MBCategory category : categories) {
+			containerModels.add(category);
+		}
+
+		return containerModels;
+	}
+
+	@Override
+	public int getContainerModelsCount(
+			long classPK, long parentContainerModelId)
+		throws PortalException, SystemException {
+
+		MBThread thread = MBThreadLocalServiceUtil.getThread(classPK);
+
+		return MBCategoryLocalServiceUtil.getCategoriesCount(
+			thread.getGroupId(), parentContainerModelId,
+			WorkflowConstants.STATUS_APPROVED);
 	}
 
 	@Override
 	public String getRestoreLink(PortletRequest portletRequest, long classPK)
 		throws PortalException, SystemException {
 
+		String portletId = PortletKeys.MESSAGE_BOARDS;
+
 		MBThread thread = MBThreadLocalServiceUtil.getThread(classPK);
 
-		return MBUtil.getMBControlPanelLink(
-			portletRequest, thread.getCategoryId());
+		long plid = PortalUtil.getPlidFromPortletId(
+			thread.getGroupId(), PortletKeys.MESSAGE_BOARDS);
+
+		if (plid == LayoutConstants.DEFAULT_PLID) {
+			portletId = PortletKeys.MESSAGE_BOARDS_ADMIN;
+
+			plid = PortalUtil.getControlPanelPlid(portletRequest);
+		}
+
+		PortletURL portletURL = PortletURLFactoryUtil.create(
+			portletRequest, portletId, plid, PortletRequest.RENDER_PHASE);
+
+		if (portletId.equals(PortletKeys.MESSAGE_BOARDS)) {
+			portletURL.setParameter("struts_action", "/message_boards/view");
+		}
+		else {
+			portletURL.setParameter(
+				"struts_action", "/message_boards_admin/view");
+		}
+
+		portletURL.setParameter(
+			"mbCategoryId", String.valueOf(thread.getCategoryId()));
+
+		return portletURL.toString();
 	}
 
 	@Override
@@ -126,6 +142,15 @@ public class MBThreadTrashHandler extends BaseTrashHandler {
 	}
 
 	@Override
+	public ContainerModel getTrashContainer(long classPK)
+		throws PortalException, SystemException {
+
+		MBThread thread = MBThreadLocalServiceUtil.getThread(classPK);
+
+		return thread.getTrashContainer();
+	}
+
+	@Override
 	public TrashRenderer getTrashRenderer(long classPK)
 		throws PortalException, SystemException {
 
@@ -134,16 +159,51 @@ public class MBThreadTrashHandler extends BaseTrashHandler {
 		return new MBThreadTrashRenderer(thread);
 	}
 
-	public boolean isInTrash(long classPK) {
-		return false;
-	}
-
-	public void restoreTrashEntries(long[] classPKs)
+	public boolean isInTrash(long classPK)
 		throws PortalException, SystemException {
 
-		for (long classPK : classPKs) {
-			MBThreadServiceUtil.restoreThreadFromTrash(classPK);
-		}
+		MBThread thread = MBThreadLocalServiceUtil.getThread(classPK);
+
+		return thread.isInTrash();
+	}
+
+	@Override
+	public boolean isInTrashContainer(long classPK)
+			throws PortalException, SystemException {
+
+		MBThread thread = MBThreadLocalServiceUtil.getThread(classPK);
+
+		return thread.isInTrashContainer();
+	}
+
+	@Override
+	public boolean isMovable() {
+		return true;
+	}
+
+	@Override
+	public void moveEntry(
+			long userId, long classPK, long containerModelId,
+			ServiceContext serviceContext)
+		throws PortalException, SystemException {
+
+		MBThreadLocalServiceUtil.moveThread(userId, containerModelId, classPK);
+	}
+
+	@Override
+	public void moveTrashEntry(
+			long userId, long classPK, long containerModelId,
+			ServiceContext serviceContext)
+		throws PortalException, SystemException {
+
+		MBThreadLocalServiceUtil.moveThreadFromTrash(
+			userId, containerModelId, classPK);
+	}
+
+	public void restoreTrashEntry(long userId, long classPK)
+		throws PortalException, SystemException {
+
+		MBThreadLocalServiceUtil.restoreThreadFromTrash(userId, classPK);
 	}
 
 	@Override

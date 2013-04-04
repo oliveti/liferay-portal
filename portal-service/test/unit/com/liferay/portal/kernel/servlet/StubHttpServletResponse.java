@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -17,7 +17,6 @@ package com.liferay.portal.kernel.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import java.util.Collection;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
@@ -82,28 +81,12 @@ public class StubHttpServletResponse implements HttpServletResponse {
 		throw new UnsupportedOperationException();
 	}
 
-	public String getHeader(String name) {
-		throw new UnsupportedOperationException();
-	}
-
-	public Collection<String> getHeaderNames() {
-		throw new UnsupportedOperationException();
-	}
-
-	public Collection<String> getHeaders(String name) {
-		throw new UnsupportedOperationException();
-	}
-
 	public Locale getLocale() {
 		throw new UnsupportedOperationException();
 	}
 
 	@SuppressWarnings("unused")
 	public ServletOutputStream getOutputStream() throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	public int getStatus() {
 		throw new UnsupportedOperationException();
 	}
 

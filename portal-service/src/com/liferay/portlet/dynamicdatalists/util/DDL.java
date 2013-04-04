@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -79,12 +79,12 @@ public interface DDL {
 
 	public void sendRecordFileUpload(
 			HttpServletRequest request, HttpServletResponse response,
-			DDLRecord record, String fieldName)
+			DDLRecord record, String fieldName, int valueIndex)
 		throws Exception;
 
 	public void sendRecordFileUpload(
 			HttpServletRequest request, HttpServletResponse response,
-			long recordId, String fieldName)
+			long recordId, String fieldName, int valueIndex)
 		throws Exception;
 
 	public DDLRecord updateRecord(
@@ -97,7 +97,7 @@ public interface DDL {
 			ServiceContext serviceContext)
 		throws Exception;
 
-	public String uploadRecordFieldFile(
+	public void uploadRecordFieldFile(
 			DDLRecord record, String fieldName, ServiceContext serviceContext)
 		throws Exception;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -164,7 +164,7 @@ public class AssetTagModelImpl extends BaseModelImpl<AssetTag>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_tagId);
+		return _tagId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -393,13 +393,12 @@ public class AssetTagModelImpl extends BaseModelImpl<AssetTag>
 
 	@Override
 	public AssetTag toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (AssetTag)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (AssetTag)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -604,7 +603,7 @@ public class AssetTagModelImpl extends BaseModelImpl<AssetTag>
 	}
 
 	private static ClassLoader _classLoader = AssetTag.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			AssetTag.class
 		};
 	private long _tagId;
@@ -621,5 +620,5 @@ public class AssetTagModelImpl extends BaseModelImpl<AssetTag>
 	private String _originalName;
 	private int _assetCount;
 	private long _columnBitmask;
-	private AssetTag _escapedModelProxy;
+	private AssetTag _escapedModel;
 }

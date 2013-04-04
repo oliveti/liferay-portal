@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -134,28 +134,8 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 						TrashHandlerRegistryUtil.getTrashHandler(
 							entry.getClassName());
 
-					trashHandler.deleteTrashEntry(entry.getClassPK(), false);
+					trashHandler.deleteTrashEntry(entry.getClassPK());
 				}
-			}
-
-		};
-
-		actionableDynamicQuery.performActions();
-	}
-
-	public void checkEntriesAttachments()
-		throws PortalException, SystemException {
-
-		ActionableDynamicQuery actionableDynamicQuery =
-			new GroupActionableDynamicQuery() {
-
-			@Override
-			protected void performAction(Object object)
-				throws PortalException, SystemException {
-
-				Group group = (Group)object;
-
-				checkEntriesAttachments(group);
 			}
 
 		};
@@ -338,7 +318,7 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 	 * @throws SystemException if a system exception occurred
 	 */
 	public List<TrashVersion> getVersions(long entryId) throws SystemException {
-		return trashEntryPersistence.getTrashVersions(entryId);
+		return trashVersionPersistence.findByEntryId(entryId);
 	}
 
 	/**
@@ -387,18 +367,6 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 		}
 	}
 
-	protected void checkEntriesAttachments(Group group)
-		throws PortalException, SystemException {
-
-		Date date = getMaxAge(group);
-
-		for (TrashHandler trashHandler :
-				TrashHandlerRegistryUtil.getTrashHandlers()) {
-
-			trashHandler.deleteTrashAttachments(group, date);
-		}
-	}
-
 	protected Date getMaxAge(Group group)
 		throws PortalException, SystemException {
 
@@ -408,7 +376,7 @@ public class TrashEntryLocalServiceImpl extends TrashEntryLocalServiceBaseImpl {
 
 		int maxAge = TrashUtil.getMaxAge(group);
 
-		calendar.add(Calendar.DATE, -maxAge);
+		calendar.add(Calendar.MINUTE, -maxAge);
 
 		return calendar.getTime();
 	}

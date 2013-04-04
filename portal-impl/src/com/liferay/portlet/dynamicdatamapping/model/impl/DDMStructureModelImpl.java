@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -89,6 +89,8 @@ public class DDMStructureModelImpl extends BaseModelImpl<DDMStructure>
 		};
 	public static final String TABLE_SQL_CREATE = "create table DDMStructure (uuid_ VARCHAR(75) null,structureId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,parentStructureId LONG,classNameId LONG,structureKey VARCHAR(75) null,name STRING null,description STRING null,xsd TEXT null,storageType VARCHAR(75) null,type_ INTEGER)";
 	public static final String TABLE_SQL_DROP = "drop table DDMStructure";
+	public static final String ORDER_BY_JPQL = " ORDER BY ddmStructure.structureId ASC";
+	public static final String ORDER_BY_SQL = " ORDER BY DDMStructure.structureId ASC";
 	public static final String DATA_SOURCE = "liferayDataSource";
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
 	public static final String TX_MANAGER = "liferayTransactionManager";
@@ -108,6 +110,7 @@ public class DDMStructureModelImpl extends BaseModelImpl<DDMStructure>
 	public static long NAME_COLUMN_BITMASK = 16L;
 	public static long STRUCTUREKEY_COLUMN_BITMASK = 32L;
 	public static long UUID_COLUMN_BITMASK = 64L;
+	public static long STRUCTUREID_COLUMN_BITMASK = 128L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -162,6 +165,19 @@ public class DDMStructureModelImpl extends BaseModelImpl<DDMStructure>
 		return models;
 	}
 
+	public static final String MAPPING_TABLE_DLFILEENTRYTYPES_DDMSTRUCTURES_NAME =
+		"DLFileEntryTypes_DDMStructures";
+	public static final Object[][] MAPPING_TABLE_DLFILEENTRYTYPES_DDMSTRUCTURES_COLUMNS =
+		{
+			{ "structureId", Types.BIGINT },
+			{ "fileEntryTypeId", Types.BIGINT }
+		};
+	public static final String MAPPING_TABLE_DLFILEENTRYTYPES_DDMSTRUCTURES_SQL_CREATE =
+		"create table DLFileEntryTypes_DDMStructures (structureId LONG not null,fileEntryTypeId LONG not null,primary key (structureId, fileEntryTypeId))";
+	public static final boolean FINDER_CACHE_ENABLED_DLFILEENTRYTYPES_DDMSTRUCTURES =
+		GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
+				"value.object.finder.cache.enabled.DLFileEntryTypes_DDMStructures"),
+			true);
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portlet.dynamicdatamapping.model.DDMStructure"));
 
@@ -177,7 +193,7 @@ public class DDMStructureModelImpl extends BaseModelImpl<DDMStructure>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_structureId);
+		return _structureId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -791,13 +807,12 @@ public class DDMStructureModelImpl extends BaseModelImpl<DDMStructure>
 
 	@Override
 	public DDMStructure toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (DDMStructure)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (DDMStructure)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -1117,7 +1132,7 @@ public class DDMStructureModelImpl extends BaseModelImpl<DDMStructure>
 	}
 
 	private static ClassLoader _classLoader = DDMStructure.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			DDMStructure.class
 		};
 	private String _uuid;
@@ -1150,5 +1165,5 @@ public class DDMStructureModelImpl extends BaseModelImpl<DDMStructure>
 	private String _storageType;
 	private int _type;
 	private long _columnBitmask;
-	private DDMStructure _escapedModelProxy;
+	private DDMStructure _escapedModel;
 }

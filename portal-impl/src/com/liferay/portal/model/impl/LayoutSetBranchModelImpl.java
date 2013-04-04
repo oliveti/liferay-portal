@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -180,7 +180,7 @@ public class LayoutSetBranchModelImpl extends BaseModelImpl<LayoutSetBranch>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_layoutSetBranchId);
+		return _layoutSetBranchId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -673,13 +673,12 @@ public class LayoutSetBranchModelImpl extends BaseModelImpl<LayoutSetBranch>
 
 	@Override
 	public LayoutSetBranch toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (LayoutSetBranch)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (LayoutSetBranch)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -1045,7 +1044,7 @@ public class LayoutSetBranchModelImpl extends BaseModelImpl<LayoutSetBranch>
 	}
 
 	private static ClassLoader _classLoader = LayoutSetBranch.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			LayoutSetBranch.class
 		};
 	private long _layoutSetBranchId;
@@ -1076,5 +1075,5 @@ public class LayoutSetBranchModelImpl extends BaseModelImpl<LayoutSetBranch>
 	private String _layoutSetPrototypeUuid;
 	private boolean _layoutSetPrototypeLinkEnabled;
 	private long _columnBitmask;
-	private LayoutSetBranch _escapedModelProxy;
+	private LayoutSetBranch _escapedModel;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -171,7 +171,7 @@ public abstract class SCProductEntryLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCProductEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -191,7 +191,7 @@ public abstract class SCProductEntryLocalServiceBaseImpl
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCProductEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -247,7 +247,7 @@ public abstract class SCProductEntryLocalServiceBaseImpl
 	 * Returns a range of all the s c product entries.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCProductEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of s c product entries
@@ -281,6 +281,137 @@ public abstract class SCProductEntryLocalServiceBaseImpl
 	public SCProductEntry updateSCProductEntry(SCProductEntry scProductEntry)
 		throws SystemException {
 		return scProductEntryPersistence.update(scProductEntry);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addSCLicenseSCProductEntry(long licenseId, long productEntryId)
+		throws SystemException {
+		scLicensePersistence.addSCProductEntry(licenseId, productEntryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addSCLicenseSCProductEntry(long licenseId,
+		SCProductEntry scProductEntry) throws SystemException {
+		scLicensePersistence.addSCProductEntry(licenseId, scProductEntry);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addSCLicenseSCProductEntries(long licenseId,
+		long[] productEntryIds) throws SystemException {
+		scLicensePersistence.addSCProductEntries(licenseId, productEntryIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void addSCLicenseSCProductEntries(long licenseId,
+		List<SCProductEntry> SCProductEntries) throws SystemException {
+		scLicensePersistence.addSCProductEntries(licenseId, SCProductEntries);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void clearSCLicenseSCProductEntries(long licenseId)
+		throws SystemException {
+		scLicensePersistence.clearSCProductEntries(licenseId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteSCLicenseSCProductEntry(long licenseId,
+		long productEntryId) throws SystemException {
+		scLicensePersistence.removeSCProductEntry(licenseId, productEntryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteSCLicenseSCProductEntry(long licenseId,
+		SCProductEntry scProductEntry) throws SystemException {
+		scLicensePersistence.removeSCProductEntry(licenseId, scProductEntry);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteSCLicenseSCProductEntries(long licenseId,
+		long[] productEntryIds) throws SystemException {
+		scLicensePersistence.removeSCProductEntries(licenseId, productEntryIds);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void deleteSCLicenseSCProductEntries(long licenseId,
+		List<SCProductEntry> SCProductEntries) throws SystemException {
+		scLicensePersistence.removeSCProductEntries(licenseId, SCProductEntries);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<SCProductEntry> getSCLicenseSCProductEntries(long licenseId)
+		throws SystemException {
+		return scLicensePersistence.getSCProductEntries(licenseId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<SCProductEntry> getSCLicenseSCProductEntries(long licenseId,
+		int start, int end) throws SystemException {
+		return scLicensePersistence.getSCProductEntries(licenseId, start, end);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public List<SCProductEntry> getSCLicenseSCProductEntries(long licenseId,
+		int start, int end, OrderByComparator orderByComparator)
+		throws SystemException {
+		return scLicensePersistence.getSCProductEntries(licenseId, start, end,
+			orderByComparator);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public int getSCLicenseSCProductEntriesCount(long licenseId)
+		throws SystemException {
+		return scLicensePersistence.getSCProductEntriesSize(licenseId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasSCLicenseSCProductEntry(long licenseId,
+		long productEntryId) throws SystemException {
+		return scLicensePersistence.containsSCProductEntry(licenseId,
+			productEntryId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public boolean hasSCLicenseSCProductEntries(long licenseId)
+		throws SystemException {
+		return scLicensePersistence.containsSCProductEntries(licenseId);
+	}
+
+	/**
+	 * @throws SystemException if a system exception occurred
+	 */
+	public void setSCLicenseSCProductEntries(long licenseId,
+		long[] productEntryIds) throws SystemException {
+		scLicensePersistence.setSCProductEntries(licenseId, productEntryIds);
 	}
 
 	/**

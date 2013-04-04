@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -390,7 +390,7 @@ public class StripFilter extends BasePortalFilter {
 
 				unsyncByteArrayOutputStream.writeTo(response.getOutputStream());
 			}
-			else {
+			else if (!response.isCommitted()) {
 				strip(request, response, oldCharBuffer, response.getWriter());
 			}
 		}
@@ -695,7 +695,7 @@ public class StripFilter extends BasePortalFilter {
 
 	private static final char[] _MARKER_INPUT_OPEN = "input".toCharArray();
 
-	private static final String _MARKER_LANGUAGE = "language=\"";
+	private static final String _MARKER_LANGUAGE = "language=";
 
 	private static final int[] _MARKER_LANGUAGE_NEXTS = KMPSearch.generateNexts(
 		_MARKER_LANGUAGE);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -172,7 +172,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_organizationId);
+		return _organizationId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -451,13 +451,12 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 
 	@Override
 	public Organization toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (Organization)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (Organization)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -682,7 +681,7 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	}
 
 	private static ClassLoader _classLoader = Organization.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			Organization.class
 		};
 	private long _organizationId;
@@ -702,5 +701,5 @@ public class OrganizationModelImpl extends BaseModelImpl<Organization>
 	private int _statusId;
 	private String _comments;
 	private long _columnBitmask;
-	private Organization _escapedModelProxy;
+	private Organization _escapedModel;
 }

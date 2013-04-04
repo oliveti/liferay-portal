@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -65,14 +65,23 @@ public class Entity {
 	public static boolean hasColumn(
 		String name, List<EntityColumn> columnList) {
 
-		int pos = columnList.indexOf(new EntityColumn(name));
+		return hasColumn(name, null, columnList);
+	}
 
-		if (pos != -1) {
-			return true;
+	public static boolean hasColumn(
+		String name, String type, List<EntityColumn> columnList) {
+
+		int index = columnList.indexOf(new EntityColumn(name));
+
+		if (index != -1) {
+			EntityColumn col = columnList.get(index);
+
+			if ((type == null) || type.equals(col.getType())) {
+				return true;
+			}
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public Entity(String name) {
@@ -317,6 +326,17 @@ public class Entity {
 		}
 	}
 
+	public String getPKVarNames() {
+		if (hasCompoundPK()) {
+			return getVarName() + "PKs";
+		}
+		else {
+			EntityColumn col = _getPKColumn();
+
+			return col.getNames();
+		}
+	}
+
 	public String getPortletName() {
 		return _portletName;
 	}
@@ -374,7 +394,7 @@ public class Entity {
 		while (itr.hasNext()) {
 			EntityFinder finder = itr.next();
 
-			if (finder.isCollection()) {
+			if (finder.isCollection() && !finder.isUnique()) {
 				itr.remove();
 			}
 		}
@@ -390,6 +410,21 @@ public class Entity {
 		return TextFormatter.formatPlural(getVarName());
 	}
 
+	public boolean hasActionableDynamicQuery() {
+		if (hasColumns() && hasLocalService()) {
+			if (hasCompoundPK()) {
+				EntityColumn col = _pkList.get(0);
+
+				return col.isPrimitiveType();
+			}
+			else {
+				return hasPrimitivePK();
+			}
+		}
+
+		return false;
+	}
+
 	public boolean hasArrayableOperator() {
 		for (EntityFinder finder : _finderList) {
 			if (finder.hasArrayableOperator()) {
@@ -402,6 +437,10 @@ public class Entity {
 
 	public boolean hasColumn(String name) {
 		return hasColumn(name, _columnList);
+	}
+
+	public boolean hasColumn(String name, String type) {
+		return hasColumn(name, type, _columnList);
 	}
 
 	public boolean hasColumns() {
@@ -531,15 +570,14 @@ public class Entity {
 	}
 
 	public boolean isAuditedModel() {
-		if (hasColumn("companyId") && hasColumn("createDate") &&
-			hasColumn("modifiedDate") && hasColumn("userId") &&
+		if (hasColumn("companyId") && hasColumn("createDate", "Date") &&
+			hasColumn("modifiedDate", "Date") && hasColumn("userId") &&
 			hasColumn("userName")) {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	public boolean isCacheEnabled() {
@@ -675,6 +713,14 @@ public class Entity {
 		else {
 			return false;
 		}
+	}
+
+	public boolean isStagedModel() {
+		if (isGroupedModel() && hasUuid()) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public boolean isWorkflowEnabled() {

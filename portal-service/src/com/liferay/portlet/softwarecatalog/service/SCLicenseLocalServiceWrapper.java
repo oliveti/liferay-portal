@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -106,7 +106,7 @@ public class SCLicenseLocalServiceWrapper implements SCLicenseLocalService,
 	* Performs a dynamic query on the database and returns a range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCLicenseModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -126,7 +126,7 @@ public class SCLicenseLocalServiceWrapper implements SCLicenseLocalService,
 	* Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCLicenseModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param dynamicQuery the dynamic query
@@ -191,7 +191,7 @@ public class SCLicenseLocalServiceWrapper implements SCLicenseLocalService,
 	* Returns a range of all the s c licenses.
 	*
 	* <p>
-	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set.
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portlet.softwarecatalog.model.impl.SCLicenseModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
 	* </p>
 	*
 	* @param start the lower bound of the range of s c licenses
@@ -227,6 +227,159 @@ public class SCLicenseLocalServiceWrapper implements SCLicenseLocalService,
 		com.liferay.portlet.softwarecatalog.model.SCLicense scLicense)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _scLicenseLocalService.updateSCLicense(scLicense);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addSCProductEntrySCLicense(long productEntryId, long licenseId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.addSCProductEntrySCLicense(productEntryId,
+			licenseId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addSCProductEntrySCLicense(long productEntryId,
+		com.liferay.portlet.softwarecatalog.model.SCLicense scLicense)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.addSCProductEntrySCLicense(productEntryId,
+			scLicense);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addSCProductEntrySCLicenses(long productEntryId,
+		long[] licenseIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.addSCProductEntrySCLicenses(productEntryId,
+			licenseIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void addSCProductEntrySCLicenses(long productEntryId,
+		java.util.List<com.liferay.portlet.softwarecatalog.model.SCLicense> SCLicenses)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.addSCProductEntrySCLicenses(productEntryId,
+			SCLicenses);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void clearSCProductEntrySCLicenses(long productEntryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.clearSCProductEntrySCLicenses(productEntryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteSCProductEntrySCLicense(long productEntryId,
+		long licenseId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.deleteSCProductEntrySCLicense(productEntryId,
+			licenseId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteSCProductEntrySCLicense(long productEntryId,
+		com.liferay.portlet.softwarecatalog.model.SCLicense scLicense)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.deleteSCProductEntrySCLicense(productEntryId,
+			scLicense);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteSCProductEntrySCLicenses(long productEntryId,
+		long[] licenseIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.deleteSCProductEntrySCLicenses(productEntryId,
+			licenseIds);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void deleteSCProductEntrySCLicenses(long productEntryId,
+		java.util.List<com.liferay.portlet.softwarecatalog.model.SCLicense> SCLicenses)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.deleteSCProductEntrySCLicenses(productEntryId,
+			SCLicenses);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public java.util.List<com.liferay.portlet.softwarecatalog.model.SCLicense> getSCProductEntrySCLicenses(
+		long productEntryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scLicenseLocalService.getSCProductEntrySCLicenses(productEntryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public java.util.List<com.liferay.portlet.softwarecatalog.model.SCLicense> getSCProductEntrySCLicenses(
+		long productEntryId, int start, int end)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scLicenseLocalService.getSCProductEntrySCLicenses(productEntryId,
+			start, end);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public java.util.List<com.liferay.portlet.softwarecatalog.model.SCLicense> getSCProductEntrySCLicenses(
+		long productEntryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator orderByComparator)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scLicenseLocalService.getSCProductEntrySCLicenses(productEntryId,
+			start, end, orderByComparator);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public int getSCProductEntrySCLicensesCount(long productEntryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scLicenseLocalService.getSCProductEntrySCLicensesCount(productEntryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public boolean hasSCProductEntrySCLicense(long productEntryId,
+		long licenseId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scLicenseLocalService.hasSCProductEntrySCLicense(productEntryId,
+			licenseId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public boolean hasSCProductEntrySCLicenses(long productEntryId)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		return _scLicenseLocalService.hasSCProductEntrySCLicenses(productEntryId);
+	}
+
+	/**
+	* @throws SystemException if a system exception occurred
+	*/
+	public void setSCProductEntrySCLicenses(long productEntryId,
+		long[] licenseIds)
+		throws com.liferay.portal.kernel.exception.SystemException {
+		_scLicenseLocalService.setSCProductEntrySCLicenses(productEntryId,
+			licenseIds);
 	}
 
 	/**
@@ -325,14 +478,14 @@ public class SCLicenseLocalServiceWrapper implements SCLicenseLocalService,
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedService}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedService}
 	 */
 	public SCLicenseLocalService getWrappedSCLicenseLocalService() {
 		return _scLicenseLocalService;
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #setWrappedService}
+	 * @deprecated As of 6.1.0, replaced by {@link #setWrappedService}
 	 */
 	public void setWrappedSCLicenseLocalService(
 		SCLicenseLocalService scLicenseLocalService) {

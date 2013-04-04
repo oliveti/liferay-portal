@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -92,6 +92,7 @@ public class WorkflowInstanceLinkModelImpl extends BaseModelImpl<WorkflowInstanc
 	public static long CLASSPK_COLUMN_BITMASK = 2L;
 	public static long COMPANYID_COLUMN_BITMASK = 4L;
 	public static long GROUPID_COLUMN_BITMASK = 8L;
+	public static long CREATEDATE_COLUMN_BITMASK = 16L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.model.WorkflowInstanceLink"));
 
@@ -107,7 +108,7 @@ public class WorkflowInstanceLinkModelImpl extends BaseModelImpl<WorkflowInstanc
 	}
 
 	public Serializable getPrimaryKeyObj() {
-		return new Long(_workflowInstanceLinkId);
+		return _workflowInstanceLinkId;
 	}
 
 	public void setPrimaryKeyObj(Serializable primaryKeyObj) {
@@ -384,13 +385,12 @@ public class WorkflowInstanceLinkModelImpl extends BaseModelImpl<WorkflowInstanc
 
 	@Override
 	public WorkflowInstanceLink toEscapedModel() {
-		if (_escapedModelProxy == null) {
-			_escapedModelProxy = (WorkflowInstanceLink)ProxyUtil.newProxyInstance(_classLoader,
-					_escapedModelProxyInterfaces,
-					new AutoEscapeBeanHandler(this));
+		if (_escapedModel == null) {
+			_escapedModel = (WorkflowInstanceLink)ProxyUtil.newProxyInstance(_classLoader,
+					_escapedModelInterfaces, new AutoEscapeBeanHandler(this));
 		}
 
-		return _escapedModelProxy;
+		return _escapedModel;
 	}
 
 	@Override
@@ -611,7 +611,7 @@ public class WorkflowInstanceLinkModelImpl extends BaseModelImpl<WorkflowInstanc
 	}
 
 	private static ClassLoader _classLoader = WorkflowInstanceLink.class.getClassLoader();
-	private static Class<?>[] _escapedModelProxyInterfaces = new Class[] {
+	private static Class<?>[] _escapedModelInterfaces = new Class[] {
 			WorkflowInstanceLink.class
 		};
 	private long _workflowInstanceLinkId;
@@ -634,5 +634,5 @@ public class WorkflowInstanceLinkModelImpl extends BaseModelImpl<WorkflowInstanc
 	private boolean _setOriginalClassPK;
 	private long _workflowInstanceId;
 	private long _columnBitmask;
-	private WorkflowInstanceLink _escapedModelProxy;
+	private WorkflowInstanceLink _escapedModel;
 }

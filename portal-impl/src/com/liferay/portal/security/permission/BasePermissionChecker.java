@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -68,6 +68,10 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 		return PermissionChecker.DEFAULT_ROLE_IDS;
 	}
 
+	public User getUser() {
+		return user;
+	}
+
 	public long getUserId() {
 		return user.getUserId();
 	}
@@ -134,7 +138,7 @@ public abstract class BasePermissionChecker implements PermissionChecker {
 
 	public boolean isOmniadmin() {
 		if (omniadmin == null) {
-			omniadmin = Boolean.valueOf(OmniadminUtil.isOmniadmin(getUserId()));
+			omniadmin = Boolean.valueOf(OmniadminUtil.isOmniadmin(getUser()));
 		}
 
 		return omniadmin.booleanValue();

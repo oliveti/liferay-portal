@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -25,14 +25,26 @@ import com.liferay.portlet.trash.model.TrashEntry;
 import java.util.Date;
 import java.util.List;
 
+import javax.portlet.PortletURL;
+
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Julio Camarero
  */
 public interface Trash {
 
-	public String appendTrashNamespace(String title);
+	public static final String TRASH_TIME_SEPARATOR = "_TRASH_TIME_";
 
-	public String appendTrashNamespace(String title, String separator);
+	public void addBaseModelBreadcrumbEntries(
+			HttpServletRequest request, String className, long classPK,
+			PortletURL containerModelURL)
+		throws PortalException, SystemException;
+
+	public void addContainerModelBreadcrumbEntries(
+			HttpServletRequest request, String className, long classPK,
+			PortletURL containerModelURL)
+		throws PortalException, SystemException;
 
 	public void deleteEntriesAttachments(
 			long companyId, long repositoryId, Date date,
@@ -49,36 +61,20 @@ public interface Trash {
 
 	public String getNewName(ThemeDisplay themeDisplay, String oldName);
 
+	public String getOriginalTitle(String title);
+
 	public String getTrashTime(String title, String separator);
+
+	public String getTrashTitle(long trashEntryId);
+
+	public PortletURL getViewContentURL(
+			HttpServletRequest request, String className, long classPK)
+		throws PortalException, SystemException;
 
 	public boolean isInTrash(String className, long classPK)
 		throws PortalException, SystemException;
 
 	public boolean isTrashEnabled(long groupId)
 		throws PortalException, SystemException;
-
-	public void moveAttachmentFromTrash(
-			long companyId, long repositoryId, String deletedFileName,
-			String attachmentsDir)
-		throws PortalException, SystemException;
-
-	public void moveAttachmentFromTrash(
-			long companyId, long repositoryId, String deletedFileName,
-			String attachmentsDir, String separator)
-		throws PortalException, SystemException;
-
-	public String moveAttachmentToTrash(
-			long companyId, long repositoryId, String fileName,
-			String deletedAttachmentsDir)
-		throws PortalException, SystemException;
-
-	public String moveAttachmentToTrash(
-			long companyId, long repositoryId, String fileName,
-			String deletedAttachmentsDir, String separator)
-		throws PortalException, SystemException;
-
-	public String stripTrashNamespace(String title);
-
-	public String stripTrashNamespace(String title, String separator);
 
 }

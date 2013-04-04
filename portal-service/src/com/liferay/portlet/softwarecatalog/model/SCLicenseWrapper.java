@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -278,6 +278,16 @@ public class SCLicenseWrapper implements SCLicense, ModelWrapper<SCLicense> {
 	}
 
 	public void setExpandoBridgeAttributes(
+		com.liferay.portal.model.BaseModel<?> baseModel) {
+		_scLicense.setExpandoBridgeAttributes(baseModel);
+	}
+
+	public void setExpandoBridgeAttributes(
+		com.liferay.portlet.expando.model.ExpandoBridge expandoBridge) {
+		_scLicense.setExpandoBridgeAttributes(expandoBridge);
+	}
+
+	public void setExpandoBridgeAttributes(
 		com.liferay.portal.service.ServiceContext serviceContext) {
 		_scLicense.setExpandoBridgeAttributes(serviceContext);
 	}
@@ -305,6 +315,10 @@ public class SCLicenseWrapper implements SCLicense, ModelWrapper<SCLicense> {
 		return new SCLicenseWrapper(_scLicense.toEscapedModel());
 	}
 
+	public com.liferay.portlet.softwarecatalog.model.SCLicense toUnescapedModel() {
+		return new SCLicenseWrapper(_scLicense.toUnescapedModel());
+	}
+
 	@Override
 	public java.lang.String toString() {
 		return _scLicense.toString();
@@ -320,7 +334,7 @@ public class SCLicenseWrapper implements SCLicense, ModelWrapper<SCLicense> {
 	}
 
 	/**
-	 * @deprecated Renamed to {@link #getWrappedModel}
+	 * @deprecated As of 6.1.0, replaced by {@link #getWrappedModel}
 	 */
 	public SCLicense getWrappedSCLicense() {
 		return _scLicense;

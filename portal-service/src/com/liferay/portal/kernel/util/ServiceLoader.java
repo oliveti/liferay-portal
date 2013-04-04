@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -31,18 +31,35 @@ import java.util.List;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Miguel Pastor
+ * @author Raymond Augé
  */
 public class ServiceLoader {
 
 	public static <S> List<S> load(Class<S> clazz) throws Exception {
+		return load(clazz, _serviceLoaderCondition);
+	}
+
+	public static <S> List<S> load(
+			Class<S> clazz, ServiceLoaderCondition serviceLoaderCondition)
+		throws Exception {
+
 		Thread currentThread = Thread.currentThread();
 
 		ClassLoader classLoader = currentThread.getContextClassLoader();
 
-		return load(classLoader, clazz);
+		return load(classLoader, clazz, serviceLoaderCondition);
 	}
 
 	public static <S> List<S> load(ClassLoader classLoader, Class<S> clazz)
+		throws Exception {
+
+		return load(classLoader, clazz, _serviceLoaderCondition);
+	}
+
+	public static <S> List<S> load(
+			ClassLoader classLoader, Class<S> clazz,
+			ServiceLoaderCondition serviceLoaderCondition)
 		throws Exception {
 
 		Enumeration<URL> enu = classLoader.getResources(
@@ -52,6 +69,10 @@ public class ServiceLoader {
 
 		while (enu.hasMoreElements()) {
 			URL url = enu.nextElement();
+
+			if (!serviceLoaderCondition.isLoad(url)) {
+				continue;
+			}
 
 			try {
 				_load(services, classLoader, clazz, url);
@@ -112,5 +133,8 @@ public class ServiceLoader {
 	}
 
 	private static Log _log = LogFactoryUtil.getLog(ServiceLoader.class);
+
+	private static ServiceLoaderCondition _serviceLoaderCondition =
+		new DefaultServiceLoaderCondition();
 
 }

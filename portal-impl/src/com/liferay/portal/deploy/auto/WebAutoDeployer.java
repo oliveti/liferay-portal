@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -52,15 +52,19 @@ public class WebAutoDeployer extends WebDeployer implements AutoDeployer {
 
 			List<String> jars = new ArrayList<String>();
 
+			addExtJar(jars, "ext-util-bridges.jar");
 			addExtJar(jars, "ext-util-java.jar");
+			addExtJar(jars, "ext-util-taglib.jar");
+			addRequiredJar(jars, "util-bridges.jar");
 			addRequiredJar(jars, "util-java.jar");
+			addRequiredJar(jars, "util-taglib.jar");
 
 			this.jars = jars;
 
 			checkArguments();
 		}
 		catch (Exception e) {
-			_log.error(e);
+			_log.error(e, e);
 		}
 	}
 

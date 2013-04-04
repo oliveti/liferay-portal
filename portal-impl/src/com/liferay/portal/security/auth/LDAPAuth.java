@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -29,7 +29,7 @@ import com.liferay.portal.model.User;
 import com.liferay.portal.security.ldap.LDAPSettingsUtil;
 import com.liferay.portal.security.ldap.PortalLDAPImporterUtil;
 import com.liferay.portal.security.ldap.PortalLDAPUtil;
-import com.liferay.portal.security.pwd.PwdEncryptor;
+import com.liferay.portal.security.pwd.PasswordEncryptorUtil;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
@@ -193,7 +193,7 @@ public class LDAPAuth implements Authenticator {
 					sb.append(algorithm);
 					sb.append(StringPool.CLOSE_CURLY_BRACE);
 					sb.append(
-						PwdEncryptor.encrypt(
+						PasswordEncryptorUtil.encrypt(
 							algorithm, password, ldapPassword));
 
 					encryptedPassword = sb.toString();
@@ -480,27 +480,23 @@ public class LDAPAuth implements Authenticator {
 				}
 			}
 			else if (Validator.isNotNull(emailAddress)) {
-				try {
-					User user = UserLocalServiceUtil.getUserByEmailAddress(
-						companyId, emailAddress);
+				User user = UserLocalServiceUtil.fetchUserByEmailAddress(
+					companyId, emailAddress);
 
-					if (OmniadminUtil.isOmniadmin(user.getUserId())) {
+				if (user != null) {
+					if (OmniadminUtil.isOmniadmin(user)) {
 						return SUCCESS;
 					}
-				}
-				catch (NoSuchUserException nsue) {
 				}
 			}
 			else if (Validator.isNotNull(screenName)) {
-				try {
-					User user = UserLocalServiceUtil.getUserByScreenName(
-						companyId, screenName);
+				User user = UserLocalServiceUtil.fetchUserByScreenName(
+					companyId, screenName);
 
-					if (OmniadminUtil.isOmniadmin(user.getUserId())) {
+				if (user != null) {
+					if (OmniadminUtil.isOmniadmin(user)) {
 						return SUCCESS;
 					}
-				}
-				catch (NoSuchUserException nsue) {
 				}
 			}
 		}

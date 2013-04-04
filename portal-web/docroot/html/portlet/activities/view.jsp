@@ -1,6 +1,6 @@
 <%--
 /**
- * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -45,8 +45,10 @@ String taglibFeedTitle = LanguageUtil.format(pageContext, "subscribe-to-x's-acti
 
 <liferay-ui:social-activities
 	activities="<%= activities %>"
-	feedEnabled="<%= true %>"
+	feedDisplayStyle="<%= rssDisplayStyle %>"
+	feedEnabled="<%= enableRSS %>"
 	feedLink="<%= rssURL.toString() %>"
 	feedLinkMessage="<%= HtmlUtil.escape(taglibFeedTitle) %>"
 	feedTitle="<%= HtmlUtil.escape(taglibFeedTitle) %>"
+	feedType="<%= rssFeedType %>"
 />
